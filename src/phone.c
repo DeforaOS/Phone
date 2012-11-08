@@ -620,7 +620,8 @@ int phone_error(Phone * phone, char const * message, int ret)
 	if(phone == NULL)
 		return _error_text(message, ret);
 	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
-				PHONE_NOTIFICATION_TYPE_ERROR, message) != 0)
+				PHONE_NOTIFICATION_TYPE_ERROR, NULL, message)
+			!= 0)
 		return ret;
 	return _phone_error(NULL, message, ret);
 }
@@ -1005,8 +1006,9 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 			va_end(ap);
 			break;
 		case PHONE_EVENT_TYPE_NOTIFICATION:
-			event.notification.type = va_arg(ap,
+			event.notification.ntype = va_arg(ap,
 					PhoneNotificationType);
+			event.notification.title = va_arg(ap, char const *);
 			event.notification.message = va_arg(ap, char const *);
 			break;
 		case PHONE_EVENT_TYPE_VOLUME_GET:
@@ -1036,7 +1038,8 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 void phone_info(Phone * phone, char const * message)
 {
 	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
-				PHONE_NOTIFICATION_TYPE_INFO, message) == 0)
+				PHONE_NOTIFICATION_TYPE_INFO, NULL, message)
+			== 0)
 		_phone_info(phone, NULL, message, NULL);
 }
 

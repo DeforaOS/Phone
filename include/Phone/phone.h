@@ -97,6 +97,8 @@ typedef union _PhoneEvent
 	struct
 	{
 		PhoneEventType type;
+		PhoneNotificationType ntype;
+		char const * title;
 		char const * message;
 	} notification;
 
