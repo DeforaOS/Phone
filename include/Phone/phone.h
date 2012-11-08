@@ -45,6 +45,13 @@ typedef enum _PhoneEncoding
 	PHONE_ENCODING_DATA
 } PhoneEncoding;
 
+typedef enum _PhoneNotificationType
+{
+	PHONE_NOTIFICATION_TYPE_INFO = 0,
+	PHONE_NOTIFICATION_TYPE_ERROR,
+	PHONE_NOTIFICATION_TYPE_WARNING
+} PhoneNotificationType;
+
 typedef enum _PhoneEventType
 {
 	PHONE_EVENT_TYPE_KEY_TONE,
@@ -55,6 +62,7 @@ typedef enum _PhoneEventType
 						   char **, size_t * */
 	PHONE_EVENT_TYPE_MESSAGE_SENT,
 	PHONE_EVENT_TYPE_MODEM_EVENT,		/* ModemEvent * event */
+	PHONE_EVENT_TYPE_NOTIFICATION,
 	PHONE_EVENT_TYPE_NOTIFICATION_OFF,
 	PHONE_EVENT_TYPE_NOTIFICATION_ON,	/* char const * message? */
 	PHONE_EVENT_TYPE_OFFLINE,
@@ -84,6 +92,13 @@ typedef union _PhoneEvent
 		PhoneEventType type;
 		ModemEvent * event;
 	} modem_event;
+
+	/* PHONE_EVENT_TYPE_NOTIFICATION */
+	struct
+	{
+		PhoneEventType type;
+		char const * message;
+	} notification;
 
 	/* PHONE_EVENT_TYPE_VOLUME_GET, PHONE_EVENT_TYPE_VOLUME_SET */
 	struct

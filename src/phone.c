@@ -619,6 +619,9 @@ int phone_error(Phone * phone, char const * message, int ret)
 {
 	if(phone == NULL)
 		return _error_text(message, ret);
+	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
+				PHONE_NOTIFICATION_TYPE_ERROR, message) != 0)
+		return ret;
 	return _phone_error(NULL, message, ret);
 }
 
@@ -1001,6 +1004,11 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 			event.modem_event.event = va_arg(ap, ModemEvent *);
 			va_end(ap);
 			break;
+		case PHONE_EVENT_TYPE_NOTIFICATION:
+			event.notification.type = va_arg(ap,
+					PhoneNotificationType);
+			event.notification.message = va_arg(ap, char const *);
+			break;
 		case PHONE_EVENT_TYPE_VOLUME_GET:
 			level = va_arg(ap, double *);
 			va_end(ap);
@@ -1027,7 +1035,9 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 /* phone_info */
 void phone_info(Phone * phone, char const * message)
 {
-	_phone_info(phone, NULL, message, NULL);
+	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
+				PHONE_NOTIFICATION_TYPE_INFO, message) == 0)
+		_phone_info(phone, NULL, message, NULL);
 }
 
 
@@ -4053,6 +4063,7 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 			phone_code_clear(phone);
 			if(name == NULL)
 				break;
+			/* FIXME turn this into a simple notification */
 			snprintf(buf, sizeof(buf), _("%s is valid"), name);
 			_phone_info(phone, phone->en_window, buf, callback);
 			break;
