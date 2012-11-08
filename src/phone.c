@@ -4066,9 +4066,15 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 			phone_code_clear(phone);
 			if(name == NULL)
 				break;
-			/* FIXME turn this into a simple notification */
 			snprintf(buf, sizeof(buf), _("%s is valid"), name);
-			_phone_info(phone, phone->en_window, buf, callback);
+			if(phone_event_type(phone,
+						PHONE_EVENT_TYPE_NOTIFICATION,
+						PHONE_NOTIFICATION_TYPE_INFO,
+						NULL, buf) != 0)
+				phone_show_code(phone, FALSE);
+			else
+				_phone_info(phone, phone->en_window, buf,
+						callback);
 			break;
 		case MODEM_AUTHENTICATION_STATUS_REQUIRED:
 			if(event->authentication.method
