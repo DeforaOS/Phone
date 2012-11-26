@@ -60,17 +60,23 @@ typedef struct _PhonePlugin
 
 
 /* prototypes */
-/* plugins */
+/* plug-in */
 static GPRS * _gprs_init(PhonePluginHelper * helper);
 static void _gprs_destroy(GPRS * gprs);
 static int _gprs_event(GPRS * gprs, PhoneEvent * event);
 static void _gprs_settings(GPRS * gprs);
 
+/* accessors */
 static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 		char const * message, size_t in, size_t out);
 
+/* useful */
 static int _gprs_access_point(GPRS * gprs);
 static int _gprs_connect(GPRS * gprs);
+
+static void _gprs_counters_load(GPRS * gprs);
+static void _gprs_counters_save(GPRS * gprs);
+
 static int _gprs_disconnect(GPRS * gprs);
 
 /* callbacks */
@@ -96,6 +102,7 @@ PhonePluginDefinition plugin =
 
 /* private */
 /* functions */
+/* plug-in */
 /* gprs_init */
 static GPRS * _gprs_init(PhonePluginHelper * helper)
 {
@@ -114,11 +121,7 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 	gprs->in = 0;
 	gprs->out = 0;
 	gprs->glin = 0;
-	if((p = helper->config_get(helper->phone, "gprs", "in")) != NULL)
-		gprs->glin = strtol(p, NULL, 10);
 	gprs->glout = 0;
-	if((p = helper->config_get(helper->phone, "gprs", "out")) != NULL)
-		gprs->glout = strtol(p, NULL, 10);
 	gprs->active = FALSE;
 	gprs->window = NULL;
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -140,6 +143,7 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 			!= NULL && strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
 	gtk_status_icon_set_visible(gprs->icon, active);
 #endif
+	_gprs_counters_load(gprs);
 	return gprs;
 }
 
@@ -147,6 +151,7 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 /* gprs_destroy */
 static void _gprs_destroy(GPRS * gprs)
 {
+	_gprs_counters_save(gprs);
 #if GTK_CHECK_VERSION(2, 10, 0)
 	g_object_unref(gprs->icon);
 #endif
@@ -391,6 +396,7 @@ static void _settings_on_apply(gpointer data)
 	gtk_status_icon_set_visible(gprs->icon, active);
 #endif
 	_gprs_access_point(gprs);
+	_gprs_counters_save(gprs);
 	gprs->active = FALSE;
 }
 
@@ -458,8 +464,7 @@ static void _settings_on_reset(gpointer data)
 	/* refresh the dialog box */
 	_gprs_set_connected(gprs, gprs->connected, NULL, gprs->in, gprs->out);
 	/* save in the configuration */
-	helper->config_set(helper->phone, "gprs", "in", "0");
-	helper->config_set(helper->phone, "gprs", "out", "0");
+	_gprs_counters_save(gprs);
 }
 
 
@@ -468,7 +473,6 @@ static void _settings_on_reset(gpointer data)
 static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 		char const * message, size_t in, size_t out)
 {
-	PhonePluginHelper * helper = gprs->helper;
 	char buf[64];
 
 	gprs->connected = connected;
@@ -484,13 +488,13 @@ static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 			? GTK_STOCK_DISCONNECT : GTK_STOCK_CONNECT);
 	if(connected)
 	{
-		gprs->in = in;
-		gprs->out = out;
-		snprintf(buf, sizeof(buf), "Received: %lu kB",
-				(unsigned long)in / 1024);
+		snprintf(buf, sizeof(buf), "Received: %lu kB (%lu kB/s)",
+				(unsigned long)in / 1024,
+				(unsigned long)(in - gprs->in) / 1024);
 		gtk_label_set_text(GTK_LABEL(gprs->st_in), buf);
-		snprintf(buf, sizeof(buf), "Sent: %lu kB",
-				(unsigned long)out / 1024);
+		snprintf(buf, sizeof(buf), "Sent: %lu kB (%lu kB/s)",
+				(unsigned long)out / 1024,
+				(unsigned long)(out - gprs->out) / 1024);
 		gtk_label_set_text(GTK_LABEL(gprs->st_out), buf);
 		gtk_widget_show(gprs->st_in);
 		gtk_widget_show(gprs->st_out);
@@ -500,6 +504,8 @@ static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 				(unsigned long)out / 1024);
 		gtk_status_icon_set_tooltip_text(gprs->icon, buf);
 #endif
+		gprs->in = in;
+		gprs->out = out;
 		if(gprs->source == 0)
 			gprs->source = g_timeout_add(1000, _gprs_on_timeout,
 					gprs);
@@ -518,10 +524,7 @@ static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 		gprs->glin += gprs->in;
 		gprs->glout += gprs->out;
 		/* save in the configuration */
-		snprintf(buf, sizeof(buf), "%lu", gprs->glin);
-		helper->config_set(helper->phone, "gprs", "in", buf);
-		snprintf(buf, sizeof(buf), "%lu", gprs->glout);
-		helper->config_set(helper->phone, "gprs", "out", buf);
+		_gprs_counters_save(gprs);
 		/* reset the known data */
 		gprs->in = 0;
 		gprs->out = 0;
@@ -600,6 +603,34 @@ static int _gprs_connect(GPRS * gprs)
 	request.call.call_type = MODEM_CALL_TYPE_DATA;
 	request.call.number = "*99***1#"; /* XXX specific to GSM/GPRS */
 	return gprs->helper->request(gprs->helper->phone, &request);
+}
+
+
+/* gprs_counters_load */
+static void _gprs_counters_load(GPRS * gprs)
+{
+	PhonePluginHelper * helper = gprs->helper;
+	char const * p;
+
+	gprs->glin = 0;
+	if((p = helper->config_get(helper->phone, "gprs", "in")) != NULL)
+		gprs->glin = strtol(p, NULL, 10);
+	gprs->glout = 0;
+	if((p = helper->config_get(helper->phone, "gprs", "out")) != NULL)
+		gprs->glout = strtol(p, NULL, 10);
+}
+
+
+/* gprs_counters_save */
+static void _gprs_counters_save(GPRS * gprs)
+{
+	PhonePluginHelper * helper = gprs->helper;
+	char buf[16];
+
+	snprintf(buf, sizeof(buf), "%lu", gprs->glin);
+	helper->config_set(helper->phone, "gprs", "in", buf);
+	snprintf(buf, sizeof(buf), "%lu", gprs->glout);
+	helper->config_set(helper->phone, "gprs", "out", buf);
 }
 
 
