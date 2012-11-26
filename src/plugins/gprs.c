@@ -456,7 +456,7 @@ static void _settings_on_reset(gpointer data)
 	gprs->glin = 0;
 	gprs->glout = 0;
 	/* refresh the dialog box */
-	_gprs_set_connected(gprs, NULL, gprs->in, gprs->out);
+	_gprs_set_connected(gprs, gprs->connected, NULL, gprs->in, gprs->out);
 	/* save in the configuration */
 	helper->config_set(helper->phone, "gprs", "in", "0");
 	helper->config_set(helper->phone, "gprs", "out", "0");
@@ -468,11 +468,12 @@ static void _settings_on_reset(gpointer data)
 static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 		char const * message, size_t in, size_t out)
 {
+	PhonePluginHelper * helper = gprs->helper;
 	char buf[64];
 
 	gprs->connected = connected;
 	if(message == NULL)
-		message = (connected != NULL) ? "Connected" : "Not connected";
+		message = connected ? "Connected" : "Not connected";
 	if(gprs->window == NULL)
 		return;
 	gtk_image_set_from_icon_name(GTK_IMAGE(gprs->st_image), connected
