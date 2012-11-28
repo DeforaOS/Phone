@@ -457,7 +457,6 @@ static void _settings_on_ok(gpointer data)
 static void _settings_on_reset(gpointer data)
 {
 	GPRS * gprs = data;
-	PhonePluginHelper * helper = gprs->helper;
 
 	gprs->glin = 0;
 	gprs->glout = 0;
