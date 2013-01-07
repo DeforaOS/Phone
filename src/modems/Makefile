@@ -2,19 +2,19 @@ TARGETS	= debug.so hayes.so purple.so sofia.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
-CC	?= cc
+CC	= cc
 CPPFLAGSF= -I ../../include
 CPPFLAGS=
 CFLAGSF	= -W `pkg-config --cflags glib-2.0`
 CFLAGS	= -Wall -g -O2 -pedantic -fPIC
 LDFLAGSF= `pkg-config --libs glib-2.0`
-AR	?= ar
-RANLIB	?= ranlib
-CCSHARED?= $(CC) -shared
-RM	?= rm -f
-LN	?= ln -f
-MKDIR	?= mkdir -p
-INSTALL	?= install
+AR	= ar
+RANLIB	= ranlib
+CCSHARED= $(CC) -shared
+RM	= rm -f
+LN	= ln -f
+MKDIR	= mkdir -p
+INSTALL	= install
 INCLUDEDIR= $(PREFIX)/include
 
 
