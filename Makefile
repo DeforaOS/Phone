@@ -27,6 +27,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/phone-log.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-messages.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-settings.desktop \
+		$(PACKAGE)-$(VERSION)/data/phone-sofia.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/phone-dialer.png \
