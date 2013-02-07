@@ -62,13 +62,6 @@ typedef enum _PhoneAttachmentColumn
 #define PHONE_ATTACHMENT_COLUMN_LAST PHONE_ATTACHMENT_COLUMN_ICON
 #define PHONE_ATTACHMENT_COLUMN_COUNT (PHONE_ATTACHMENT_COLUMN_LAST + 1)
 
-typedef enum _PhoneCallType
-{
-	PHONE_CALL_TYPE_OUTGOING = 0,
-	PHONE_CALL_TYPE_INCOMING,
-	PHONE_CALL_TYPE_MISSED
-} PhoneCallType;
-
 typedef enum _PhoneContactColumn
 {
 	PHONE_CONTACT_COLUMN_ID = 0,
@@ -1114,6 +1107,39 @@ int phone_load(Phone * phone, char const * plugin)
 
 
 /* logs */
+/* phone_logs_append */
+void phone_logs_append(Phone * phone, PhoneCallType type, char const * number)
+{
+	GtkTreeIter iter;
+	char const * display = "";
+	time_t date;
+	struct tm t;
+	char dd[32];
+
+	switch(type)
+	{
+		case PHONE_CALL_TYPE_INCOMING:
+			display = _("Incoming");
+			break;
+		case PHONE_CALL_TYPE_MISSED:
+			display = _("Missed");
+			break;
+		case PHONE_CALL_TYPE_OUTGOING:
+			display = _("Outgoing");
+			break;
+	}
+	gtk_list_store_append(phone->lo_store, &iter);
+	date = time(NULL);
+	localtime_r(&date, &t);
+	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
+	gtk_list_store_set(phone->lo_store, &iter,
+			PHONE_LOGS_COLUMN_CALL_TYPE, type,
+			PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, display,
+			PHONE_LOGS_COLUMN_NUMBER, number,
+			PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
+}
+
+
 /* phone_logs_call_selected */
 void phone_logs_call_selected(Phone * phone)
 	/* XXX code duplication */
@@ -3292,25 +3318,12 @@ static void _phone_about(Phone * phone)
 /* phone_call_number */
 static int _phone_call_number(Phone * phone, char const * number)
 {
-	GtkTreeIter iter;
-	time_t date;
-	struct tm t;
-	char dd[32];
-
 	if(number == NULL)
 		return -1;
 	modem_request_type(phone->modem, MODEM_REQUEST_CALL,
 			MODEM_CALL_TYPE_VOICE, number, 0);
 	/* add a log entry */
-	gtk_list_store_append(phone->lo_store, &iter);
-	date = time(NULL);
-	localtime_r(&date, &t);
-	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
-	gtk_list_store_set(phone->lo_store, &iter,
-			PHONE_LOGS_COLUMN_CALL_TYPE, PHONE_CALL_TYPE_OUTGOING,
-			PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, _("Outgoing"),
-			PHONE_LOGS_COLUMN_NUMBER, number,
-			PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
+	phone_logs_append(phone, PHONE_CALL_TYPE_OUTGOING, number);
 	return 0;
 }
 
@@ -4088,11 +4101,6 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 
 static void _modem_event_call(Phone * phone, ModemEvent * event)
 {
-	GtkTreeIter iter;
-	time_t date;
-	struct tm t;
-	char dd[32];
-
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u %u\n", __func__, event->call.call_type,
 			event->call.status);
@@ -4106,18 +4114,8 @@ static void _modem_event_call(Phone * phone, ModemEvent * event)
 		case MODEM_CALL_DIRECTION_INCOMING:
 			/* add a log entry */
 			/* XXX check that calls are not duplicated */
-			gtk_list_store_append(phone->lo_store, &iter);
-			date = time(NULL);
-			localtime_r(&date, &t);
-			strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
-			gtk_list_store_set(phone->lo_store, &iter,
-					PHONE_LOGS_COLUMN_CALL_TYPE,
-					PHONE_CALL_TYPE_INCOMING,
-					PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY,
-					_("Incoming"),
-					PHONE_LOGS_COLUMN_NUMBER,
-					event->call.number,
-					PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
+			phone_logs_append(phone, PHONE_CALL_TYPE_INCOMING,
+					event->call.number);
 			break;
 		case MODEM_CALL_DIRECTION_OUTGOING:
 		case MODEM_CALL_DIRECTION_NONE:

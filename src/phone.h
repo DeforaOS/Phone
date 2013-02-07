@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,15 @@
 
 
 /* Phone */
+/* types */
+typedef enum _PhoneCallType
+{
+	PHONE_CALL_TYPE_OUTGOING = 0,
+	PHONE_CALL_TYPE_INCOMING,
+	PHONE_CALL_TYPE_MISSED
+} PhoneCallType;
+
+
 /* functions */
 Phone * phone_new(char const * plugin, int retry);
 void phone_delete(Phone * phone);
@@ -80,6 +89,7 @@ void phone_show_system(Phone * phone, gboolean show);
 void phone_show_write(Phone * phone, gboolean show, ...);
 
 /* logs */
+void phone_logs_append(Phone * phone, PhoneCallType type, char const * number);
 void phone_logs_call_selected(Phone * phone);
 void phone_logs_clear(Phone * phone);
 void phone_logs_write_selected(Phone * phone);
