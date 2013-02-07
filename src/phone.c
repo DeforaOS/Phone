@@ -4088,6 +4088,11 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 
 static void _modem_event_call(Phone * phone, ModemEvent * event)
 {
+	GtkTreeIter iter;
+	time_t date;
+	struct tm t;
+	char dd[32];
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %u %u\n", __func__, event->call.call_type,
 			event->call.status);
@@ -4096,6 +4101,29 @@ static void _modem_event_call(Phone * phone, ModemEvent * event)
 	if(event->call.call_type != MODEM_CALL_TYPE_VOICE
 			|| event->call.number == NULL)
 		return; /* XXX ignore these for now */
+	switch(event->call.direction)
+	{
+		case MODEM_CALL_DIRECTION_INCOMING:
+			/* add a log entry */
+			/* XXX check that calls are not duplicated */
+			gtk_list_store_append(phone->lo_store, &iter);
+			date = time(NULL);
+			localtime_r(&date, &t);
+			strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
+			gtk_list_store_set(phone->lo_store, &iter,
+					PHONE_LOGS_COLUMN_CALL_TYPE,
+					PHONE_CALL_TYPE_INCOMING,
+					PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY,
+					_("Incoming"),
+					PHONE_LOGS_COLUMN_NUMBER,
+					event->call.number,
+					PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
+			break;
+		case MODEM_CALL_DIRECTION_OUTGOING:
+		case MODEM_CALL_DIRECTION_NONE:
+			/* we can ignore these */
+			break;
+	}
 	phone_show_call(phone, TRUE, event);
 }
 
