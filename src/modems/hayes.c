@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -457,7 +457,7 @@ static const struct
 			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
 	{ "Nokia N900",
 		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_BATTERY_70	},
-	{ NULL,			0					}
+	{ NULL,	0							}
 };
 
 static HayesRequestHandler _hayes_request_handlers[] =
@@ -572,6 +572,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_message_list },
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
 		_on_request_generic },
+	{ MODEM_REQUEST_PASSWORD_SET,			NULL,
+		_on_request_generic },
 	{ MODEM_REQUEST_REGISTRATION,			NULL,
 		_on_request_registration },
 	{ MODEM_REQUEST_SIGNAL_LEVEL,			"AT+CSQ",
@@ -685,6 +687,9 @@ static char * _request_attention_message_list(ModemPlugin * modem);
 static char * _request_attention_message_send(ModemPlugin * modem,
 		char const * number, ModemMessageEncoding encoding,
 		size_t length, char const * content);
+static char * _request_attention_password_set(ModemPlugin * modem,
+		char const * name, char const * oldpassword,
+		char const * newpassword);
 static char * _request_attention_registration(ModemPlugin * modem,
 		ModemRegistrationMode mode, char const * _operator);
 static char * _request_attention_sim_pin(ModemPlugin * modem,
@@ -816,6 +821,11 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 					request->message_send.encoding,
 					request->message_send.length,
 					request->message_send.content);
+		case MODEM_REQUEST_PASSWORD_SET:
+			return _request_attention_password_set(modem,
+					request->password_set.name,
+					request->password_set.oldpassword,
+					request->password_set.newpassword);
 		case MODEM_REQUEST_REGISTRATION:
 			return _request_attention_registration(modem,
 					request->registration.mode,
@@ -1082,6 +1092,30 @@ static char * _request_attention_message_send(ModemPlugin * modem,
 		snprintf(ret, len, "%s%lu\r\n%s", cmd, ((unsigned long)pdulen
 					- 1) / 2, pdu);
 	free(pdu);
+	return ret;
+}
+
+static char * _request_attention_password_set(ModemPlugin * modem,
+		char const * name, char const * oldpassword,
+		char const * newpassword)
+{
+	char * ret;
+	size_t len;
+	char const cpwd[] = "AT+CPWD=";
+	char const * n;
+
+	if(name == NULL || oldpassword == NULL || newpassword == NULL)
+		return NULL;
+	if(strcmp(name, "SIM PIN") == 0)
+		n = "SC";
+	else
+		return NULL;
+	len = sizeof(cpwd) + strlen(n) + 2 + strlen(oldpassword) + 3
+		+ strlen(newpassword) + 3;
+	if((ret = malloc(len)) == NULL)
+		return NULL;
+	snprintf(ret, len, "%s\"%s\",\"%s\",\"%s\"", cpwd, n, oldpassword,
+			newpassword);
 	return ret;
 }
 

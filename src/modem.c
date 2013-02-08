@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -218,6 +218,13 @@ int modem_request_type(Modem * modem, ModemRequestType type, ...)
 			break;
 		case MODEM_REQUEST_MUTE:
 			request.mute.enabled = va_arg(ap, unsigned int);
+			break;
+		case MODEM_REQUEST_PASSWORD_SET:
+			request.password_set.name = va_arg(ap, char const *);
+			request.password_set.oldpassword = va_arg(ap,
+					char const *);
+			request.password_set.newpassword = va_arg(ap,
+					char const *);
 			break;
 		case MODEM_REQUEST_REGISTRATION:
 			request.registration.mode = va_arg(ap,

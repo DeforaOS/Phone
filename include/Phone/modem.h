@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -326,6 +326,7 @@ typedef enum _ModemRequestType
 	MODEM_REQUEST_MESSAGE_LIST,
 	MODEM_REQUEST_MESSAGE_SEND,
 	MODEM_REQUEST_MUTE,
+	MODEM_REQUEST_PASSWORD_SET,
 	MODEM_REQUEST_REGISTRATION,
 	MODEM_REQUEST_SIGNAL_LEVEL,
 	MODEM_REQUEST_UNSUPPORTED
@@ -423,6 +424,15 @@ typedef union _ModemRequest
 		ModemRequestType type;
 		unsigned int enabled;
 	} mute;
+
+	/* MODEM_REQUEST_PASSWORD_SET */
+	struct
+	{
+		ModemRequestType type;
+		char const * name;
+		char const * oldpassword;
+		char const * newpassword;
+	} password_set;
 
 	/* MODEM_REQUEST_PLUGIN */
 	struct
