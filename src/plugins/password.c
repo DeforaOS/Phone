@@ -15,6 +15,7 @@
 
 
 
+#include <string.h>
 #include <System.h>
 #include <Desktop.h>
 #include "Phone.h"
@@ -95,6 +96,7 @@ static int _password_event(PasswordPhonePlugin * password, PhoneEvent * event)
 /* password_settings */
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
+static void _on_settings_ok(gpointer data);
 
 static void _password_settings(PasswordPhonePlugin * password)
 {
@@ -170,7 +172,8 @@ static void _password_settings(PasswordPhonePlugin * password)
 				_on_settings_cancel), password);
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
-	/* FIXME implement the callback */
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(_on_settings_ok),
+			password);
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(password->window), vbox);
@@ -193,4 +196,33 @@ static gboolean _on_settings_closex(gpointer data)
 
 	gtk_widget_hide(password->window);
 	return TRUE;
+}
+
+static void _on_settings_ok(gpointer data)
+{
+	PasswordPhonePlugin * password = data;
+	PhonePluginHelper * helper = password->helper;
+	GtkWidget * widget;
+	char const * name;
+	char const * oldpassword;
+	char const * newpassword;
+	char const * newpassword2;
+	ModemRequest request;
+
+	widget = gtk_bin_get_child(GTK_BIN(password->entry));
+	name = gtk_entry_get_text(GTK_ENTRY(widget));
+	oldpassword = gtk_entry_get_text(GTK_ENTRY(password->oldpassword));
+	newpassword = gtk_entry_get_text(GTK_ENTRY(password->newpassword));
+	newpassword2 = gtk_entry_get_text(GTK_ENTRY(password->newpassword2));
+	if(strcmp(newpassword, newpassword2) != 0)
+		/* FIXME report the error */
+		return;
+	/* issue the request */
+	memset(&request, 0, sizeof(request));
+	request.type = MODEM_REQUEST_PASSWORD_SET;
+	request.password_set.name = name;
+	request.password_set.oldpassword = oldpassword;
+	request.password_set.newpassword = newpassword;
+	helper->request(helper->phone, &request);
+	gtk_widget_hide(password->window);
 }
