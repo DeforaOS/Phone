@@ -97,6 +97,8 @@ static int _password_event(PasswordPhonePlugin * password, PhoneEvent * event)
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_ok(gpointer data);
+static void _on_settings_ok_error(PasswordPhonePlugin * password,
+		char const * error);
 
 static void _password_settings(PasswordPhonePlugin * password)
 {
@@ -215,8 +217,11 @@ static void _on_settings_ok(gpointer data)
 	newpassword = gtk_entry_get_text(GTK_ENTRY(password->newpassword));
 	newpassword2 = gtk_entry_get_text(GTK_ENTRY(password->newpassword2));
 	if(strcmp(newpassword, newpassword2) != 0)
-		/* FIXME report the error */
+	{
+		_on_settings_ok_error(password,
+				"The new passwords do not match");
 		return;
+	}
 	/* issue the request */
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_PASSWORD_SET;
@@ -225,4 +230,22 @@ static void _on_settings_ok(gpointer data)
 	request.password_set.newpassword = newpassword;
 	helper->request(helper->phone, &request);
 	gtk_widget_hide(password->window);
+}
+
+static void _on_settings_ok_error(PasswordPhonePlugin * password,
+		char const * error)
+{
+	GtkWidget * dialog;
+
+	dialog = gtk_message_dialog_new(GTK_WINDOW(password->window),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", error);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 }
