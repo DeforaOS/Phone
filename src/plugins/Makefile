@@ -236,6 +236,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 -- password.so $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
@@ -257,6 +259,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
