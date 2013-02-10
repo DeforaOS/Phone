@@ -32,6 +32,7 @@ typedef struct _PhonePlugin
 	GtkWidget * entry;
 	GtkWidget * oldpassword;
 	GtkWidget * newpassword;
+	GtkWidget * newpassword2;
 } PasswordPhonePlugin;
 
 
@@ -92,6 +93,7 @@ static int _password_event(PasswordPhonePlugin * password, PhoneEvent * event)
 
 
 /* password_settings */
+static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 
 static void _password_settings(PasswordPhonePlugin * password)
@@ -124,7 +126,8 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	password->entry = gtk_entry_new();
+	password->entry = gtk_combo_box_entry_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(password->entry), "SIM PIN");
 	gtk_box_pack_start(GTK_BOX(hbox), password->entry, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* old password */
@@ -147,12 +150,24 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_entry_set_visibility(GTK_ENTRY(password->newpassword), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), password->newpassword, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* new password */
+	hbox = gtk_hbox_new(FALSE, 0);
+	widget = gtk_label_new("Confirm: ");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	password->newpassword2 = gtk_entry_new();
+	gtk_entry_set_visibility(GTK_ENTRY(password->newpassword2), FALSE);
+	gtk_box_pack_start(GTK_BOX(hbox), password->newpassword2, TRUE, TRUE,
+			0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* buttons */
 	hbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
 	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	/* FIXME implement the callback */
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_on_settings_cancel), password);
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	widget = gtk_button_new_from_stock(GTK_STOCK_OK);
 	/* FIXME implement the callback */
@@ -160,6 +175,16 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(password->window), vbox);
 	gtk_widget_show_all(password->window);
+}
+
+static void _on_settings_cancel(gpointer data)
+{
+	PasswordPhonePlugin * password = data;
+
+	gtk_widget_hide(password->window);
+	gtk_entry_set_text(GTK_ENTRY(password->oldpassword), "");
+	gtk_entry_set_text(GTK_ENTRY(password->newpassword), "");
+	gtk_entry_set_text(GTK_ENTRY(password->newpassword2), "");
 }
 
 static gboolean _on_settings_closex(gpointer data)
