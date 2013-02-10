@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
  * - attempt to open the video device at regular intervals
- * - display a window even if it was impossible to open a capture device */
+ * - display a window even if it was impossible to open a capture device
+ * - re-use code from the Camera project instead */
 
 
 
@@ -26,6 +27,7 @@
 #endif
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <System.h>
@@ -40,13 +42,33 @@ typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
 
-	int fd;
+	String * device;
+
 	guint source;
-	Buffer * buffer;
+	int fd;
+	struct v4l2_capability cap;
+	struct v4l2_format format;
+
+	/* IO channel */
+	GIOChannel * channel;
+
+	/* input data */
+	char * raw_buffer;
+	size_t raw_buffer_cnt;
+
+	/* RGB data */
+	unsigned char * rgb_buffer;
+	size_t rgb_buffer_cnt;
+
+	/* decoding */
+	int yuv_amp;
 
 	/* widgets */
+	GdkGC * gc;
 	GtkWidget * window;
 	GtkWidget * area;
+	GtkAllocation area_allocation;
+	GdkPixmap * pixmap;
 } VideoPhonePlugin;
 
 
@@ -60,7 +82,13 @@ static int _video_ioctl(VideoPhonePlugin * video, unsigned long request,
 		void * data);
 
 /* callbacks */
+static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
+		gpointer data);
 static gboolean _video_on_closex(gpointer data);
+static gboolean _video_on_drawing_area_configure(GtkWidget * widget,
+		GdkEventConfigure * event, gpointer data);
+static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
+		GdkEventExpose * event, gpointer data);
 static gboolean _video_on_refresh(gpointer data);
 
 
@@ -81,35 +109,85 @@ PhonePluginDefinition plugin =
 /* private */
 /* functions */
 /* video_init */
+static int _open_setup(VideoPhonePlugin * video);
+
 static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 {
 	VideoPhonePlugin * video;
-	struct v4l2_capability cap;
-	struct v4l2_cropcap cropcap;
-	struct v4l2_crop crop;
-	struct v4l2_format format;
+	char const * device = NULL;
 
 	if((video = object_new(sizeof(*video))) == NULL)
 		return NULL;
 	video->helper = helper;
 	/* FIXME let this be configurable */
-	video->fd = open("/dev/video0", O_RDWR);
-	video->buffer = buffer_new(0, NULL);
+	if(device == NULL)
+		device = "/dev/video0";
 	video->source = 0;
+	video->fd = -1;
+	memset(&video->cap, 0, sizeof(video->cap));
+	video->channel = NULL;
+	video->raw_buffer = NULL;
+	video->raw_buffer_cnt = 0;
+	video->rgb_buffer = NULL;
+	video->rgb_buffer_cnt = 0;
+	video->yuv_amp = 255;
+	video->gc = NULL;
 	video->window = NULL;
 	/* check for errors */
-	if(video->buffer == NULL
-			|| video->fd < 0
-			|| _video_ioctl(video, VIDIOC_QUERYCAP, &cap) == -1
-			|| (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0
-			/* FIXME also implement mmap() and streaming */
-			|| (cap.capabilities & V4L2_CAP_READWRITE) == 0)
+	if((video->device = string_new(device)) == NULL
+			|| (video->fd = open(device, O_RDWR)) < 0)
 	{
 		helper->error(helper->phone,
 				"Could not open the video capture device", 1);
 		_video_destroy(video);
 		return NULL;
 	}
+	if(_open_setup(video) != 0)
+	{
+		helper->error(helper->phone, error_get(), 1);
+		_video_destroy(video);
+		return NULL;
+	}
+	/* create the window */
+	video->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(video->window), "Phone - Video");
+	gtk_widget_realize(video->window);
+	video->gc = gdk_gc_new(video->window->window); /* XXX */
+	g_signal_connect_swapped(video->window, "delete-event", G_CALLBACK(
+				_video_on_closex), video);
+	video->area = gtk_drawing_area_new();
+	video->pixmap = NULL;
+	g_signal_connect(video->area, "configure-event", G_CALLBACK(
+				_video_on_drawing_area_configure), video);
+	g_signal_connect(video->area, "expose-event", G_CALLBACK(
+				_video_on_drawing_area_expose), video);
+	gtk_widget_set_size_request(video->area, video->format.fmt.pix.width,
+			video->format.fmt.pix.height);
+	gtk_container_add(GTK_CONTAINER(video->window), video->area);
+	gtk_widget_show_all(video->window);
+	if(_video_on_refresh(video) == TRUE)
+		video->source = g_timeout_add(1000, _video_on_refresh, video);
+	return video;
+}
+
+static int _open_setup(VideoPhonePlugin * video)
+{
+	struct v4l2_cropcap cropcap;
+	struct v4l2_crop crop;
+	size_t cnt;
+	char * p;
+	GError * error = NULL;
+
+	/* check for errors */
+	if(_video_ioctl(video, VIDIOC_QUERYCAP, &video->cap) == -1)
+		return -error_set_code(1, "%s: %s (%s)", video->device,
+				"Could not obtain the capabilities",
+				strerror(errno));
+	if((video->cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0
+			/* FIXME also implement mmap() and streaming */
+			|| (video->cap.capabilities & V4L2_CAP_READWRITE) == 0)
+		return -error_set_code(1, "%s: %s", video->device,
+				"Unsupported capabilities");
 	/* reset cropping */
 	memset(&cropcap, 0, sizeof(cropcap));
 	cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -120,44 +198,75 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 		crop.c = cropcap.defrect;
 		if(_video_ioctl(video, VIDIOC_S_CROP, &crop) == -1
 				&& errno == EINVAL)
-			helper->error(helper->phone, "Cropping not supported",
-					0);
+			/* XXX ignore this error for now */
+			error_set_code(1, "%s: %s", video->device,
+					"Cropping not supported");
 	}
 	/* obtain the current format */
-	if(_video_ioctl(video, VIDIOC_G_FMT, &format) == -1
-			|| buffer_set_size(video->buffer,
-				format.fmt.pix.sizeimage) != 0)
+	if(_video_ioctl(video, VIDIOC_G_FMT, &video->format) == -1)
+		return -error_set_code(1, "%s: %s", video->device,
+				"Could not obtain the video capture format");
+	/* check the current format */
+	if(video->format.type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
+		return -error_set_code(1, "%s: %s", video->device,
+				"Unsupported video capture type");
+	/* FIXME also try to obtain a RGB24 format if possible */
+	/* allocate the raw buffer */
+	cnt = video->format.fmt.pix.sizeimage;
+	if((p = realloc(video->raw_buffer, cnt)) == NULL)
+		return -error_set_code(1, "%s: %s", video->device,
+				strerror(errno));
+	video->raw_buffer = p;
+	video->raw_buffer_cnt = cnt;
+	/* allocate the rgb buffer */
+	cnt = video->format.fmt.pix.width * video->format.fmt.pix.height * 3;
+	if((p = realloc(video->rgb_buffer, cnt)) == NULL)
+		return -error_set_code(1, "%s: %s", video->device,
+				strerror(errno));
+	video->rgb_buffer = (unsigned char *)p;
+	video->rgb_buffer_cnt = cnt;
+	/* setup a IO channel */
+	video->channel = g_io_channel_unix_new(video->fd);
+	if(g_io_channel_set_encoding(video->channel, NULL, &error)
+			!= G_IO_STATUS_NORMAL)
 	{
-		_video_destroy(video);
-		return NULL;
+		error_set_code(1, "%s", error->message);
+		g_error_free(error);
+		return -1;
 	}
-	/* create the window */
-	video->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_resizable(GTK_WINDOW(video->window), FALSE);
-	gtk_window_set_title(GTK_WINDOW(video->window), "Phone - Video");
-	g_signal_connect_swapped(video->window, "delete-event", G_CALLBACK(
-				_video_on_closex), video);
-	video->area = gtk_drawing_area_new();
-	gtk_widget_set_size_request(video->area, format.fmt.pix.width,
-			format.fmt.pix.height);
-	gtk_container_add(GTK_CONTAINER(video->window), video->area);
-	gtk_widget_show_all(video->window);
-	if(_video_on_refresh(video) == TRUE)
-		video->source = g_timeout_add(1000, _video_on_refresh, video);
-	return video;
+	g_io_channel_set_buffered(video->channel, FALSE);
+	video->source = g_io_add_watch(video->channel, G_IO_IN,
+			_video_on_can_read, video);
+	return 0;
 }
 
 
 /* video_destroy */
 static void _video_destroy(VideoPhonePlugin * video)
 {
-	if(video->window != NULL)
-		gtk_widget_destroy(video->window);
 	if(video->source != 0)
 		g_source_remove(video->source);
+	if(video->channel != NULL)
+	{
+		/* XXX we ignore errors at this point */
+		g_io_channel_shutdown(video->channel, TRUE, NULL);
+#if 0
+		/* FIXME seems to cause a crash in the original code */
+		g_object_unref(video->channel);
+#endif
+	}
+	if(video->pixmap != NULL)
+		g_object_unref(video->pixmap);
+	if(video->gc != NULL)
+		g_object_unref(video->gc);
+	if(video->window != NULL)
+		gtk_widget_destroy(video->window);
 	if(video->fd >= 0)
 		close(video->fd);
-	buffer_delete(video->buffer);
+	if((char *)video->rgb_buffer != video->raw_buffer)
+		free(video->rgb_buffer);
+	free(video->raw_buffer);
+	string_delete(video->device);
 	object_delete(video);
 }
 
@@ -178,6 +287,40 @@ static int _video_ioctl(VideoPhonePlugin * video, unsigned long request,
 
 
 /* callbacks */
+/* video_on_can_read */
+static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
+		gpointer data)
+{
+	VideoPhonePlugin * video = data;
+	PhonePluginHelper * helper = video->helper;
+	ssize_t s;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(channel != video->channel || condition != G_IO_IN)
+		return FALSE;
+	if((s = read(video->fd, video->raw_buffer, video->raw_buffer_cnt))
+			<= 0)
+	{
+		/* this error can be ignored */
+		if(errno == EAGAIN)
+			return TRUE;
+		close(video->fd);
+		video->fd = -1;
+		helper->error(helper->phone, strerror(errno), 1);
+		video->source = 0;
+		return FALSE;
+	}
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %lu %ld\n", __func__,
+			video->raw_buffer_cnt, s);
+#endif
+	video->source = g_idle_add(_video_on_refresh, video);
+	return FALSE;
+}
+
+
 /* video_on_closex */
 static gboolean _video_on_closex(gpointer data)
 {
@@ -191,22 +334,142 @@ static gboolean _video_on_closex(gpointer data)
 }
 
 
+/* video_on_drawing_area_configure */
+static gboolean _video_on_drawing_area_configure(GtkWidget * widget,
+                GdkEventConfigure * event, gpointer data)
+{
+	/* XXX this code is inspired from GQcam */
+	VideoPhonePlugin * video = data;
+	GtkAllocation * allocation = &video->area_allocation;
+
+	if(video->pixmap != NULL)
+		g_object_unref(video->pixmap);
+	/* FIXME requires Gtk+ 2.18 */
+	gtk_widget_get_allocation(widget, allocation);
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() %dx%d\n", __func__, allocation->width,
+			allocation->height);
+#endif
+	video->pixmap = gdk_pixmap_new(widget->window, allocation->width,
+			allocation->height, -1);
+	/* FIXME is it not better to scale the previous pixmap for now? */
+	gdk_draw_rectangle(video->pixmap, video->gc, TRUE, 0, 0,
+			allocation->width, allocation->height);
+	return TRUE;
+}
+
+
+/* video_on_drawing_area_expose */
+static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
+                GdkEventExpose * event, gpointer data)
+{
+        /* XXX this code is inspired from GQcam */
+        VideoPhonePlugin * video = data;
+
+        gdk_draw_pixmap(widget->window, video->gc, video->pixmap,
+                        event->area.x, event->area.y,
+                        event->area.x, event->area.y,
+                        event->area.width, event->area.height);
+        return FALSE;
+}
+
+
 /* video_on_refresh */
+static void _refresh_convert(VideoPhonePlugin * video);
+static void _refresh_convert_yuv(int amp, uint8_t y, uint8_t u, uint8_t v,
+                uint8_t * r, uint8_t * g, uint8_t * b);
+
 static gboolean _video_on_refresh(gpointer data)
 {
 	VideoPhonePlugin * video = data;
+	GtkAllocation * allocation = &video->area_allocation;
+	int width = video->format.fmt.pix.width;
+	int height = video->format.fmt.pix.height;
+	GdkPixbuf * pixbuf;
+	GdkPixbuf * pixbuf2;
 
-	/* FIXME no longer block on read() */
-	if(read(video->fd, buffer_get_data(video->buffer),
-				buffer_get_size(video->buffer)) <= 0)
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() 0x%x\n", __func__,
+			video->format.fmt.pix.pixelformat);
+#endif
+	_refresh_convert(video);
+	if(width == allocation->width && height == allocation->height)
+		/* render directly */
+		gdk_draw_rgb_image(video->pixmap, video->gc, 0, 0,
+				width, height, GDK_RGB_DITHER_NORMAL,
+				video->rgb_buffer, width * 3);
+	else
 	{
-		/* this error can be ignored */
-		if(errno == EAGAIN)
-			return TRUE;
-		close(video->fd);
-		video->fd = -1;
-		return FALSE;
+		/* render after scaling */
+		pixbuf = gdk_pixbuf_new_from_data(video->rgb_buffer,
+				GDK_COLORSPACE_RGB, FALSE, 8, width, height,
+				width * 3, NULL, NULL);
+		pixbuf2 = gdk_pixbuf_scale_simple(pixbuf, allocation->width,
+				allocation->height, GDK_INTERP_BILINEAR);
+		gdk_pixbuf_render_to_drawable(pixbuf2, video->pixmap,
+				video->gc, 0, 0, 0, 0, -1, -1,
+				GDK_RGB_DITHER_NORMAL, 0, 0);
+		g_object_unref(pixbuf2);
+		g_object_unref(pixbuf);
 	}
-	/* FIXME implement the rest */
-	return TRUE;
+	/* force a refresh */
+	gtk_widget_queue_draw_area(video->area, 0, 0,
+			video->area_allocation.width,
+			video->area_allocation.height);
+	video->source = g_io_add_watch(video->channel, G_IO_IN,
+			_video_on_can_read, video);
+	return FALSE;
+}
+
+static void _refresh_convert(VideoPhonePlugin * video)
+{
+	size_t i;
+	size_t j;
+
+	switch(video->format.fmt.pix.pixelformat)
+	{
+		case V4L2_PIX_FMT_YUYV:
+			for(i = 0, j = 0; i + 3 < video->raw_buffer_cnt;
+					i += 4, j += 6)
+			{
+				/* pixel 0 */
+				_refresh_convert_yuv(video->yuv_amp,
+						video->raw_buffer[i],
+						video->raw_buffer[i + 1],
+						video->raw_buffer[i + 3],
+						&video->rgb_buffer[j + 2],
+						&video->rgb_buffer[j + 1],
+						&video->rgb_buffer[j]);
+				/* pixel 1 */
+				_refresh_convert_yuv(video->yuv_amp,
+						video->raw_buffer[i + 2],
+						video->raw_buffer[i + 1],
+						video->raw_buffer[i + 3],
+						&video->rgb_buffer[j + 5],
+						&video->rgb_buffer[j + 4],
+						&video->rgb_buffer[j + 3]);
+			}
+			break;
+		default:
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() Unsupported format\n",
+					__func__);
+#endif
+			break;
+	}
+}
+
+static void _refresh_convert_yuv(int amp, uint8_t y, uint8_t u, uint8_t v,
+                uint8_t * r, uint8_t * g, uint8_t * b)
+{
+	double dr;
+	double dg;
+	double db;
+
+	dr = amp * (0.004565 * y + 0.007935 * u - 1.088);
+	dg = amp * (0.004565 * y - 0.001542 * u - 0.003183 * v + 0.531);
+	db = amp * (0.004565 * y + 0.000001 * u + 0.006250 * v - 0.872);
+	*r = (dr < 0) ? 0 : ((dr > 255) ? 255 : dr);
+	*g = (dg < 0) ? 0 : ((dg > 255) ? 255 : dg);
+	*b = (db < 0) ? 0 : ((db > 255) ? 255 : db);
 }
