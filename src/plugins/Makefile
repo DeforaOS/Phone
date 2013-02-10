@@ -1,5 +1,5 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so notify.so openmoko.so oss.so panel.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
+TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so notify.so openmoko.so oss.so panel.so password.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -99,6 +99,13 @@ panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 panel.so: $(panel_OBJS)
 	$(CCSHARED) -o panel.so $(panel_OBJS) $(panel_LDFLAGS)
 
+password_OBJS = password.o
+password_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+password_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+password.so: $(password_OBJS)
+	$(CCSHARED) -o password.so $(password_OBJS) $(password_LDFLAGS)
+
 profiles_OBJS = profiles.o
 profiles_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libpulse`
 profiles_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libpulse`
@@ -174,6 +181,9 @@ oss.o: oss.c ../../include/Phone.h
 panel.o: panel.c ../../include/Phone.h
 	$(CC) $(panel_CFLAGS) -c panel.c
 
+password.o: password.c ../../include/Phone.h
+	$(CC) $(password_CFLAGS) -c password.c
+
 profiles.o: profiles.c ../../include/Phone.h
 	$(CC) $(profiles_CFLAGS) -c profiles.c
 
@@ -194,11 +204,11 @@ video.o: video.c ../../include/Phone.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
