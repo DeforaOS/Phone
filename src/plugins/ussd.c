@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,14 @@ static USSDCode _ussd_codes_de_eplus[] =
 	{ NULL,		NULL						}
 };
 
+/* FYVE, see http://www.prepaid-wiki.de/index.php5/FYVE#Servicefunktionen */
+static USSDCode _ussd_codes_de_fyve[] =
+{
+	{ "*100#",	"Balance enquiry and charging menu"		},
+	{ "*106#",	"Balance enquiry"				},
+	{ NULL,		NULL						}
+};
+
 /* MTN, see http://www.mtn.co.za/Support/faq/Pages/USSD.aspx */
 static USSDCode _ussd_codes_za_mtn[] =
 {
@@ -89,6 +97,7 @@ static const struct
 } _ussd_operators[] =
 {
 	{ "E-plus",	_ussd_codes_de_eplus				},
+	{ "FYVE",	_ussd_codes_de_fyve				},
 	{ "Monacell",	_ussd_codes_fr_virgin				},
 	{ "MTN",	_ussd_codes_za_mtn				},
 	{ "NRJ",	_ussd_codes_fr_virgin				},
