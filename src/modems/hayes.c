@@ -261,8 +261,6 @@ static int _hayes_queue_pop(ModemPlugin * modem);
 static int _hayes_queue_push(ModemPlugin * modem);
 
 static void _hayes_reset(ModemPlugin * modem);
-static void _hayes_reset_start(ModemPlugin * modem, unsigned int retry);
-static void _hayes_reset_stop(ModemPlugin * modem);
 
 /* commands */
 static HayesCommand * _hayes_command_new(char const * attention);
@@ -1212,16 +1210,92 @@ static char * _request_attention_unsupported(ModemPlugin * modem,
 /* hayes_start */
 static int _hayes_start(ModemPlugin * modem, unsigned int retry)
 {
-	_hayes_reset_start(modem, retry);
+	Hayes * hayes = modem;
+
+	hayes->retry = retry;
+	hayes->source = g_idle_add(_on_reset, modem);
 	return 0;
 }
 
 
 /* hayes_stop */
+static void _stop_channel(GIOChannel * channel);
+static void _stop_string(char ** string);
+
 static int _hayes_stop(ModemPlugin * modem)
 {
-	_hayes_reset_stop(modem);
+	Hayes * hayes = modem;
+	ModemEvent * event;
+	size_t i;
+
+	/* close everything opened */
+	if(hayes->fp != NULL)
+		fclose(hayes->fp);
+	hayes->fp = NULL;
+	_hayes_queue_flush(modem);
+	_stop_channel(hayes->channel);
+	hayes->channel = NULL;
+	_stop_channel(hayes->rd_ppp_channel);
+	hayes->rd_ppp_channel = NULL;
+	_stop_channel(hayes->wr_ppp_channel);
+	hayes->wr_ppp_channel = NULL;
+	/* report disconnection if already connected */
+	event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
+	if(event->connection.connected)
+	{
+		event->connection.connected = 0;
+		event->connection.in = 0;
+		event->connection.out = 0;
+		hayes->helper->event(hayes->helper->modem, event);
+	}
+	/* reset battery information */
+	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
+	if(event->battery_level.status != MODEM_BATTERY_STATUS_UNKNOWN)
+	{
+		event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
+		event->battery_level.level = 0.0 / 0.0;
+		event->battery_level.charging = 0;
+		hayes->helper->event(hayes->helper->modem, event);
+	}
+	/* remove internal data */
+	_stop_string(&hayes->authentication_name);
+	_stop_string(&hayes->call_number);
+	_stop_string(&hayes->contact_name);
+	_stop_string(&hayes->contact_number);
+	_stop_string(&hayes->gprs_username);
+	_stop_string(&hayes->gprs_password);
+	_stop_string(&hayes->message_number);
+	_stop_string(&hayes->model_name);
+	_stop_string(&hayes->model_vendor);
+	_stop_string(&hayes->model_version);
+	_stop_string(&hayes->registration_media);
+	_stop_string(&hayes->registration_operator);
+	/* reset events */
+	memset(&hayes->events, 0, sizeof(hayes->events));
+	for(i = 0; i < sizeof(hayes->events) / sizeof(*hayes->events); i++)
+		hayes->events[i].type = i;
+	/* reset mode */
+	hayes->mode = HAYES_MODE_INIT;
 	return 0;
+}
+
+static void _stop_channel(GIOChannel * channel)
+{
+	GError * error = NULL;
+
+	if(channel == NULL)
+		return;
+	/* XXX should the file descriptor also be closed? */
+	if(g_io_channel_shutdown(channel, TRUE, &error) == G_IO_STATUS_ERROR)
+		/* XXX report error */
+		g_error_free(error);
+	g_io_channel_unref(channel);
+}
+
+static void _stop_string(char ** string)
+{
+	free(*string);
+	*string = NULL;
 }
 
 
@@ -1768,8 +1842,8 @@ static void _hayes_reset(ModemPlugin * modem)
 {
 	Hayes * hayes = modem;
 
-	_hayes_reset_stop(modem);
-	_hayes_reset_start(modem, hayes->retry);
+	_hayes_stop(modem);
+	_hayes_start(modem, hayes->retry);
 }
 
 
@@ -1781,96 +1855,6 @@ static int _hayes_request_type(ModemPlugin * modem, ModemRequestType type)
 	memset(&request, 0, sizeof(request));
 	request.type = type;
 	return _hayes_request(modem, &request);
-}
-
-
-/* hayes_reset_start */
-static void _hayes_reset_start(ModemPlugin * modem, unsigned int retry)
-{
-	Hayes * hayes = modem;
-
-	hayes->retry = retry;
-	hayes->source = g_idle_add(_on_reset, modem);
-}
-
-
-/* hayes_reset_stop */
-static void _reset_stop_channel(GIOChannel * channel);
-static void _reset_stop_string(char ** string);
-
-static void _hayes_reset_stop(ModemPlugin * modem)
-{
-	Hayes * hayes = modem;
-	ModemEvent * event;
-	size_t i;
-
-	/* close everything opened */
-	if(hayes->fp != NULL)
-		fclose(hayes->fp);
-	hayes->fp = NULL;
-	_hayes_queue_flush(modem);
-	_reset_stop_channel(hayes->channel);
-	hayes->channel = NULL;
-	_reset_stop_channel(hayes->rd_ppp_channel);
-	hayes->rd_ppp_channel = NULL;
-	_reset_stop_channel(hayes->wr_ppp_channel);
-	hayes->wr_ppp_channel = NULL;
-	/* report disconnection if already connected */
-	event = &hayes->events[MODEM_EVENT_TYPE_CONNECTION];
-	if(event->connection.connected)
-	{
-		event->connection.connected = 0;
-		event->connection.in = 0;
-		event->connection.out = 0;
-		hayes->helper->event(hayes->helper->modem, event);
-	}
-	/* reset battery information */
-	event = &hayes->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
-	if(event->battery_level.status != MODEM_BATTERY_STATUS_UNKNOWN)
-	{
-		event->battery_level.status = MODEM_BATTERY_STATUS_UNKNOWN;
-		event->battery_level.level = 0.0 / 0.0;
-		event->battery_level.charging = 0;
-		hayes->helper->event(hayes->helper->modem, event);
-	}
-	/* remove internal data */
-	_reset_stop_string(&hayes->authentication_name);
-	_reset_stop_string(&hayes->call_number);
-	_reset_stop_string(&hayes->contact_name);
-	_reset_stop_string(&hayes->contact_number);
-	_reset_stop_string(&hayes->gprs_username);
-	_reset_stop_string(&hayes->gprs_password);
-	_reset_stop_string(&hayes->message_number);
-	_reset_stop_string(&hayes->model_name);
-	_reset_stop_string(&hayes->model_vendor);
-	_reset_stop_string(&hayes->model_version);
-	_reset_stop_string(&hayes->registration_media);
-	_reset_stop_string(&hayes->registration_operator);
-	/* reset events */
-	memset(&hayes->events, 0, sizeof(hayes->events));
-	for(i = 0; i < sizeof(hayes->events) / sizeof(*hayes->events); i++)
-		hayes->events[i].type = i;
-	/* reset mode */
-	hayes->mode = HAYES_MODE_INIT;
-}
-
-static void _reset_stop_channel(GIOChannel * channel)
-{
-	GError * error = NULL;
-
-	if(channel == NULL)
-		return;
-	/* XXX should the file descriptor also be closed? */
-	if(g_io_channel_shutdown(channel, TRUE, &error) == G_IO_STATUS_ERROR)
-		/* XXX report error */
-		g_error_free(error);
-	g_io_channel_unref(channel);
-}
-
-static void _reset_stop_string(char ** string)
-{
-	free(*string);
-	*string = NULL;
 }
 
 
@@ -2096,7 +2080,7 @@ static gboolean _on_reset(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_hayes_reset_stop(modem);
+	_hayes_stop(modem);
 	if((fd = _reset_open(modem)) < 0)
 	{
 		if(event->status.status != MODEM_STATUS_UNAVAILABLE)
