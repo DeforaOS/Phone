@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -216,6 +216,15 @@ void on_phone_dialer_call(gpointer data)
 
 	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_dialer_call(phone, NULL);
+}
+
+
+/* on_phone_dialer_clear */
+void on_phone_dialer_clear(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_dialer_clear(phone);
 }
 
 

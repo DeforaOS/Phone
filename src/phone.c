@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright (c) 2010-2012 DeforaOS Project <contact@defora.org>";
+"Copyright (c) 2010-2013 DeforaOS Project <contact@defora.org>";
 /* This file is part of DeforaOS Desktop Phone */
 static char const _license[] =
 "This program is free software: you can redistribute it and/or modify\n"
@@ -903,12 +903,21 @@ void phone_dialer_call(Phone * phone, char const * number)
 }
 
 
+/* phone_dialer_clear */
+void phone_dialer_clear(Phone * phone)
+{
+	if(phone->di_window != NULL)
+		gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
+}
+
+
 /* phone_dialer_hangup */
 void phone_dialer_hangup(Phone * phone)
 {
 	phone_call_hangup(phone);
-	if(phone->di_window != NULL)
-		gtk_entry_set_text(GTK_ENTRY(phone->di_entry), "");
+#if !GTK_CHECK_VERSION(2, 16, 0)
+	phone_dialer_clear(phone);
+#endif
 }
 
 
@@ -1746,7 +1755,14 @@ static void _show_code_window(Phone * phone)
 	gtk_widget_modify_font(phone->en_entry, phone->bold);
 	g_signal_connect_swapped(G_OBJECT(phone->en_entry), "activate",
 			G_CALLBACK(on_phone_code_enter), phone);
+#if GTK_CHECK_VERSION(2, 16, 0)
+	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->en_entry),
+			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_CLEAR);
+	g_signal_connect_swapped(G_OBJECT(phone->en_entry), "icon-press",
+			G_CALLBACK(on_phone_code_clear), phone);
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
+#if !GTK_CHECK_VERSION(2, 16, 0)
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"edit-undo", GTK_ICON_SIZE_BUTTON));
@@ -1754,6 +1770,7 @@ static void _show_code_window(Phone * phone)
 	g_signal_connect_swapped(G_OBJECT(widget), "clicked",
 			G_CALLBACK(on_phone_code_clear), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),
 			G_CALLBACK(on_phone_code_enter),
@@ -1895,6 +1912,12 @@ static void _show_dialer_window(Phone * phone)
 	gtk_widget_modify_font(phone->di_entry, phone->bold);
 	g_signal_connect_swapped(G_OBJECT(phone->di_entry), "activate",
 			G_CALLBACK(on_phone_dialer_call), phone);
+#if GTK_CHECK_VERSION(2, 16, 0)
+	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->di_entry),
+			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_CLEAR);
+	g_signal_connect_swapped(G_OBJECT(phone->di_entry), "icon-press",
+			G_CALLBACK(on_phone_dialer_clear), phone);
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
@@ -4114,6 +4137,7 @@ static void _modem_event_call(Phone * phone, ModemEvent * event)
 		case MODEM_CALL_DIRECTION_INCOMING:
 			/* add a log entry */
 			/* XXX check that calls are not duplicated */
+			/* FIXME really log once accepting/missing the call */
 			phone_logs_append(phone, PHONE_CALL_TYPE_INCOMING,
 					event->call.number);
 			break;

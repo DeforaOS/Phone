@@ -67,6 +67,7 @@ void phone_contacts_write_selected(Phone * phone);
 /* dialer */
 int phone_dialer_append(Phone * phone, char character);
 void phone_dialer_call(Phone * phone, char const * number);
+void phone_dialer_clear(Phone * phone);
 void phone_dialer_hangup(Phone * phone);
 
 /* events */
