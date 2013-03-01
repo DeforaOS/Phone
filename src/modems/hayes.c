@@ -3682,12 +3682,23 @@ static void _on_code_connect(ModemPlugin * modem, char const * answer)
 		return;
 	}
 	hayes->rd_ppp_channel = g_io_channel_unix_new(rfd);
-	g_io_channel_set_encoding(hayes->rd_ppp_channel, NULL, &error);
+	if(g_io_channel_set_encoding(hayes->rd_ppp_channel, NULL, &error)
+			!= G_IO_STATUS_NORMAL)
+	{
+		hayes->helper->error(NULL, error->message, 1);
+		g_error_free(error);
+		error = NULL;
+	}
 	g_io_channel_set_buffered(hayes->rd_ppp_channel, FALSE);
 	hayes->rd_ppp_source = g_io_add_watch(hayes->rd_ppp_channel, G_IO_IN,
 			_on_watch_can_read_ppp, modem);
 	hayes->wr_ppp_channel = g_io_channel_unix_new(wfd);
-	g_io_channel_set_encoding(hayes->wr_ppp_channel, NULL, &error);
+	if(g_io_channel_set_encoding(hayes->wr_ppp_channel, NULL, &error)
+			!= G_IO_STATUS_NORMAL)
+	{
+		hayes->helper->error(NULL, error->message, 1);
+		g_error_free(error);
+	}
 	g_io_channel_set_buffered(hayes->wr_ppp_channel, FALSE);
 	hayes->wr_ppp_source = 0;
 	event->connection.connected = 1;
