@@ -20,7 +20,7 @@ INSTALL	= install
 all: subdirs $(TARGETS)
 
 subdirs:
-	@for i in $(SUBDIRS); do (cd $$i && $(MAKE)) || exit; done
+	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE)) || exit; done
 
 blacklist_OBJS = blacklist.o
 blacklist_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -203,16 +203,16 @@ video.o: video.c ../../include/Phone.h
 	$(CC) $(video_CFLAGS) -c video.c
 
 clean:
-	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean) || exit; done
+	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) clean) || exit; done
 	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 
 distclean:
-	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean) || exit; done
+	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) distclean) || exit; done
 	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
-	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) install) || exit; done
+	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 -- blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -247,7 +247,7 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 -- ussd.so $(DESTDIR)$(LIBDIR)/Phone/plugins/ussd.so
 
 uninstall:
-	@for i in $(SUBDIRS); do (cd $$i && $(MAKE) uninstall) || exit; done
+	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
