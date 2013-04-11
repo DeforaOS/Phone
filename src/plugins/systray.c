@@ -115,7 +115,6 @@ static void _systray_on_activate(gpointer data)
 
 
 /* systray_on_popup_menu */
-static void _popup_menu_on_show_about(gpointer data);
 static void _popup_menu_on_show_contacts(gpointer data);
 static void _popup_menu_on_show_dialer(gpointer data);
 static void _popup_menu_on_show_logs(gpointer data);
@@ -124,6 +123,8 @@ static void _popup_menu_on_show_write(gpointer data);
 static void _popup_menu_on_show_settings(gpointer data);
 static void _popup_menu_on_resume(gpointer data);
 static void _popup_menu_on_suspend(gpointer data);
+static void _popup_menu_on_contents(gpointer data);
+static void _popup_menu_on_show_about(gpointer data);
 static void _popup_menu_on_quit(gpointer data);
 
 static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
@@ -156,7 +157,12 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ "gtk-media-pause", "S_uspend telephony",
 			_popup_menu_on_suspend },
 		{ NULL, NULL, NULL },
+		{ "help-contents", "_Contents", _popup_menu_on_contents },
+#if GTK_CHECK_VERSION(2, 6, 0)
 		{ GTK_STOCK_ABOUT, "_About", _popup_menu_on_show_about },
+#else
+		{ NULL, "_About", _popup_menu_on_show_about },
+#endif
 		{ NULL, NULL, NULL },
 		{ "gtk-quit", "_Quit", _popup_menu_on_quit },
 	};
@@ -172,16 +178,24 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 			continue;
 		}
 		menuitem = gtk_image_menu_item_new_with_mnemonic(items[i].name);
-		image = gtk_image_new_from_icon_name(items[i].icon,
-				GTK_ICON_SIZE_MENU);
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem),
-				image);
+		if(items[i].icon != NULL)
+		{
+			image = gtk_image_new_from_icon_name(items[i].icon,
+					GTK_ICON_SIZE_MENU);
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(
+						menuitem), image);
+		}
 		g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 					items[i].callback), systray);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	}
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
+
+static void _popup_menu_on_contents(gpointer data)
+{
+	desktop_help_contents(PACKAGE, "phone");
 }
 
 static void _popup_menu_on_show_about(gpointer data)
