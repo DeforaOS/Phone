@@ -1,4 +1,4 @@
-TARGETS	= phone.1 phone.html phonectl.1 phonectl.html
+TARGETS	= index.html phone.1 phone.html phonectl.1 phonectl.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	= rm -f
@@ -8,6 +8,9 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+index.html: index.xml index.xsl phone.xml phonectl.xml
+	./docbook.sh -P "$(PREFIX)" -- "index.html"
 
 phone.1: phone.xml
 	./docbook.sh -P "$(PREFIX)" -- "phone.1"
@@ -22,7 +25,7 @@ phonectl.html: phonectl.xml
 	./docbook.sh -P "$(PREFIX)" -- "phonectl.html"
 
 clean:
-	$(RM) -- $(phone.1_OBJS) $(phone.html_OBJS) $(phonectl.1_OBJS) $(phonectl.html_OBJS)
+	$(RM) -- $(index.html_OBJS) $(phone.1_OBJS) $(phone.html_OBJS) $(phonectl.1_OBJS) $(phonectl.html_OBJS)
 	./docbook.sh -c -P "$(PREFIX)" -- "phonectl.html"
 
 distclean: clean

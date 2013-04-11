@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- $Id$ -->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY phone1 "phone.xml">
+<!ENTITY phonectl1 "phonectl.xml">
+]>
+<book><?dbhtml filename="index.html"?>
+	<title>DeforaOS Phone</title>
+	<para>Telephony application for the DeforaOS desktop environment.</para>
+	<chapter>
+		<title>User manual</title>
+	</chapter>
+	<chapter>
+		<title>Manual pages</title>
+		<section>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&phone1;"/>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&phonectl1;"/>
+		</section>
+	</chapter>
+</book>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->

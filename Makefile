@@ -59,6 +59,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/doc/Makefile \
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
+		$(PACKAGE)-$(VERSION)/doc/index.xml \
+		$(PACKAGE)-$(VERSION)/doc/index.xsl \
 		$(PACKAGE)-$(VERSION)/doc/phone.xml \
 		$(PACKAGE)-$(VERSION)/doc/phonectl.xml \
 		$(PACKAGE)-$(VERSION)/doc/pppd-ip-down \
