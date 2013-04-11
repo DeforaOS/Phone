@@ -22,7 +22,7 @@ distclean:
 install:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop
-	$(INSTALL) -m 0644 -- Phone.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone.h
+	$(INSTALL) -m 0644 Phone.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone.h
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done

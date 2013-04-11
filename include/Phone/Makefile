@@ -15,11 +15,11 @@ distclean: clean
 
 install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Phone
-	$(INSTALL) -m 0644 -- modem.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone/modem.h
+	$(INSTALL) -m 0644 modem.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone/modem.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Phone
-	$(INSTALL) -m 0644 -- phone.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone/phone.h
+	$(INSTALL) -m 0644 phone.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone/phone.h
 	$(MKDIR) $(DESTDIR)$(PREFIX)/include/Desktop/Phone
-	$(INSTALL) -m 0644 -- plugin.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone/plugin.h
+	$(INSTALL) -m 0644 plugin.h $(DESTDIR)$(PREFIX)/include/Desktop/Phone/plugin.h
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/include/Desktop/Phone/modem.h

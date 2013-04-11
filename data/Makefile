@@ -20,15 +20,15 @@ distclean:
 install:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 -- phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
+	$(INSTALL) -m 0644 phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 -- phone-dialer.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
+	$(INSTALL) -m 0644 phone-dialer.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 -- phone-log.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
+	$(INSTALL) -m 0644 phone-log.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 -- phone-messages.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
+	$(INSTALL) -m 0644 phone-messages.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 -- phone-settings.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-settings.desktop
+	$(INSTALL) -m 0644 phone-settings.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-settings.desktop
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done

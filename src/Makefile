@@ -62,9 +62,9 @@ distclean:
 install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 -- phone $(DESTDIR)$(BINDIR)/phone
+	$(INSTALL) -m 0755 phone $(DESTDIR)$(BINDIR)/phone
 	$(MKDIR) $(DESTDIR)$(BINDIR)
-	$(INSTALL) -m 0755 -- phonectl $(DESTDIR)$(BINDIR)/phonectl
+	$(INSTALL) -m 0755 phonectl $(DESTDIR)$(BINDIR)/phonectl
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done

@@ -214,37 +214,37 @@ distclean:
 install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
+	$(INSTALL) -m 0644 blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
+	$(INSTALL) -m 0644 debug.so $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
+	$(INSTALL) -m 0644 engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
+	$(INSTALL) -m 0644 gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- gps.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
+	$(INSTALL) -m 0644 gps.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
+	$(INSTALL) -m 0644 locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
+	$(INSTALL) -m 0644 n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- notify.so $(DESTDIR)$(LIBDIR)/Phone/plugins/notify.so
+	$(INSTALL) -m 0644 notify.so $(DESTDIR)$(LIBDIR)/Phone/plugins/notify.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
+	$(INSTALL) -m 0644 openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- oss.so $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
+	$(INSTALL) -m 0644 oss.so $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
+	$(INSTALL) -m 0644 panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- password.so $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
+	$(INSTALL) -m 0644 password.so $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
+	$(INSTALL) -m 0644 profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
+	$(INSTALL) -m 0644 smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- systray.so $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
+	$(INSTALL) -m 0644 systray.so $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 -- ussd.so $(DESTDIR)$(LIBDIR)/Phone/plugins/ussd.so
+	$(INSTALL) -m 0644 ussd.so $(DESTDIR)$(LIBDIR)/Phone/plugins/ussd.so
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done

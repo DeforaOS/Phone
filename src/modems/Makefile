@@ -68,15 +68,15 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 -- debug.so $(DESTDIR)$(LIBDIR)/Phone/modem/debug.so
+	$(INSTALL) -m 0644 debug.so $(DESTDIR)$(LIBDIR)/Phone/modem/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 -- hayes.so $(DESTDIR)$(LIBDIR)/Phone/modem/hayes.so
+	$(INSTALL) -m 0644 hayes.so $(DESTDIR)$(LIBDIR)/Phone/modem/hayes.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 -- purple.so $(DESTDIR)$(LIBDIR)/Phone/modem/purple.so
+	$(INSTALL) -m 0644 purple.so $(DESTDIR)$(LIBDIR)/Phone/modem/purple.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 -- sofia.so $(DESTDIR)$(LIBDIR)/Phone/modem/sofia.so
+	$(INSTALL) -m 0644 sofia.so $(DESTDIR)$(LIBDIR)/Phone/modem/sofia.so
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems
-	$(INSTALL) -m 0644 -- hayes.h $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems/hayes.h
+	$(INSTALL) -m 0644 hayes.h $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems/hayes.h
 
 uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/modem/debug.so
