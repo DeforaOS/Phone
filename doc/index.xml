@@ -2,11 +2,39 @@
 <!-- $Id$ -->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-<!ENTITY phone1 "phone.xml">
+<!ENTITY firstname "Pierre">
+<!ENTITY surname   "Pronchery">
+<!ENTITY username  "khorben">
+<!ENTITY email     "khorben@defora.org">
+<!ENTITY package   "DeforaOS Phone">
+<!ENTITY phone1    "phone.xml">
 <!ENTITY phonectl1 "phonectl.xml">
 ]>
 <book><?dbhtml filename="index.html"?>
-	<title>DeforaOS Phone</title>
+	<bookinfo>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2013</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This documentation was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this
+				document under the terms of the GNU General Public License,
+				Version 3 as published by the Free Software Foundation.</para>
+		</legalnotice>
+	</bookinfo>
+	<title>&package;</title>
 	<para>Telephony application for the DeforaOS desktop environment.</para>
 	<chapter>
 		<title>User manual</title>
