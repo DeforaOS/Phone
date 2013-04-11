@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,11 +109,13 @@ static void _systray_on_activate(gpointer data)
 	Systray * systray = data;
 	PhonePluginHelper * helper = systray->helper;
 
-	helper->about_dialog(helper->phone);
+	helper->message(helper->phone, PHONE_MESSAGE_SHOW,
+			PHONE_MESSAGE_SHOW_DIALER);
 }
 
 
 /* systray_on_popup_menu */
+static void _popup_menu_on_show_about(gpointer data);
 static void _popup_menu_on_show_contacts(gpointer data);
 static void _popup_menu_on_show_dialer(gpointer data);
 static void _popup_menu_on_show_logs(gpointer data);
@@ -154,6 +156,8 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ "gtk-media-pause", "S_uspend telephony",
 			_popup_menu_on_suspend },
 		{ NULL, NULL, NULL },
+		{ GTK_STOCK_ABOUT, "_About", _popup_menu_on_show_about },
+		{ NULL, NULL, NULL },
 		{ "gtk-quit", "_Quit", _popup_menu_on_quit },
 	};
 	size_t i;
@@ -178,6 +182,14 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	}
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
+}
+
+static void _popup_menu_on_show_about(gpointer data)
+{
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
+
+	helper->about_dialog(helper->phone);
 }
 
 static void _popup_menu_on_show_contacts(gpointer data)
