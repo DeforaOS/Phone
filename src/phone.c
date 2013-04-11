@@ -515,6 +515,7 @@ static gboolean _new_idle(gpointer data)
 	phone_show_write(phone, FALSE);
 	_idle_settings(phone);
 	/* listen to desktop messages */
+	gtk_widget_realize(phone->ca_window);
 	desktop_message_register(phone->ca_window, PHONE_CLIENT_MESSAGE,
 			_phone_on_message, phone);
 	/* default to the "systray" plug-in if nothing is configured */
