@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+	<!ENTITY firstname "Pierre">
+	<!ENTITY surname   "Pronchery">
+	<!ENTITY username  "khorben">
+	<!ENTITY email     "khorben@defora.org">
+	<!ENTITY section   "1">
+	<!ENTITY title     "Phone User Manual">
+	<!ENTITY package   "DeforaOS Phone">
+	<!ENTITY name      "phonectl">
+	<!ENTITY purpose   "Control interface for the desktop telephony application">
+]>
+<refentry>
+	<refentryinfo>
+		<title>&title;</title>
+		<productname>&package;</productname>
+		<authorgroup>
+			<author>
+				<firstname>&firstname;</firstname>
+				<surname>&surname;</surname>
+				<contrib>Code and documentation.</contrib>
+				<address>
+					<email>&email;</email>
+				</address>
+			</author>
+		</authorgroup>
+		<copyright>
+			<year>2013</year>
+			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
+		</copyright>
+		<legalnotice>
+			<para>This manual page was written for the DeforaOS project (and may be
+				used by others).</para>
+			<para>Permission is granted to copy, distribute and/or modify this
+				document under the terms of the GNU General Public License,
+				Version 3 as published by the Free Software Foundation.</para>
+		</legalnotice>
+	</refentryinfo>
+	<refmeta>
+		<refentrytitle>&name;</refentrytitle>
+		<manvolnum>&section;</manvolnum>
+	</refmeta>
+	<refnamediv>
+		<refname>&name;</refname>
+		<refpurpose>&purpose;</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>&name;</command>
+			<group choice="plain">
+				<arg choice="plain">-C</arg>
+				<arg choice="plain">-D</arg>
+				<arg choice="plain">-L</arg>
+				<arg choice="plain">-M</arg>
+				<arg choice="plain">-S</arg>
+				<arg choice="plain">-W</arg>
+				<arg choice="plain">-r</arg>
+				<arg choice="plain">-s</arg>
+			</group>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+	<refsect1 id="description">
+		<title>Description</title>
+		<para><command>&name;</command> is a control interface for the desktop
+			telephony application. It can show different elements of its user interface,
+			or help reacting to system events when required.</para>
+	</refsect1>
+	<refsect1 id="options">
+		<title>Options</title>
+		<para>The following options are available:</para>
+		<variablelist>
+			<varlistentry>
+				<term><option>-C</option></term>
+				<listitem>
+					<para>Open the contacts window.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-D</option></term>
+				<listitem>
+					<para>Show the dialer.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-L</option></term>
+				<listitem>
+					<para>Open the phone log window.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-M</option></term>
+				<listitem>
+					<para>Open the messages window.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-S</option></term>
+				<listitem>
+					<para>Display the preferences window.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-W</option></term>
+				<listitem>
+					<para>Write a new message.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-r</option></term>
+				<listitem>
+					<para>Resume telephony operation.</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-s</option></term>
+				<listitem>
+					<para>Suspend telephony operation.</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	<refsect1 id="bugs">
+		<title>Bugs</title>
+		<para>Issues can be listed and reported at <ulink
+				url="http://www.defora.org/os/project/bug_list/3343/Phone"/>.</para>
+	</refsect1>
+	<refsect1 id="see_also">
+		<title>See also</title>
+		<para>
+			<citerefentry>
+				<refentrytitle>phone</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
+			<citerefentry>
+				<refentrytitle>pppd</refentrytitle>
+				<manvolnum>8</manvolnum>
+			</citerefentry>
+		</para>
+	</refsect1>
+</refentry>
+<!-- vim: set noet ts=1 sw=1 sts=1 tw=80: -->
