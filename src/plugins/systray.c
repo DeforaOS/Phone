@@ -157,7 +157,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ "gtk-media-pause", "S_uspend telephony",
 			_popup_menu_on_suspend },
 		{ NULL, NULL, NULL },
-		{ "help-contents", "_Contents", _popup_menu_on_contents },
+		{ "help-contents", "_Help contents", _popup_menu_on_contents },
 #if GTK_CHECK_VERSION(2, 6, 0)
 		{ GTK_STOCK_ABOUT, "_About", _popup_menu_on_show_about },
 #else
