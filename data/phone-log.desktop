@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Phone log
+Comment=Telephony activity log
 Exec=phonectl -L
 Icon=logviewer
 Type=Application

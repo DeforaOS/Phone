@@ -1,5 +1,6 @@
 [Desktop Entry]
-Name=Telephony settings
+Name=Telephony
+Comment=Preferences for the telephony application
 Exec=phonectl -S
 Icon=stock_cell-phone
 Type=Application
