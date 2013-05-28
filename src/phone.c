@@ -926,6 +926,9 @@ void phone_dialer_hangup(Phone * phone)
 
 /* events */
 /* phone_event */
+static int _event_type_started(Phone * phone);
+static int _event_type_starting(Phone * phone);
+
 int phone_event(Phone * phone, PhoneEvent * event)
 {
 	int ret = 0;
@@ -947,23 +950,19 @@ int phone_event(Phone * phone, PhoneEvent * event)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_OFFLINE:
-			/* connect to the network */
-			modem_request_type(phone->modem,
-					MODEM_REQUEST_CONNECTIVITY, 1);
 			break;
 		case PHONE_EVENT_TYPE_ONLINE:
 			/* authenticate if necessary */
 			modem_trigger(phone->modem,
 					MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
+		case PHONE_EVENT_TYPE_STARTED:
+			if(ret == 0)
+				ret = _event_type_started(phone);
+			break;
 		case PHONE_EVENT_TYPE_STARTING:
 			if(ret == 0)
-			{
-				ret = modem_start(phone->modem);
-				phone_event_type(phone, (ret == 0)
-						? PHONE_EVENT_TYPE_STARTED
-						: PHONE_EVENT_TYPE_STOPPED);
-			}
+				ret = _event_type_starting(phone);
 			break;
 		case PHONE_EVENT_TYPE_STOPPING:
 			if(ret == 0 && phone->modem != NULL
@@ -975,6 +974,30 @@ int phone_event(Phone * phone, PhoneEvent * event)
 		default:
 			break;
 	}
+	return ret;
+}
+
+static int _event_type_started(Phone * phone)
+{
+	int online = 0;
+	char const * p;
+
+	if((p = config_get(phone->config, NULL, "online")) == NULL
+			|| strtol(p, NULL, 10) != 0
+			|| _phone_confirm(phone, NULL,
+				_("Connect to the network?")) != 0)
+		online = 1;
+	modem_request_type(phone->modem, MODEM_REQUEST_CONNECTIVITY, online);
+	return 0;
+}
+
+static int _event_type_starting(Phone * phone)
+{
+	int ret;
+
+	ret = modem_start(phone->modem);
+	phone_event_type(phone, (ret == 0) ? PHONE_EVENT_TYPE_STARTED
+			: PHONE_EVENT_TYPE_STOPPED);
 	return ret;
 }
 
