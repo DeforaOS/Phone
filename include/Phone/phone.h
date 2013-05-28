@@ -62,7 +62,9 @@ typedef enum _PhoneEventType
 						   char **, size_t * */
 	PHONE_EVENT_TYPE_MESSAGE_SENT,
 	PHONE_EVENT_TYPE_MODEM_EVENT,		/* ModemEvent * event */
-	PHONE_EVENT_TYPE_NOTIFICATION,
+	PHONE_EVENT_TYPE_NOTIFICATION,		/* PhoneNotificationType type,
+						   char const * title,
+						   char const * message */
 	PHONE_EVENT_TYPE_NOTIFICATION_OFF,
 	PHONE_EVENT_TYPE_NOTIFICATION_ON,	/* char const * message? */
 	PHONE_EVENT_TYPE_OFFLINE,
@@ -79,7 +81,7 @@ typedef enum _PhoneEventType
 	PHONE_EVENT_TYPE_VIBRATOR_OFF,
 	PHONE_EVENT_TYPE_VIBRATOR_ON,
 	PHONE_EVENT_TYPE_VOLUME_GET,
-	PHONE_EVENT_TYPE_VOLUME_SET
+	PHONE_EVENT_TYPE_VOLUME_SET		/* double volume */
 } PhoneEventType;
 
 typedef union _PhoneEvent
