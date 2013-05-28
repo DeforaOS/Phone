@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -447,6 +447,15 @@ static void _profiles_apply(Profiles * profiles, ProfileType type)
 	profiles->profiles_cur = type;
 	helper->config_set(helper->phone, "profiles", "default",
 			profiles->profiles[profiles->profiles_cur].name);
+	switch(type)
+	{
+		case PROFILE_TYPE_OFFLINE:
+			helper->config_set(helper->phone, NULL, "online", "0");
+			break;
+		default:
+			helper->config_set(helper->phone, NULL, "online", NULL);
+			break;
+	}
 }
 
 
