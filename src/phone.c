@@ -1015,6 +1015,7 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 	switch((event.type = type))
 	{
 		/* no arguments */
+		case PHONE_EVENT_TYPE_AUDIO_STOP:
 		case PHONE_EVENT_TYPE_KEY_TONE:
 		case PHONE_EVENT_TYPE_OFFLINE:
 		case PHONE_EVENT_TYPE_ONLINE:
@@ -1027,6 +1028,11 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 		case PHONE_EVENT_TYPE_UNAVAILABLE:
 		case PHONE_EVENT_TYPE_VIBRATOR_OFF:
 		case PHONE_EVENT_TYPE_VIBRATOR_ON:
+			break;
+		case PHONE_EVENT_TYPE_AUDIO_PLAY:
+			va_start(ap, type);
+			event.audio_play.sample = va_arg(ap, char const *);
+			va_end(ap);
 			break;
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			va_start(ap, type);

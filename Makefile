@@ -111,6 +111,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/panel.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/password.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/profiles.c \
+		$(PACKAGE)-$(VERSION)/src/plugins/pulseaudio.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/systray.c \
 		$(PACKAGE)-$(VERSION)/src/plugins/template.c \

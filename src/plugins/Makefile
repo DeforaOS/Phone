@@ -1,5 +1,5 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so notify.so openmoko.so oss.so panel.so password.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
+TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so notify.so openmoko.so oss.so panel.so password.so profiles.so pulseaudio.so smscrypt.so systray.so template.so ussd.so video.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -107,11 +107,18 @@ password.so: $(password_OBJS)
 	$(CCSHARED) -o password.so $(password_OBJS) $(password_LDFLAGS)
 
 profiles_OBJS = profiles.o
-profiles_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libpulse`
-profiles_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libpulse`
+profiles_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+profiles_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 profiles.so: $(profiles_OBJS)
 	$(CCSHARED) -o profiles.so $(profiles_OBJS) $(profiles_LDFLAGS)
+
+pulseaudio_OBJS = pulseaudio.o
+pulseaudio_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libpulse`
+pulseaudio_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libpulse`
+
+pulseaudio.so: $(pulseaudio_OBJS)
+	$(CCSHARED) -o pulseaudio.so $(pulseaudio_OBJS) $(pulseaudio_LDFLAGS)
 
 smscrypt_OBJS = smscrypt.o
 smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -187,6 +194,9 @@ password.o: password.c ../../include/Phone.h
 profiles.o: profiles.c ../../include/Phone.h
 	$(CC) $(profiles_CFLAGS) -c profiles.c
 
+pulseaudio.o: pulseaudio.c ../../include/Phone.h ../../config.h
+	$(CC) $(pulseaudio_CFLAGS) -c pulseaudio.c
+
 smscrypt.o: smscrypt.c ../../include/Phone.h
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
@@ -204,11 +214,11 @@ video.o: video.c ../../include/Phone.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) clean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(pulseaudio_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) distclean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(pulseaudio_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -240,6 +250,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
+	$(INSTALL) -m 0644 pulseaudio.so $(DESTDIR)$(LIBDIR)/Phone/plugins/pulseaudio.so
+	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 systray.so $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
@@ -261,6 +273,7 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
+	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/pulseaudio.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/ussd.so

@@ -101,6 +101,8 @@ static DebugModemEvent _debug_modem_events[] =
 
 static DebugPhoneEvent _debug_phone_events[] =
 {
+	{ PHONE_EVENT_TYPE_AUDIO_PLAY,		"AUDIO_PLAY"		},
+	{ PHONE_EVENT_TYPE_AUDIO_STOP,		"AUDIO_STOP"		},
 	{ PHONE_EVENT_TYPE_KEY_TONE,		"KEY_TONE"		},
 	{ PHONE_EVENT_TYPE_MODEM_EVENT,		"MODEM_EVENT"		},
 	{ PHONE_EVENT_TYPE_NOTIFICATION,	"NOTIFICATION"	},

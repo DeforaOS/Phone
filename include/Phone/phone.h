@@ -54,6 +54,8 @@ typedef enum _PhoneNotificationType
 
 typedef enum _PhoneEventType
 {
+	PHONE_EVENT_TYPE_AUDIO_PLAY,		/* char const * sample */
+	PHONE_EVENT_TYPE_AUDIO_STOP,
 	PHONE_EVENT_TYPE_KEY_TONE,
 	PHONE_EVENT_TYPE_MESSAGE_RECEIVED,
 	PHONE_EVENT_TYPE_MESSAGE_RECEIVING,	/* char const *, GSMEncoding *,
@@ -87,6 +89,13 @@ typedef enum _PhoneEventType
 typedef union _PhoneEvent
 {
 	PhoneEventType type;
+
+	/* PHONE_EVENT_TYPE_AUDIO_PLAY */
+	struct
+	{
+		PhoneEventType type;
+		char const * sample;
+	} audio_play;
 
 	/* PHONE_EVENT_TYPE_MODEM_EVENT */
 	struct

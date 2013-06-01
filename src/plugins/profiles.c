@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - move PulseAudio support in a dedicated plug-in */
 
 
 
@@ -22,18 +20,9 @@
 #include <errno.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
-#include <pulse/pulseaudio.h>
 #include <System.h>
 #include "Phone.h"
-#include "../../config.h"
 #define max(a, b) ((a) > (b) ? (a) : (b))
-
-#ifndef PREFIX
-# define PREFIX		"/usr/local"
-#endif
-#ifndef DATADIR
-# define DATADIR	PREFIX "/share"
-#endif
 
 
 /* Profiles */
@@ -86,11 +75,6 @@ typedef struct _PhonePlugin
 	GtkWidget * pr_online;
 	GtkWidget * pr_volume;
 	GtkWidget * pr_vibrator;
-
-	/* pulseaudio */
-	pa_threaded_mainloop * pam;
-	pa_context * pac;
-	pa_operation * pao;
 } Profiles;
 
 /* variables */
@@ -138,7 +122,6 @@ PhonePluginDefinition plugin =
 static Profiles * _profiles_init(PhonePluginHelper * helper)
 {
 	Profiles * profiles;
-	pa_mainloop_api * mapi = NULL;
 	char const * p;
 	size_t i;
 
@@ -163,25 +146,6 @@ static Profiles * _profiles_init(PhonePluginHelper * helper)
 			}
 	profiles->vibrator = 0;
 	profiles->pr_window = NULL;
-	profiles->pam = pa_threaded_mainloop_new();
-	profiles->pac = NULL;
-	profiles->pao = NULL;
-	if(profiles->pam == NULL)
-	{
-		_profiles_destroy(profiles);
-		error_set_code(1, "%s", "Could not initialize PulseAudio");
-		return NULL;
-	}
-	mapi = pa_threaded_mainloop_get_api(profiles->pam);
-	/* XXX update the context name */
-	if((profiles->pac = pa_context_new(mapi, PACKAGE)) == NULL)
-	{
-		_profiles_destroy(profiles);
-		error_set_code(1, "%s", "Could not initialize PulseAudio");
-		return NULL;
-	}
-	pa_context_connect(profiles->pac, NULL, 0, NULL);
-	pa_threaded_mainloop_start(profiles->pam);
 	return profiles;
 }
 
@@ -196,11 +160,6 @@ static void _profiles_destroy(Profiles * profiles)
 		g_source_remove(profiles->source);
 	if(profiles->pr_window != NULL)
 		gtk_widget_destroy(profiles->pr_window);
-	if(profiles->pao != NULL)
-		pa_operation_cancel(profiles->pao);
-	if(profiles->pac != NULL)
-		pa_context_unref(profiles->pac);
-	pa_threaded_mainloop_free(profiles->pam);
 	object_delete(profiles);
 }
 
@@ -471,15 +430,17 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 	if(sample == NULL)
 	{
 		/* cancel the current sample */
-		if(profiles->pao != NULL)
-			pa_operation_cancel(profiles->pao);
-		profiles->pao = NULL;
+		memset(&event, 0, sizeof(event));
+		event.type = PHONE_EVENT_TYPE_AUDIO_STOP;
+		helper->event(helper->phone, &event);
 	}
-	else if(definition->volume != PROFILE_VOLUME_SILENT
-			&& profiles->pao == NULL)
-		/* FIXME apply the proper volume */
-		profiles->pao = pa_context_play_sample(profiles->pac, sample,
-				NULL, PA_VOLUME_NORM, NULL, NULL);
+	else if(definition->volume != PROFILE_VOLUME_SILENT)
+	{
+		memset(&event, 0, sizeof(event));
+		event.type = PHONE_EVENT_TYPE_AUDIO_PLAY;
+		event.audio_play.sample = sample;
+		helper->event(helper->phone, &event);
+	}
 	profiles->vibrator = max(profiles->vibrator, vibrator);
 	if(vibrator == 0)
 	{
