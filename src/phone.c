@@ -354,6 +354,8 @@ static void _phone_modem_event_authentication(GtkWidget * widget, gint response,
 		gpointer data);
 static int _phone_on_message(void * data, uint32_t value1, uint32_t value2,
 		uint32_t value3);
+static gboolean _phone_on_read_event_after(GtkWidget * widget, GdkEvent * event,
+		gpointer data);
 static gboolean _phone_timeout_track(gpointer data);
 
 
@@ -2497,7 +2499,7 @@ static void _show_read_buffer(Phone * phone, char const * content)
 	{
 		for(j = 0; i + j < len
 				&& isdigit((unsigned char)content[i + j]); j++);
-		/* XXX ignore errors */
+		/* XXX ignore errors, memory leak */
 		if(j >= 3 && (p = malloc(j + 1)) != NULL)
 		{
 			snprintf(p, j + 1, "%s", &content[i]);
@@ -2510,7 +2512,7 @@ static void _show_read_buffer(Phone * phone, char const * content)
 					&content[i], j, tag, NULL);
 			continue;
 		}
-		for(j = 0; i + j < len
+		for(j = 1; i + j < len
 				&& !isdigit((unsigned char)content[i + j]);
 				j++);
 		gtk_text_buffer_insert(tbuf, &iter, &content[i], j);
@@ -2578,6 +2580,8 @@ static void _show_read_window(Phone * phone)
 	gtk_text_view_set_editable(GTK_TEXT_VIEW(phone->re_view), FALSE);
 	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->re_view),
 			GTK_WRAP_WORD_CHAR);
+	g_signal_connect(phone->re_view, "event-after", G_CALLBACK(
+				_phone_on_read_event_after), phone);
 	gtk_container_add(GTK_CONTAINER(widget), phone->re_view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
 	gtk_container_add(GTK_CONTAINER(phone->re_window), vbox);
@@ -4409,6 +4413,41 @@ static int _message_show(Phone * phone, PhoneMessageShow what, gboolean show)
 			break;
 	}
 	return 0;
+}
+
+
+/* phone_on_read_event_after */
+static gboolean _phone_on_read_event_after(GtkWidget * widget, GdkEvent * event,
+		gpointer data)
+{
+	Phone * phone = data;
+	GdkEventButton * eb;
+	gint x;
+	gint y;
+	GtkTextIter iter;
+	GSList * tags;
+	GSList * p;
+	char * link = NULL;
+
+	if(event->type != GDK_BUTTON_RELEASE || event->button.button != 1)
+		return FALSE;
+	eb = &event->button;
+	gtk_text_view_window_to_buffer_coords(GTK_TEXT_VIEW(widget),
+			GTK_TEXT_WINDOW_WIDGET, eb->x, eb->y, &x, &y);
+	gtk_text_view_get_iter_at_location(GTK_TEXT_VIEW(widget), &iter, x, y);
+	tags = gtk_text_iter_get_tags(&iter);
+	for(p = tags; p != NULL; p = p->next)
+		if((link = g_object_get_data(G_OBJECT(p->data), "link"))
+				!= NULL)
+			break;
+	if(tags != NULL)
+		g_slist_free(tags);
+	if(link == NULL)
+		return FALSE;
+	/* XXX there may be more adequate things to perform */
+	gtk_entry_set_text(GTK_ENTRY(phone->di_entry), link);
+	phone_show_dialer(phone, TRUE);
+	return FALSE;
 }
 
 
