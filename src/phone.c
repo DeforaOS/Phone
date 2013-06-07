@@ -25,6 +25,7 @@ static char const _license[] =
 #include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <ctype.h>
 #include <string.h>
 #include <time.h>
 #include <libgen.h>
@@ -2433,6 +2434,7 @@ static void _plugins_on_ok(gpointer data)
 
 
 /* phone_show_read */
+static void _show_read_buffer(Phone * phone, char const * content);
 static void _show_read_window(Phone * phone);
 
 void phone_show_read(Phone * phone, gboolean show, ...)
@@ -2444,7 +2446,6 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	char const * content;
 	struct tm t;
 	char buf[32];
-	GtkTextBuffer * tbuf;
 
 	if(show == FALSE)
 	{
@@ -2473,10 +2474,47 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	localtime_r(&date, &t); /* XXX gmtime_r() or localtime_r() ? */
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_label_set_text(GTK_LABEL(phone->re_date), buf);
-	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
 	if(content != NULL)
-		gtk_text_buffer_set_text(tbuf, content, -1);
+		_show_read_buffer(phone, content);
 	gtk_window_present(GTK_WINDOW(phone->re_window));
+}
+
+static void _show_read_buffer(Phone * phone, char const * content)
+{
+	GtkTextBuffer * tbuf;
+	GtkTextIter iter;
+	size_t len;
+	size_t i;
+	size_t j;
+	char * p;
+	GtkTextTag * tag;
+
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->re_view));
+	gtk_text_buffer_set_text(tbuf, "", 0);
+	len = strlen(content);
+	gtk_text_buffer_get_start_iter(tbuf, &iter);
+	for(i = 0; i < len; i += j)
+	{
+		for(j = 0; i + j < len
+				&& isdigit((unsigned char)content[i + j]); j++);
+		/* XXX ignore errors */
+		if(j >= 3 && (p = malloc(j + 1)) != NULL)
+		{
+			snprintf(p, j + 1, "%s", &content[i]);
+			tag = gtk_text_buffer_create_tag(tbuf, NULL,
+					"foreground", "blue", "underline",
+					(void *)PANGO_UNDERLINE_SINGLE,
+					"underline-set", (void *) TRUE, NULL);
+			g_object_set_data(G_OBJECT(tag), "link", p);
+			gtk_text_buffer_insert_with_tags(tbuf, &iter,
+					&content[i], j, tag, NULL);
+			continue;
+		}
+		for(j = 0; i + j < len
+				&& !isdigit((unsigned char)content[i + j]);
+				j++);
+		gtk_text_buffer_insert(tbuf, &iter, &content[i], j);
+	}
 }
 
 static void _show_read_window(Phone * phone)
