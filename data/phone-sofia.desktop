@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=VoIP telephony
+Comment=Voice over IP telephony application (SIP)
+Exec=phone -m sofia
+Icon=phone-dialer
+Type=Application
+Categories=Network;Telephony;GTK;
