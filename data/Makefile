@@ -29,6 +29,8 @@ install:
 	$(INSTALL) -m 0644 phone-messages.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 phone-settings.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-settings.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 phone-sofia.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-sofia.desktop
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done
@@ -37,5 +39,6 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-settings.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-sofia.desktop
 
 .PHONY: all subdirs clean distclean install uninstall
