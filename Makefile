@@ -1,6 +1,6 @@
 PACKAGE	= Phone
 VERSION	= 0.3.12
-SUBDIRS	= data doc include po src tools
+SUBDIRS	= data doc include po src tests tools
 RM	= rm -f
 LN	= ln -f
 TAR	= tar -czvf
@@ -139,6 +139,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/phone-openmoko.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/phone-roaming.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/plugins.c \
+		$(PACKAGE)-$(VERSION)/tests/Makefile \
+		$(PACKAGE)-$(VERSION)/tests/tests.sh \
+		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/engineering.c \
 		$(PACKAGE)-$(VERSION)/tools/pdu.c \
 		$(PACKAGE)-$(VERSION)/tools/smscrypt.c \
