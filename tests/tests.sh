@@ -100,6 +100,7 @@ FAILED=
 echo "Performing tests:" 1>&2
 #_test "plugins"
 echo "Expected failures:" 1>&2
+_fail "modems"
 _fail "plugins"
 if [ -n "$FAILED" ]; then
 	echo "Failed tests:$FAILED" 1>&2

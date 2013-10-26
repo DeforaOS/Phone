@@ -139,6 +139,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/phone-openmoko.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/phone-roaming.png \
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/project.conf \
+		$(PACKAGE)-$(VERSION)/tests/modems.c \
 		$(PACKAGE)-$(VERSION)/tests/plugins.c \
 		$(PACKAGE)-$(VERSION)/tests/Makefile \
 		$(PACKAGE)-$(VERSION)/tests/tests.sh \
