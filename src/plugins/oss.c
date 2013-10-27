@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,22 @@ typedef struct _PhonePlugin
 	GtkWidget * mixer;
 	int fd;
 } OSS;
+
+typedef struct _RIFFChunk
+{
+	char ckID[4];
+	uint32_t ckSize;
+	uint8_t ckData[0];
+} RIFFChunk;
+
+typedef struct _WaveFormat
+{
+	uint16_t wFormatTag;
+	uint16_t wChannels;
+	uint32_t dwSamplesPerSec;
+	uint32_t dwAvgBytesPerSec;
+	uint16_t wBlockAlign;
+} WaveFormat;
 
 
 /* prototypes */
@@ -104,6 +120,10 @@ static void _oss_destroy(OSS * oss)
 
 
 /* oss_event */
+static int _event_audio_play(OSS * oss, char const * sample);
+static int _event_audio_play_chunk(OSS * oss, FILE * fp);
+static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
+static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_modem_event(OSS * oss, ModemEvent * event);
 static int _event_volume_get(OSS * oss, gdouble * level);
 static int _event_volume_set(OSS * oss, gdouble level);
@@ -112,6 +132,9 @@ static int _oss_event(OSS * oss, PhoneEvent * event)
 {
 	switch(event->type)
 	{
+		case PHONE_EVENT_TYPE_AUDIO_PLAY:
+			return _event_audio_play(oss,
+					event->audio_play.sample);
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _event_modem_event(oss,
 					event->modem_event.event);
@@ -122,6 +145,175 @@ static int _oss_event(OSS * oss, PhoneEvent * event)
 		default: /* not relevant */
 			break;
 	}
+	return 0;
+}
+
+static int _event_audio_play(OSS * oss, char const * sample)
+{
+	const char path[] = DATADIR "/sounds/" PACKAGE;
+	String * s;
+	FILE * fp;
+
+	/* XXX ignore errors */
+	if((s = string_new_append(path, "/", sample, ".wav", NULL)) == NULL)
+		return oss->helper->error(NULL, error_get(), 0);
+	/* open the audio file */
+	if((fp = fopen(s, "rb")) == NULL)
+	{
+		oss->helper->error(NULL, strerror(errno), 0);
+		string_delete(s);
+		return 0;
+	}
+	string_delete(s);
+	/* go through every chunk */
+	while(_event_audio_play_chunk(oss, fp) == 0);
+	fclose(fp);
+	return 0;
+}
+
+static int _event_audio_play_chunk(OSS * oss, FILE * fp)
+{
+	RIFFChunk rc;
+
+	if(fread(&rc, sizeof(rc.ckID) + sizeof(rc.ckSize), 1, fp) != 1)
+		return -1;
+#if 0 /* FIXME for big endian */
+	rc.ckSize = (rc.ckSize & 0xff000000) >> 24
+		| (rc.ckSize & 0xff0000) >> 8
+		| (rc.ckSize & 0xff00) << 8;
+	| (rc.ckSize & 0xff) << 24;
+#endif
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: chunk \"%c%c%c%c\"\n", rc.ckID[0],
+			rc.ckID[1], rc.ckID[2], rc.ckID[3]);
+#endif
+	if(strncmp(rc.ckID, "RIFF", 4) == 0)
+	{
+		if(_event_audio_play_chunk_riff(oss, fp, &rc) != 0)
+			return -1;
+	}
+	for(; rc.ckSize > 0; rc.ckSize--)
+		if(fgetc(fp) == EOF)
+			return -1;
+	/* FIXME implement the padding byte */
+	return 0;
+}
+
+static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc)
+{
+	char riffid[4];
+	const char wave[4] = "WAVE";
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(rc->ckSize < sizeof(riffid)
+			|| fread(&riffid, sizeof(riffid), 1, fp) != 1)
+		return -1;
+	rc->ckSize -= sizeof(riffid);
+	if(strncmp(riffid, wave, sizeof(wave)) == 0)
+		return _event_audio_play_chunk_wave(oss, fp, rc);
+	/* skip the rest of the chunk */
+	for(; rc->ckSize > 0; rc->ckSize--)
+		if(fgetc(fp) == EOF)
+			return -1;
+	return 0;
+}
+
+static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
+{
+	RIFFChunk rc2;
+#ifdef __NetBSD__
+	const char devdsp[] = "/dev/sound";
+#else
+	const char devdsp[] = "/dev/dsp";
+#endif
+	const char data[4] = "data";
+	const char fmt[4] = "fmt ";
+	WaveFormat wf;
+	int fd = -1;
+	int format;
+	uint8_t u8;
+
+	while(rc->ckSize > 0)
+	{
+		/* read the current WAVE chunk */
+		if(rc->ckSize < sizeof(rc2)
+				|| fread(&rc2, sizeof(rc2), 1, fp) != 1)
+			return -1;
+#if 0 /* FIXME for big endian */
+		/* FIXME implement */
+#endif
+		rc->ckSize -= sizeof(rc2);
+		/* interpret the WAVE chunk */
+#ifdef DEBUG
+		fprintf(stderr, "DEBUG: wave chunk \"%c%c%c%c\"\n", rc2.ckID[0],
+				rc2.ckID[1], rc2.ckID[2], rc2.ckID[3]);
+#endif
+		if(strncmp(rc2.ckID, fmt, sizeof(fmt)) == 0)
+		{
+			if(fd >= 0)
+			{
+				close(fd);
+				return -1;
+			}
+			if(rc->ckSize < sizeof(wf)
+					|| rc2.ckSize < sizeof(wf)
+					|| fread(&wf, sizeof(wf), 1, fp) != 1)
+				return -1;
+#if 0 /* FIXME for big endian */
+			/* FIXME implement */
+#endif
+			rc->ckSize -= sizeof(wf);
+			rc2.ckSize -= sizeof(wf);
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: 0x%04x format, %u channels\n",
+					wf.wFormatTag, wf.wChannels);
+#endif
+			switch(wf.wFormatTag)
+			{
+				case 0x01:
+					if((fd = open(devdsp, O_WRONLY)) < 0)
+						return -oss->helper->error(NULL,
+								devdsp, 1);
+					format = AFMT_U8;
+					if(ioctl(fd, SNDCTL_DSP_SETFMT, &format)
+							< 0)
+					{
+						close(fd);
+						return -oss->helper->error(NULL,
+								devdsp, 1);
+					}
+					break;
+				default:
+					return -1;
+			}
+		}
+		else if(strncmp(rc2.ckID, data, sizeof(data)) == 0)
+		{
+#if 0 /* FIXME for big endian */
+			/* FIXME implement */
+#endif
+			if(fd < 0)
+				return -1;
+			/* FIXME use a larger buffer instead */
+			for(; fread(&u8, sizeof(u8), 1, fp) == 1;
+					rc->ckSize -= sizeof(u8),
+					rc2.ckSize -= sizeof(u8))
+				if(write(fd, &u8, sizeof(u8)) != sizeof(u8))
+					break;
+		}
+		/* skip the rest of the chunk */
+		for(; rc2.ckSize > 0; rc2.ckSize--, rc->ckSize--)
+			if(fgetc(fp) == EOF)
+			{
+				if(fd >= 0)
+					close(fd);
+				return -1;
+			}
+	}
+	if(fd >= 0)
+		close(fd);
 	return 0;
 }
 
