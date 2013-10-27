@@ -266,7 +266,8 @@ static void _profiles_settings(Profiles * profiles)
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, profiles->name);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__,
+			profiles->profiles[profiles->profiles_cur].name);
 #endif
 	if(profiles->pr_window != NULL)
 	{
@@ -427,6 +428,10 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 		profiles->profiles_cur];
 	PhoneEvent event;
 
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(\"%s\") %s\n", __func__, sample,
+			definition->name);
+#endif
 	if(sample == NULL)
 	{
 		/* cancel the current sample */
