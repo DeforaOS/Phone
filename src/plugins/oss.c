@@ -228,11 +228,13 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 #else
 	const char devdsp[] = "/dev/dsp";
 #endif
+	char const * dev;
 	const char data[4] = "data";
 	const char fmt[4] = "fmt ";
 	WaveFormat wf;
 	int fd = -1;
 	int format;
+	int channels;
 	uint8_t u8;
 
 	while(rc->ckSize > 0)
@@ -273,20 +275,21 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 			switch(wf.wFormatTag)
 			{
 				case 0x01:
-					if((fd = open(devdsp, O_WRONLY)) < 0)
-						return -oss->helper->error(NULL,
-								devdsp, 1);
+					dev = devdsp;
 					format = AFMT_U8;
-					if(ioctl(fd, SNDCTL_DSP_SETFMT, &format)
-							< 0)
-					{
-						close(fd);
-						return -oss->helper->error(NULL,
-								devdsp, 1);
-					}
 					break;
 				default:
 					return -1;
+			}
+			channels = wf.wChannels;
+			if((fd = open(dev, O_WRONLY)) < 0)
+				return -oss->helper->error(NULL, dev, 1);
+			if(ioctl(fd, SNDCTL_DSP_SETFMT, &format) < 0
+					|| ioctl(fd, SNDCTL_DSP_CHANNELS,
+						&channels) < 0)
+			{
+				close(fd);
+				return -oss->helper->error(NULL, dev, 1);
 			}
 		}
 		else if(strncmp(rc2.ckID, data, sizeof(data)) == 0)
