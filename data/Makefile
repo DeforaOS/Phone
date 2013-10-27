@@ -19,6 +19,26 @@ distclean:
 
 install:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 0.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/0.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 1.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/1.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 2.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/2.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 3.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/3.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 4.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/4.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 5.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/5.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 6.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/6.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 7.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/7.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 8.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 9.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
@@ -34,6 +54,16 @@ install:
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/0.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/1.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/2.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/3.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/4.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/5.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/6.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/7.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop

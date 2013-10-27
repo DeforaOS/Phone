@@ -22,6 +22,16 @@ dist:
 	$(LN) -s -- . $(PACKAGE)-$(VERSION)
 	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
+		$(PACKAGE)-$(VERSION)/data/0.wav \
+		$(PACKAGE)-$(VERSION)/data/1.wav \
+		$(PACKAGE)-$(VERSION)/data/2.wav \
+		$(PACKAGE)-$(VERSION)/data/3.wav \
+		$(PACKAGE)-$(VERSION)/data/4.wav \
+		$(PACKAGE)-$(VERSION)/data/5.wav \
+		$(PACKAGE)-$(VERSION)/data/6.wav \
+		$(PACKAGE)-$(VERSION)/data/7.wav \
+		$(PACKAGE)-$(VERSION)/data/8.wav \
+		$(PACKAGE)-$(VERSION)/data/9.wav \
 		$(PACKAGE)-$(VERSION)/data/phone-contacts.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-dialer.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-log.desktop \
