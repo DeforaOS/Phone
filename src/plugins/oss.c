@@ -48,6 +48,7 @@ typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
 	GtkWidget * window;
+	GtkWidget * sound;
 	GtkWidget * mixer;
 	int fd;
 } OSS;
@@ -272,10 +273,12 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 			fprintf(stderr, "DEBUG: 0x%04x format, %u channels\n",
 					wf.wFormatTag, wf.wChannels);
 #endif
+			dev = oss->helper->config_get(oss->helper->phone, "oss",
+					"device");
 			switch(wf.wFormatTag)
 			{
 				case 0x01:
-					dev = devdsp;
+					dev = (dev != NULL) ? dev : devdsp;
 					format = AFMT_U8;
 					break;
 				default:
@@ -426,8 +429,15 @@ static void _oss_settings(OSS * oss)
 	gtk_window_set_title(GTK_WINDOW(oss->window), "Sound preferences");
 	g_signal_connect_swapped(oss->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), oss);
-	vbox = gtk_vbox_new(FALSE, 0);
-	/* device */
+	vbox = gtk_vbox_new(FALSE, 4);
+	/* devices */
+	widget = gtk_label_new("Sound device:");
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	widget = gtk_file_chooser_button_new("Set the sound device",
+			GTK_FILE_CHOOSER_ACTION_OPEN);
+	oss->sound = widget;
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new("Mixer device:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
@@ -456,13 +466,22 @@ static void _oss_settings(OSS * oss)
 static void _on_settings_cancel(gpointer data)
 {
 	OSS * oss = data;
+#ifdef __NetBSD__
+	const char devdsp[] = "/dev/sound";
+#else
+	const char devdsp = "/dev/dsp";
+#endif
 	char const * p;
 
+	gtk_widget_hide(oss->window);
+	if((p = oss->helper->config_get(oss->helper->phone, "oss", "device"))
+			== NULL)
+		p = devdsp;
+	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(oss->sound), p);
 	if((p = oss->helper->config_get(oss->helper->phone, "oss", "mixer"))
 			== NULL)
 		p = "/dev/mixer";
 	gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(oss->mixer), p);
-	gtk_widget_hide(oss->window);
 }
 
 static gboolean _on_settings_closex(gpointer data)
@@ -478,9 +497,12 @@ static void _on_settings_ok(gpointer data)
 	OSS * oss = data;
 	char const * p;
 
+	gtk_widget_hide(oss->window);
+	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(oss->sound)))
+			!= NULL)
+		oss->helper->config_set(oss->helper->phone, "oss", "device", p);
 	if((p = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(oss->mixer)))
 			!= NULL)
 		oss->helper->config_set(oss->helper->phone, "oss", "mixer", p);
-	gtk_widget_hide(oss->window);
 	_oss_open(oss);
 }
