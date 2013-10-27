@@ -32,6 +32,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/7.wav \
 		$(PACKAGE)-$(VERSION)/data/8.wav \
 		$(PACKAGE)-$(VERSION)/data/9.wav \
+		$(PACKAGE)-$(VERSION)/data/hash.wav \
+		$(PACKAGE)-$(VERSION)/data/star.wav \
 		$(PACKAGE)-$(VERSION)/data/phone-contacts.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-dialer.desktop \
 		$(PACKAGE)-$(VERSION)/data/phone-log.desktop \

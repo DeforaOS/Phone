@@ -897,12 +897,15 @@ int phone_dialer_append(Phone * phone, char character)
 	if(phone->ca_status == MODEM_CALL_STATUS_ACTIVE && character != '+')
 		modem_request_type(phone->modem, MODEM_REQUEST_DTMF_SEND,
 				character);
-	else if(phone->ca_status != MODEM_CALL_STATUS_ACTIVE
-			&& character >= '0' && character <= '9')
+	if(character >= '0' && character <= '9')
 	{
 		sample[0] = character;
 		phone_event_type(phone, PHONE_EVENT_TYPE_AUDIO_PLAY, sample);
 	}
+	else if(character == '#')
+		phone_event_type(phone, PHONE_EVENT_TYPE_AUDIO_PLAY, "hash");
+	else if(character == '*')
+		phone_event_type(phone, PHONE_EVENT_TYPE_AUDIO_PLAY, "star");
 	return 0;
 }
 

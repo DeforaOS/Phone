@@ -39,6 +39,10 @@ install:
 	$(INSTALL) -m 0644 8.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 9.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 hash.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/hash.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 star.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/star.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
@@ -64,6 +68,8 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/7.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/hash.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/star.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
