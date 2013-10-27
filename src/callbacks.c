@@ -128,7 +128,6 @@ void on_phone_code_clicked(GtkWidget * widget, gpointer data)
 	char const * character;
 
 	character = g_object_get_data(G_OBJECT(widget), "character");
-	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_code_append(phone, *character);
 }
 
