@@ -1,4 +1,4 @@
-TARGETS	= debug.so hayes.so purple.so sofia.so
+TARGETS	= debug.so hayes.so purple.so sofia.so template.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -48,6 +48,13 @@ sofia_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem sofia-sip-ua
 sofia.so: $(sofia_OBJS)
 	$(CCSHARED) -o sofia.so $(sofia_OBJS) $(sofia_LDFLAGS)
 
+template_OBJS = template.o
+template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem`
+template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
+
+template.so: $(template_OBJS)
+	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+
 debug.o: debug.c
 	$(CC) $(debug_CFLAGS) -c debug.c
 
@@ -60,8 +67,11 @@ purple.o: purple.c ../../config.h
 sofia.o: sofia.c
 	$(CC) $(sofia_CFLAGS) -c sofia.c
 
+template.o: template.c
+	$(CC) $(template_CFLAGS) -c template.c
+
 clean:
-	$(RM) -- $(debug_OBJS) $(hayes_OBJS) $(purple_OBJS) $(sofia_OBJS)
+	$(RM) -- $(debug_OBJS) $(hayes_OBJS) $(purple_OBJS) $(sofia_OBJS) $(template_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
