@@ -125,6 +125,8 @@ static int _event_audio_play(OSS * oss, char const * sample);
 static int _event_audio_play_chunk(OSS * oss, FILE * fp);
 static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc);
+static int _event_audio_play_open(OSS * oss, char const * device,
+		WaveFormat * wf);
 static int _event_modem_event(OSS * oss, ModemEvent * event);
 static int _event_volume_get(OSS * oss, gdouble * level);
 static int _event_volume_set(OSS * oss, gdouble level);
@@ -224,19 +226,11 @@ static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc)
 static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 {
 	RIFFChunk rc2;
-#ifdef __NetBSD__
-	const char devdsp[] = "/dev/sound";
-#else
-	const char devdsp[] = "/dev/dsp";
-#endif
 	char const * dev;
 	const char data[4] = "data";
 	const char fmt[4] = "fmt ";
 	WaveFormat wf;
 	int fd = -1;
-	int format;
-	int channels;
-	int speed;
 	uint8_t u8;
 
 	while(rc->ckSize > 0)
@@ -276,28 +270,8 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 #endif
 			dev = oss->helper->config_get(oss->helper->phone, "oss",
 					"device");
-			switch(wf.wFormatTag)
-			{
-				case 0x01:
-					dev = (dev != NULL) ? dev : devdsp;
-					format = AFMT_U8;
-					break;
-				default:
-					return -1;
-			}
-			channels = wf.wChannels;
-			speed = wf.dwSamplesPerSec;
-			if((fd = open(dev, O_WRONLY)) < 0)
-				return -oss->helper->error(NULL, dev, 1);
-			if(ioctl(fd, SNDCTL_DSP_SETFMT, &format) < 0
-					|| ioctl(fd, SNDCTL_DSP_CHANNELS,
-						&channels) < 0
-					|| ioctl(fd, SNDCTL_DSP_SPEED,
-						&speed) < 0)
-			{
-				close(fd);
-				return -oss->helper->error(NULL, dev, 1);
-			}
+			if((fd = _event_audio_play_open(oss, dev, &wf)) < 0)
+				return -1;
 		}
 		else if(strncmp(rc2.ckID, data, sizeof(data)) == 0)
 		{
@@ -325,6 +299,43 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 	if(fd >= 0)
 		close(fd);
 	return 0;
+}
+
+static int _event_audio_play_open(OSS * oss, char const * device,
+		WaveFormat * wf)
+{
+#ifdef __NetBSD__
+	const char devdsp[] = "/dev/sound";
+#else
+	const char devdsp[] = "/dev/dsp";
+#endif
+	int fd;
+	int format;
+	int channels;
+	int samplerate;
+
+	switch(wf->wFormatTag)
+	{
+		case 0x01:
+			device = (device != NULL) ? device : devdsp;
+			format = AFMT_U8;
+			break;
+		default:
+			return -oss->helper->error(NULL,
+					"Unsupported WAVE format", 1);
+	}
+	channels = wf->wChannels;
+	samplerate = wf->dwSamplesPerSec;
+	if((fd = open(device, O_WRONLY)) < 0)
+		return -oss->helper->error(NULL, device, 1);
+	if(ioctl(fd, SNDCTL_DSP_SETFMT, &format) < 0
+			|| ioctl(fd, SNDCTL_DSP_CHANNELS, &channels) < 0
+			|| ioctl(fd, SNDCTL_DSP_SPEED, &samplerate) < 0)
+	{
+		close(fd);
+		return -oss->helper->error(NULL, device, 1);
+	}
+	return fd;
 }
 
 static int _event_modem_event(OSS * oss, ModemEvent * event)
