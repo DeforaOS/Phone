@@ -236,6 +236,7 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 	int fd = -1;
 	int format;
 	int channels;
+	int speed;
 	uint8_t u8;
 
 	while(rc->ckSize > 0)
@@ -285,11 +286,14 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 					return -1;
 			}
 			channels = wf.wChannels;
+			speed = wf.dwSamplesPerSec;
 			if((fd = open(dev, O_WRONLY)) < 0)
 				return -oss->helper->error(NULL, dev, 1);
 			if(ioctl(fd, SNDCTL_DSP_SETFMT, &format) < 0
 					|| ioctl(fd, SNDCTL_DSP_CHANNELS,
-						&channels) < 0)
+						&channels) < 0
+					|| ioctl(fd, SNDCTL_DSP_SPEED,
+						&speed) < 0)
 			{
 				close(fd);
 				return -oss->helper->error(NULL, dev, 1);
