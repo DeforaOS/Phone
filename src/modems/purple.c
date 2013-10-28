@@ -70,7 +70,7 @@ static void _purple_on_ui_prefs_init(void);
 ModemPluginDefinition plugin =
 {
 	"Purple",
-	NULL,
+	"pidgin",
 	_purple_config,
 	_purple_init,
 	_purple_destroy,

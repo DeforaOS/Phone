@@ -75,7 +75,7 @@ static void _debug_on_operator_set(gpointer data);
 ModemPluginDefinition plugin =
 {
 	"Debug",
-	NULL,
+	"applications-development",
 	NULL,
 	_debug_init,
 	_debug_destroy,

@@ -53,7 +53,7 @@ static int _template_request(ModemPlugin * modem, ModemRequest * request);
 ModemPluginDefinition plugin =
 {
 	"Template",
-	NULL,
+	"applications-development",
 	_template_config,
 	_template_init,
 	_template_destroy,
