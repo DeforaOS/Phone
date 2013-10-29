@@ -29,6 +29,7 @@
 #include <System.h>
 #include "Phone.h"
 #include "../../config.h"
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -338,13 +339,17 @@ static int _event_audio_play_open(OSS * oss, char const * device,
 static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
 		FILE * fp, int fd)
 {
-	uint8_t u8;
+	uint8_t u8[4096];
+	size_t s;
 
-	/* FIXME use a larger buffer instead */
-	for(; fread(&u8, sizeof(u8), 1, fp) == 1; rc->ckSize -= sizeof(u8),
-			rc2->ckSize -= sizeof(u8))
-		if(write(fd, &u8, sizeof(u8)) != sizeof(u8))
+	for(; (s = min(sizeof(u8), rc2->ckSize)) > 0;
+			rc->ckSize -= s, rc2->ckSize -= s)
+	{
+		if((s = fread(&u8, sizeof(*u8), s, fp)) == 0)
+			break;
+		if(write(fd, &u8, s) != s)
 			return -1;
+	}
 	return 0;
 }
 
