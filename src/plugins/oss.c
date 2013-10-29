@@ -130,7 +130,6 @@ static int _event_audio_play_open(OSS * oss, char const * device,
 		WaveFormat * wf);
 static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
 		FILE * fp, int fd);
-static int _event_modem_event(OSS * oss, ModemEvent * event);
 static int _event_volume_get(OSS * oss, gdouble * level);
 static int _event_volume_set(OSS * oss, gdouble level);
 
@@ -141,9 +140,6 @@ static int _oss_event(OSS * oss, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_AUDIO_PLAY:
 			return _event_audio_play(oss,
 					event->audio_play.sample);
-		case PHONE_EVENT_TYPE_MODEM_EVENT:
-			return _event_modem_event(oss,
-					event->modem_event.event);
 		case PHONE_EVENT_TYPE_VOLUME_GET:
 			return _event_volume_get(oss, &event->volume_get.level);
 		case PHONE_EVENT_TYPE_VOLUME_SET:
@@ -351,29 +347,6 @@ static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
 		if((ss = write(fd, &u8, s)) < 0
 				|| (size_t)ss != s) /* XXX */
 			return -1;
-	}
-	return 0;
-}
-
-static int _event_modem_event(OSS * oss, ModemEvent * event)
-{
-	ModemCallDirection direction;
-
-	switch(event->type)
-	{
-		case MODEM_EVENT_TYPE_CALL:
-			if(event->call.status != MODEM_CALL_STATUS_RINGING)
-				break;
-			direction = event->call.direction;
-			if(direction == MODEM_CALL_DIRECTION_INCOMING)
-				/* FIXME ringtone */
-				break;
-			else if(direction == MODEM_CALL_DIRECTION_OUTGOING)
-				/* FIXME tone */
-				break;
-			break;
-		default:
-			break;
 	}
 	return 0;
 }
