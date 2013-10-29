@@ -127,6 +127,8 @@ static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_open(OSS * oss, char const * device,
 		WaveFormat * wf);
+static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
+		FILE * fp, int fd);
 static int _event_modem_event(OSS * oss, ModemEvent * event);
 static int _event_volume_get(OSS * oss, gdouble * level);
 static int _event_volume_set(OSS * oss, gdouble level);
@@ -231,7 +233,6 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 	const char fmt[4] = "fmt ";
 	WaveFormat wf;
 	int fd = -1;
-	uint8_t u8;
 
 	while(rc->ckSize > 0)
 	{
@@ -280,12 +281,8 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 #endif
 			if(fd < 0)
 				return -1;
-			/* FIXME use a larger buffer instead */
-			for(; fread(&u8, sizeof(u8), 1, fp) == 1;
-					rc->ckSize -= sizeof(u8),
-					rc2.ckSize -= sizeof(u8))
-				if(write(fd, &u8, sizeof(u8)) != sizeof(u8))
-					break;
+			if(_event_audio_play_write(rc, &rc2, fp, fd) != 0)
+				break;
 		}
 		/* skip the rest of the chunk */
 		for(; rc2.ckSize > 0; rc2.ckSize--, rc->ckSize--)
@@ -336,6 +333,19 @@ static int _event_audio_play_open(OSS * oss, char const * device,
 		return -oss->helper->error(NULL, device, 1);
 	}
 	return fd;
+}
+
+static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
+		FILE * fp, int fd)
+{
+	uint8_t u8;
+
+	/* FIXME use a larger buffer instead */
+	for(; fread(&u8, sizeof(u8), 1, fp) == 1; rc->ckSize -= sizeof(u8),
+			rc2->ckSize -= sizeof(u8))
+		if(write(fd, &u8, sizeof(u8)) != sizeof(u8))
+			return -1;
+	return 0;
 }
 
 static int _event_modem_event(OSS * oss, ModemEvent * event)
