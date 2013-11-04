@@ -341,13 +341,15 @@ static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
 {
 	uint8_t u8[4096];
 	size_t s;
+	ssize_t ss;
 
 	for(; (s = min(sizeof(u8), rc2->ckSize)) > 0;
 			rc->ckSize -= s, rc2->ckSize -= s)
 	{
 		if((s = fread(&u8, sizeof(*u8), s, fp)) == 0)
 			break;
-		if(write(fd, &u8, s) != s)
+		if((ss = write(fd, &u8, s)) < 0
+				|| (size_t)ss != s) /* XXX */
 			return -1;
 	}
 	return 0;
