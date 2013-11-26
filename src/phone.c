@@ -3092,8 +3092,8 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 
 	if(show == FALSE)
 	{
-		if(phone->lo_window != NULL)
-			gtk_widget_hide(phone->lo_window);
+		if(phone->wr_window != NULL)
+			gtk_widget_hide(phone->wr_window);
 		return;
 	}
 	va_start(ap, show);
