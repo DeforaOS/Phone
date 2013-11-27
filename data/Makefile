@@ -39,22 +39,22 @@ install:
 	$(INSTALL) -m 0644 8.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 9.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 deforaos-phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-contacts.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 deforaos-phone-dialer.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-dialer.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 deforaos-phone-log.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-log.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 deforaos-phone-messages.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-messages.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 deforaos-phone-settings.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-settings.desktop
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
+	$(INSTALL) -m 0644 deforaos-phone-sofia.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-sofia.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 hash.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/hash.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 star.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/star.wav
-	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
-	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone-dialer.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
-	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone-log.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
-	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone-messages.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
-	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone-settings.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-settings.desktop
-	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
-	$(INSTALL) -m 0644 phone-sofia.desktop $(DESTDIR)$(PREFIX)/share/applications/phone-sofia.desktop
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done
@@ -68,13 +68,13 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/7.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-contacts.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-dialer.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-log.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-messages.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-settings.desktop
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-sofia.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/hash.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/star.wav
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-contacts.desktop
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-dialer.desktop
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-log.desktop
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-messages.desktop
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-settings.desktop
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/phone-sofia.desktop
 
 .PHONY: all subdirs clean distclean install uninstall

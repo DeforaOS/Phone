@@ -32,14 +32,14 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/7.wav \
 		$(PACKAGE)-$(VERSION)/data/8.wav \
 		$(PACKAGE)-$(VERSION)/data/9.wav \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-contacts.desktop \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-dialer.desktop \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-log.desktop \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-messages.desktop \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-settings.desktop \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-sofia.desktop \
 		$(PACKAGE)-$(VERSION)/data/hash.wav \
 		$(PACKAGE)-$(VERSION)/data/star.wav \
-		$(PACKAGE)-$(VERSION)/data/phone-contacts.desktop \
-		$(PACKAGE)-$(VERSION)/data/phone-dialer.desktop \
-		$(PACKAGE)-$(VERSION)/data/phone-log.desktop \
-		$(PACKAGE)-$(VERSION)/data/phone-messages.desktop \
-		$(PACKAGE)-$(VERSION)/data/phone-settings.desktop \
-		$(PACKAGE)-$(VERSION)/data/phone-sofia.desktop \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
 		$(PACKAGE)-$(VERSION)/data/16x16/phone-dialer.png \
