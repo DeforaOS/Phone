@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Telephony
 Comment=Preferences for the telephony application
+TryExec=phonectl
 Exec=phonectl -S
 Icon=stock_cell-phone
 Type=Application

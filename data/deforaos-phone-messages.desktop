@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Messages
 Comment=Telephony messaging
+TryExec=phonectl
 Exec=phonectl -M
 Icon=stock_mail-compose
 Type=Application

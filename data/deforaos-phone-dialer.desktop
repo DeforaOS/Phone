@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Dialer
 Comment=Telephony dialer
+TryExec=phonectl
 Exec=phonectl -D
 Icon=phone-dialer
 Type=Application

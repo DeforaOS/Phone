@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=VoIP telephony
 Comment=Voice over IP telephony application (SIP)
+TryExec=phone
 Exec=phone -m sofia
 Icon=phone-dialer
 Type=Application

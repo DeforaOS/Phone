@@ -1,6 +1,7 @@
 [Desktop Entry]
 Name=Contacts
 Comment=Telephony address book
+TryExec=phonectl
 Exec=phonectl -C
 Icon=stock_addressbook
 Type=Application
