@@ -27,6 +27,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <System.h>
@@ -67,8 +70,8 @@ typedef struct _PhonePlugin
 	int yuv_amp;
 
 	/* widgets */
-	GdkGC * gc;
 	GtkWidget * window;
+	GdkGC * gc;
 	GtkWidget * area;
 	GtkAllocation area_allocation;
 	GdkPixmap * pixmap;
@@ -147,8 +150,8 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	video->rgb_buffer = NULL;
 	video->rgb_buffer_cnt = 0;
 	video->yuv_amp = 255;
-	video->gc = NULL;
 	video->window = NULL;
+	video->gc = NULL;
 	/* check for errors */
 	if((video->device = string_new(device)) == NULL)
 	{
