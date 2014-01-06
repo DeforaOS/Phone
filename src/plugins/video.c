@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2012-2013 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2012-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,10 @@ typedef struct _PhonePlugin
 	PhonePluginHelper * helper;
 
 	String * device;
+	gboolean hflip;
+	gboolean vflip;
+	gboolean ratio;
+	GdkInterpType interp;
 
 	guint source;
 	int fd;
@@ -114,14 +118,25 @@ static int _open_setup(VideoPhonePlugin * video);
 static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 {
 	VideoPhonePlugin * video;
-	char const * device = NULL;
+	char const * device;
+	char const * p;
 
 	if((video = object_new(sizeof(*video))) == NULL)
 		return NULL;
 	video->helper = helper;
-	/* FIXME let this be configurable */
-	if(device == NULL)
+	if((device = helper->config_get(helper->phone, "video", "device"))
+			== NULL)
 		device = "/dev/video0";
+	p = helper->config_get(helper->phone, "video", "hflip");
+	video->hflip = (p != NULL && p[0] != '\0' && strtol(p, NULL, 10) > 0)
+		? TRUE : FALSE;
+	p = helper->config_get(helper->phone, "video", "vflip");
+	video->vflip = (p != NULL && p[0] != '\0' && strtol(p, NULL, 10) > 0)
+		? TRUE : FALSE;
+	p = helper->config_get(helper->phone, "video", "ratio");
+	video->ratio = (p == NULL || p[0] == '\0' || strtol(p, NULL, 10) != 0)
+		? TRUE : FALSE;
+	video->interp = GDK_INTERP_BILINEAR;
 	video->source = 0;
 	video->fd = -1;
 	memset(&video->cap, 0, sizeof(video->cap));
@@ -378,6 +393,9 @@ static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
 static void _refresh_convert(VideoPhonePlugin * video);
 static void _refresh_convert_yuv(int amp, uint8_t y, uint8_t u, uint8_t v,
                 uint8_t * r, uint8_t * g, uint8_t * b);
+static void _refresh_hflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf);
+static void _refresh_scale(VideoPhonePlugin * video, GdkPixbuf ** pixbuf);
+static void _refresh_vflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf);
 
 static gboolean _video_on_refresh(gpointer data)
 {
@@ -386,14 +404,16 @@ static gboolean _video_on_refresh(gpointer data)
 	int width = video->format.fmt.pix.width;
 	int height = video->format.fmt.pix.height;
 	GdkPixbuf * pixbuf;
-	GdkPixbuf * pixbuf2;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() 0x%x\n", __func__,
 			video->format.fmt.pix.pixelformat);
 #endif
 	_refresh_convert(video);
-	if(width == allocation->width && height == allocation->height)
+	if(video->hflip == FALSE
+			&& video->vflip == FALSE
+			&& width == allocation->width
+			&& height == allocation->height)
 		/* render directly */
 		gdk_draw_rgb_image(video->pixmap, video->gc, 0, 0,
 				width, height, GDK_RGB_DITHER_NORMAL,
@@ -404,12 +424,12 @@ static gboolean _video_on_refresh(gpointer data)
 		pixbuf = gdk_pixbuf_new_from_data(video->rgb_buffer,
 				GDK_COLORSPACE_RGB, FALSE, 8, width, height,
 				width * 3, NULL, NULL);
-		pixbuf2 = gdk_pixbuf_scale_simple(pixbuf, allocation->width,
-				allocation->height, GDK_INTERP_BILINEAR);
-		gdk_pixbuf_render_to_drawable(pixbuf2, video->pixmap,
+		_refresh_hflip(video, &pixbuf);
+		_refresh_vflip(video, &pixbuf);
+		_refresh_scale(video, &pixbuf);
+		gdk_pixbuf_render_to_drawable(pixbuf, video->pixmap,
 				video->gc, 0, 0, 0, 0, -1, -1,
 				GDK_RGB_DITHER_NORMAL, 0, 0);
-		g_object_unref(pixbuf2);
 		g_object_unref(pixbuf);
 	}
 	/* force a refresh */
@@ -472,4 +492,66 @@ static void _refresh_convert_yuv(int amp, uint8_t y, uint8_t u, uint8_t v,
 	*r = (dr < 0) ? 0 : ((dr > 255) ? 255 : dr);
 	*g = (dg < 0) ? 0 : ((dg > 255) ? 255 : dg);
 	*b = (db < 0) ? 0 : ((db > 255) ? 255 : db);
+}
+
+static void _refresh_hflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf)
+{
+	GdkPixbuf * pixbuf2;
+
+	if(video->hflip == FALSE)
+		return;
+	/* XXX could probably be more efficient */
+	pixbuf2 = gdk_pixbuf_flip(*pixbuf, TRUE);
+	g_object_unref(*pixbuf);
+	*pixbuf = pixbuf2;
+}
+
+static void _refresh_scale(VideoPhonePlugin * video, GdkPixbuf ** pixbuf)
+{
+	GtkAllocation * allocation = &video->area_allocation;
+	GdkPixbuf * pixbuf2;
+	gdouble scale;
+	gint width;
+	gint height;
+	gint x;
+	gint y;
+
+	if(video->ratio == FALSE)
+		pixbuf2 = gdk_pixbuf_scale_simple(*pixbuf, allocation->width,
+				allocation->height, video->interp);
+	else
+	{
+		if((pixbuf2 = gdk_pixbuf_new(GDK_COLORSPACE_RGB, FALSE, 8,
+						allocation->width,
+						allocation->height)) == NULL)
+			return;
+		/* XXX could be more efficient */
+		gdk_pixbuf_fill(pixbuf2, 0);
+		scale = (gdouble)allocation->width
+			/ video->format.fmt.pix.width;
+		scale = MIN(scale, (gdouble)allocation->height
+				/ video->format.fmt.pix.height);
+		width = (gdouble)video->format.fmt.pix.width * scale;
+		width = MIN(width, allocation->width);
+		height = (gdouble)video->format.fmt.pix.height * scale;
+		height = MIN(height, allocation->height);
+		x = (allocation->width - width) / 2;
+		y = (allocation->height - height) / 2;
+		gdk_pixbuf_scale(*pixbuf, pixbuf2, x, y, width, height,
+				0.0, 0.0, scale, scale, video->interp);
+	}
+	g_object_unref(*pixbuf);
+	*pixbuf = pixbuf2;
+}
+
+static void _refresh_vflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf)
+{
+	GdkPixbuf * pixbuf2;
+
+	if(video->vflip == FALSE)
+		return;
+	/* XXX could probably be more efficient */
+	pixbuf2 = gdk_pixbuf_flip(*pixbuf, FALSE);
+	g_object_unref(*pixbuf);
+	*pixbuf = pixbuf2;
 }
