@@ -191,10 +191,7 @@ static void _video_destroy(VideoPhonePlugin * video)
 	{
 		/* XXX we ignore errors at this point */
 		g_io_channel_shutdown(video->channel, TRUE, NULL);
-#if 0
-		/* FIXME seems to cause a crash in the original code */
-		g_object_unref(video->channel);
-#endif
+		g_io_channel_unref(video->channel);
 	}
 	if(video->pixmap != NULL)
 		g_object_unref(video->pixmap);
