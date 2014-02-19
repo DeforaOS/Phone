@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ typedef struct _USSDCode
 
 /* constants */
 /* Germany */
-/* E-plus, see http://www.prepaid-wiki.de/index.php5/E-Plus */
+/* E-Plus, see http://www.prepaid-wiki.de/index.php5/E-Plus */
 static USSDCode _ussd_codes_de_eplus[] =
 {
 	{ "*100#",	"Balance enquiry"				},
@@ -96,7 +96,7 @@ static const struct
 	USSDCode * codes;
 } _ussd_operators[] =
 {
-	{ "E-plus",	_ussd_codes_de_eplus				},
+	{ "E-Plus",	_ussd_codes_de_eplus				},
 	{ "FYVE",	_ussd_codes_de_fyve				},
 	{ "Monacell",	_ussd_codes_fr_virgin				},
 	{ "MTN",	_ussd_codes_za_mtn				},
