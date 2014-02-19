@@ -154,6 +154,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/tests/modems.c \
 		$(PACKAGE)-$(VERSION)/tests/plugins.c \
+		$(PACKAGE)-$(VERSION)/tests/ussd.c \
 		$(PACKAGE)-$(VERSION)/tests/Makefile \
 		$(PACKAGE)-$(VERSION)/tests/tests.sh \
 		$(PACKAGE)-$(VERSION)/tests/project.conf \

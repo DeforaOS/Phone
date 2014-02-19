@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2013 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -371,6 +371,7 @@ static void _on_code_ext_error(ModemPlugin * modem, char const * answer);
 /* helpers */
 static int _is_figure(int c);
 static int _is_number(char const * number);
+static int _is_ussd_code(char const * number);
 
 
 /* variables */
@@ -759,8 +760,6 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 {
 	unsigned int type = request->type;
 	char buf[32];
-	char const * p;
-	size_t len;
 
 	switch(type)
 	{
@@ -784,9 +783,7 @@ static char * _request_attention(ModemPlugin * modem, ModemRequest * request)
 			break;
 		case MODEM_REQUEST_CALL:
 			if(request->call.call_type == MODEM_CALL_TYPE_VOICE
-					&& (p = request->call.number) != NULL
-					&& (len = strlen(p)) > 2
-					&& p[0] == '*' && p[len - 1] == '#')
+					&& _is_ussd_code(request->call.number))
 				return _request_attention_call_ussd(modem,
 						request);
 			return _request_attention_call(modem, request);
@@ -4085,4 +4082,20 @@ static int _is_number(char const * number)
 		if(!_is_figure(*(number++)))
 			return 0;
 	return 1;
+}
+
+
+/* is_ussd_code */
+static int _is_ussd_code(char const * number)
+{
+	if(number == NULL || number[0] != '*')
+		return 0;
+	for(number++; *number != '\0'; number++)
+		if((*number >= '0' && *number <= '9') || *number == '*')
+			continue;
+		else if(*number == '#' && *(number + 1) == '\0')
+			return 1;
+		else
+			return 0;
+	return 0;
 }

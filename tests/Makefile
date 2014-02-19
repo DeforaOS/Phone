@@ -1,4 +1,4 @@
-TARGETS	= modems plugins tests.log
+TARGETS	= modems plugins ussd tests.log
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -31,7 +31,14 @@ plugins_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 plugins: $(plugins_OBJS)
 	$(CC) -o plugins $(plugins_OBJS) $(plugins_LDFLAGS)
 
-tests.log: modems plugins tests.sh
+ussd_OBJS = ussd.o
+ussd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+ussd: $(ussd_OBJS)
+	$(CC) -o ussd $(ussd_OBJS) $(ussd_LDFLAGS)
+
+tests.log: modems plugins tests.sh ussd
 	./tests.sh -P "$(PREFIX)" -- "tests.log"
 
 modems.o: modems.c
@@ -40,8 +47,11 @@ modems.o: modems.c
 plugins.o: plugins.c
 	$(CC) $(plugins_CFLAGS) -c plugins.c
 
+ussd.o: ussd.c ../src/modems/hayes.c
+	$(CC) $(ussd_CFLAGS) -c ussd.c
+
 clean:
-	$(RM) -- $(modems_OBJS) $(plugins_OBJS) $(tests.log_OBJS)
+	$(RM) -- $(modems_OBJS) $(plugins_OBJS) $(ussd_OBJS) $(tests.log_OBJS)
 	./tests.sh -c -P "$(PREFIX)" -- "tests.log"
 
 distclean: clean
