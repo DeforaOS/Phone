@@ -3638,8 +3638,9 @@ static void _on_code_cpbr(HayesChannel * channel, char const * answer)
 	switch(u)
 	{
 		case 145:
-			/* FIXME could it be in some cases that the "+" is
-			 * already there? (huawei) */
+			if(number[0] == '+')
+				break;
+			/* prefix the number with a "+" */
 			memmove(&number[1], number, sizeof(number) - 1);
 			number[0] = '+';
 			break;
