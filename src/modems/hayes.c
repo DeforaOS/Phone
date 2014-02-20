@@ -35,6 +35,7 @@
 #include <glib.h>
 #include <System.h>
 #include <Phone/modem.h>
+#include "hayes/command.h"
 #include "hayes.h"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -106,56 +107,13 @@ typedef struct _ModemPlugin
 	HayesChannel channel;
 } Hayes;
 
-typedef enum _HayesCommandPriority
-{
-	HCP_LOWER = 0,
-	HCP_NORMAL,
-	HCP_HIGHER,
-	HCP_IMMEDIATE
-} HayesCommandPriority;
-
-typedef enum _HayesCommandStatus
-{
-	HCS_PENDING = 0,
-	HCS_QUEUED,
-	HCS_ACTIVE,
-	HCS_TIMEOUT,
-	HCS_ERROR,
-	HCS_SUCCESS
-} HayesCommandStatus;
-#define HCS_LAST HCS_SUCCESS
-#define HCS_COUNT (HCS_LAST + 1)
-
 #ifdef DEBUG
-static const char * _hayes_command_status[HCS_COUNT] =
+static const char * hayes_command_status[HCS_COUNT] =
 {
 	"HCS_PENDING", "HCS_QUEUED", "HCS_ACTIVE", "HCS_TIMEOUT", "HCS_ERROR",
 	"HCS_SUCCESS"
 };
 #endif
-
-typedef struct _HayesCommand HayesCommand;
-
-typedef HayesCommandStatus (*HayesCommandCallback)(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
-
-struct _HayesCommand
-{
-	HayesCommandPriority priority;
-	HayesCommandStatus status;
-
-	/* request */
-	char * attention;
-	unsigned int timeout;
-	HayesCommandCallback callback;
-	void * priv;
-
-	/* answer */
-	char * answer;
-
-	/* XXX should be handled a better way */
-	void * data;
-};
 
 typedef struct _HayesRequestContactList
 {
@@ -285,32 +243,6 @@ static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel);
 static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel);
 
 static void _hayes_reset(Hayes * hayes);
-
-/* commands */
-static HayesCommand * _hayes_command_new(char const * attention);
-static void _hayes_command_delete(HayesCommand * command);
-static char const * _hayes_command_get_answer(HayesCommand * command);
-static char const * _hayes_command_get_attention(HayesCommand * command);
-static void * _hayes_command_get_data(HayesCommand * command);
-#if 0 /* XXX no longer being used */
-static char * _hayes_command_get_line(HayesCommand * command,
-		char const * prefix);
-#endif
-static HayesCommandPriority _hayes_command_get_priority(HayesCommand * command);
-static HayesCommandStatus _hayes_command_get_status(HayesCommand * command);
-static unsigned int _hayes_command_get_timeout(HayesCommand * command);
-static void _hayes_command_set_callback(HayesCommand * command,
-		HayesCommandCallback callback, void * priv);
-static void _hayes_command_set_data(HayesCommand * command, void * data);
-static void _hayes_command_set_priority(HayesCommand * command,
-		HayesCommandPriority priority);
-static void _hayes_command_set_status(HayesCommand * command,
-		HayesCommandStatus status);
-static void _hayes_command_set_timeout(HayesCommand * command,
-		unsigned int timeout);
-static int _hayes_command_answer_append(HayesCommand * command,
-		char const * answer);
-static HayesCommandStatus _hayes_command_callback(HayesCommand * command);
 
 /* callbacks */
 static gboolean _on_queue_timeout(gpointer data);
@@ -1109,16 +1041,16 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 		: NULL;
 	HayesCommandStatus status;
 
-	if(command == NULL || _hayes_command_get_status(command) != HCS_ACTIVE)
+	if(command == NULL || hayes_command_get_status(command) != HCS_ACTIVE)
 		/* this was most likely unsollicited */
 		return _hayes_parse_trigger(hayes, channel, line, NULL);
 	_hayes_parse_trigger(hayes, channel, line, command);
-	if(_hayes_command_answer_append(command, line) != 0)
+	if(hayes_command_answer_append(command, line) != 0)
 		return -1;
-	if((status = _hayes_command_get_status(command)) == HCS_ACTIVE)
-		_hayes_command_callback(command);
+	if((status = hayes_command_get_status(command)) == HCS_ACTIVE)
+		hayes_command_callback(command);
 	/* unqueue if complete */
-	if((status = _hayes_command_get_status(command)) == HCS_SUCCESS
+	if((status = hayes_command_get_status(command)) == HCS_SUCCESS
 			|| status == HCS_ERROR || status == HCS_TIMEOUT)
 	{
 		_hayes_queue_pop(hayes, channel);
@@ -1163,7 +1095,7 @@ static int _hayes_parse_trigger(Hayes * hayes, HayesChannel * channel,
 	}
 	/* if the answer has no prefix choose it from the command issued */
 	if(command == NULL
-			|| (p = _hayes_command_get_attention(command)) == NULL
+			|| (p = hayes_command_get_attention(command)) == NULL
 			|| strncmp(p, "AT", 2) != 0)
 		return 0;
 	for(i = 0; i < count; i++)
@@ -1191,13 +1123,13 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 	{
 		case HAYES_MODE_INIT:
 			/* ignore commands besides initialization */
-			if(_hayes_command_get_priority(command)
+			if(hayes_command_get_priority(command)
 					!= HCP_IMMEDIATE)
 				return -1;
 		case HAYES_MODE_COMMAND:
 		case HAYES_MODE_DATA:
-			_hayes_command_set_status(command, HCS_QUEUED);
-			if(_hayes_command_get_status(command) != HCS_QUEUED)
+			hayes_command_set_status(command, HCS_QUEUED);
+			if(hayes_command_get_status(command) != HCS_QUEUED)
 				return -1;
 			queue = channel->queue;
 			channel->queue = g_slist_append(channel->queue,
@@ -1220,13 +1152,13 @@ static int _hayes_queue_command_full(Hayes * hayes,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, attention);
 #endif
-	if((command = _hayes_command_new(attention)) == NULL)
+	if((command = hayes_command_new(attention)) == NULL)
 		return -hayes->helper->error(hayes->helper->modem, error_get(),
 				1);
-	_hayes_command_set_callback(command, callback, hayes);
+	hayes_command_set_callback(command, callback, hayes);
 	if(_hayes_queue_command(hayes, command) != 0)
 	{
-		_hayes_command_delete(command);
+		hayes_command_delete(command);
 		return -1;
 	}
 	return 0;
@@ -1237,11 +1169,11 @@ static int _hayes_queue_command_full(Hayes * hayes,
 /* hayes_queue_flush */
 static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel)
 {
-	g_slist_foreach(channel->queue_timeout, (GFunc)_hayes_command_delete,
+	g_slist_foreach(channel->queue_timeout, (GFunc)hayes_command_delete,
 			NULL);
 	g_slist_free(channel->queue_timeout);
 	channel->queue_timeout = NULL;
-	g_slist_foreach(channel->queue, (GFunc)_hayes_command_delete, NULL);
+	g_slist_foreach(channel->queue, (GFunc)hayes_command_delete, NULL);
 	g_slist_free(channel->queue);
 	channel->queue = NULL;
 	free(channel->rd_buf);
@@ -1282,7 +1214,7 @@ static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel)
 	if(channel->queue == NULL) /* nothing to send */
 		return 0;
 	command = channel->queue->data; /* XXX assumes it's valid */
-	_hayes_command_delete(command);
+	hayes_command_delete(command);
 	channel->queue = g_slist_remove(channel->queue, command);
 	return 0;
 }
@@ -1308,11 +1240,11 @@ static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel)
 #else
 		return 0; /* XXX keep commands in the queue in DATA mode */
 #endif
-	_hayes_command_set_status(command, HCS_ACTIVE);
-	if(_hayes_command_get_status(command) != HCS_ACTIVE)
+	hayes_command_set_status(command, HCS_ACTIVE);
+	if(hayes_command_get_status(command) != HCS_ACTIVE)
 		/* no longer push the command */
 		return 0;
-	attention = _hayes_command_get_attention(command);
+	attention = hayes_command_get_attention(command);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() pushing \"%s\"\n", __func__, attention);
 #endif
@@ -1330,7 +1262,7 @@ static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel)
 	if(channel->timeout != 0)
 		g_source_remove(channel->timeout);
 	channel->timeout = 0;
-	if((timeout = _hayes_command_get_timeout(command)) != 0)
+	if((timeout = hayes_command_get_timeout(command)) != 0)
 		channel->timeout = g_timeout_add(timeout, _on_timeout, channel);
 	return 0;
 }
@@ -1411,19 +1343,19 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 		attention = p;
 	}
 	/* XXX using _hayes_queue_command_full() was more elegant */
-	command = _hayes_command_new(attention);
+	command = hayes_command_new(attention);
 	free(p);
 	if(command == NULL)
 		return -1;
-	_hayes_command_set_callback(command,
+	hayes_command_set_callback(command,
 			_hayes_request_handlers[i].callback, channel);
 	if(_hayes_queue_command(hayes, channel, command) != 0)
 	{
-		_hayes_command_delete(command);
+		hayes_command_delete(command);
 		return -1;
 	}
 	if(data != NULL)
-		_hayes_command_set_data(command, data);
+		hayes_command_set_data(command, data);
 	return 0;
 }
 
@@ -1906,183 +1838,6 @@ static void _hayes_reset(Hayes * hayes)
 }
 
 
-/* commands */
-/* hayes_command_new */
-static HayesCommand * _hayes_command_new(char const * attention)
-{
-	HayesCommand * command;
-
-	if((command = object_new(sizeof(*command))) == NULL)
-		return NULL;
-	command->priority = HCP_NORMAL;
-	command->status = HCS_PENDING;
-	command->attention = string_new(attention);
-	command->timeout = 30000;
-	command->callback = NULL;
-	command->priv = NULL;
-	command->answer = NULL;
-	command->data = NULL;
-	if(command->attention == NULL)
-	{
-		_hayes_command_delete(command);
-		return NULL;
-	}
-	return command;
-}
-
-
-/* hayes_command_delete */
-static void _hayes_command_delete(HayesCommand * command)
-{
-	string_delete(command->attention);
-	string_delete(command->answer);
-	object_delete(command);
-}
-
-
-/* hayes_command_get_answer */
-static char const * _hayes_command_get_answer(HayesCommand * command)
-{
-	return command->answer;
-}
-
-
-/* hayes_command_get_attention */
-static char const * _hayes_command_get_attention(HayesCommand * command)
-{
-	return command->attention;
-}
-
-
-/* hayes_command_get_data */
-static void * _hayes_command_get_data(HayesCommand * command)
-{
-	return command->data;
-}
-
-
-#if 0 /* XXX no longer being used */
-/* hayes_command_get_line */
-static char * _hayes_command_get_line(HayesCommand * command,
-		char const * prefix)
-{
-	/* FIXME also return the other lines matching */
-	char * ret;
-	char const * answer = command->answer;
-	size_t len;
-	char * p;
-
-	if(prefix == NULL)
-		return NULL;
-	len = strlen(prefix);
-	while(answer != NULL)
-		if(strncmp(answer, prefix, len) == 0 && strncmp(&answer[len],
-					": ", 2) == 0)
-		{
-			if((ret = string_new(&answer[len + 2])) != NULL
-					&& (p = strchr(ret, '\n')) != NULL)
-				*p = '\0';
-			return ret;
-		}
-		else if((answer = strchr(answer, '\n')) != NULL)
-			answer++;
-	return NULL;
-}
-#endif
-
-
-/* hayes_command_get_priority */
-static HayesCommandPriority _hayes_command_get_priority(HayesCommand * command)
-{
-	return command->priority;
-}
-
-
-/* hayes_command_get_status */
-static HayesCommandStatus _hayes_command_get_status(HayesCommand * command)
-{
-	return command->status;
-}
-
-
-/* hayes_command_get_timeout */
-static unsigned int _hayes_command_get_timeout(HayesCommand * command)
-{
-	return command->timeout;
-}
-
-
-/* hayes_command_set_callback */
-static void _hayes_command_set_callback(HayesCommand * command,
-		HayesCommandCallback callback, void * priv)
-{
-	command->callback = callback;
-	command->priv = priv;
-}
-
-
-/* hayes_command_set_id */
-static void _hayes_command_set_data(HayesCommand * command, void * data)
-{
-	command->data = data;
-}
-
-
-/* hayes_command_set_priority */
-static void _hayes_command_set_priority(HayesCommand * command,
-		HayesCommandPriority priority)
-{
-	command->priority = priority;
-}
-
-
-/* hayes_command_set_status */
-static void _hayes_command_set_status(HayesCommand * command,
-		HayesCommandStatus status)
-{
-	command->status = status;
-	_hayes_command_callback(command);
-}
-
-
-/* hayes_command_set_timeout */
-static void _hayes_command_set_timeout(HayesCommand * command,
-		unsigned int timeout)
-{
-	command->timeout = timeout;
-}
-
-
-/* hayes_command_answer_append */
-static int _hayes_command_answer_append(HayesCommand * command,
-		char const * answer)
-{
-	char * p;
-
-	if(answer == NULL)
-		return 0;
-	if(command->answer == NULL)
-		p = string_new(answer);
-	else
-		p = string_new_append(command->answer, "\n", answer, NULL);
-	if(p == NULL)
-		return -1;
-	free(command->answer);
-	command->answer = p;
-	return 0;
-}
-
-
-/* hayes_command_callback */
-static HayesCommandStatus _hayes_command_callback(HayesCommand * command)
-{
-	if(command->callback != NULL)
-		command->status = command->callback(command, command->status,
-				command->priv);
-	return command->status;
-}
-
-
 /* callbacks */
 /* on_queue_timeout */
 static gboolean _on_queue_timeout(gpointer data)
@@ -2295,18 +2050,18 @@ static gboolean _reset_settle(gpointer data)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if((command = _hayes_command_new("ATZE0V1")) == NULL)
+	if((command = hayes_command_new("ATZE0V1")) == NULL)
 	{
 		hayes->helper->error(hayes->helper->modem, error_get(), 1);
 		return FALSE;
 	}
-	_hayes_command_set_callback(command, _on_reset_callback, channel);
-	_hayes_command_set_priority(command, HCP_IMMEDIATE);
-	_hayes_command_set_timeout(command, 500);
+	hayes_command_set_callback(command, _on_reset_callback, channel);
+	hayes_command_set_priority(command, HCP_IMMEDIATE);
+	hayes_command_set_timeout(command, 500);
 	if(_hayes_queue_command(hayes, channel, command) != 0)
 	{
 		hayes->helper->error(hayes->helper->modem, error_get(), 1);
-		_hayes_command_delete(command);
+		hayes_command_delete(command);
 	}
 	return FALSE;
 }
@@ -2319,7 +2074,7 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%s (%u))\n", __func__,
-			_hayes_command_status[status], status);
+			hayes_command_status[status], status);
 #endif
 	status = _on_request_generic(command, status, hayes);
 	switch(status)
@@ -2364,7 +2119,7 @@ static gboolean _on_timeout(gpointer data)
 	channel->timeout = 0;
 	if(channel->queue == NULL || (command = channel->queue->data) == NULL)
 		return FALSE;
-	_hayes_command_set_status(command, HCS_TIMEOUT);
+	hayes_command_set_status(command, HCS_TIMEOUT);
 	_hayes_queue_pop(hayes, channel);
 	_hayes_queue_push(hayes, channel);
 	return FALSE;
@@ -2808,7 +2563,7 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 
 	if(status != HCS_ACTIVE)
 		return status;
-	if((answer = _hayes_command_get_answer(command)) == NULL)
+	if((answer = hayes_command_get_answer(command)) == NULL)
 		return status;
 	/* look for the last line */
 	while((p = strchr(answer, '\n')) != NULL)
@@ -2829,10 +2584,10 @@ static HayesCommandStatus _on_request_message(HayesCommand * command,
 
 	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
 			|| status == HCS_ERROR || status == HCS_TIMEOUT)
-		if((data = _hayes_command_get_data(command)) != NULL)
+		if((data = hayes_command_get_data(command)) != NULL)
 		{
 			free(data);
-			_hayes_command_set_data(command, NULL);
+			hayes_command_set_data(command, NULL);
 		}
 	return status;
 }
@@ -2861,10 +2616,10 @@ static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 
 	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
 			|| status == HCS_ERROR || status == HCS_TIMEOUT)
-		if((data = _hayes_command_get_data(command)) != NULL)
+		if((data = hayes_command_get_data(command)) != NULL)
 		{
 			free(data);
-			_hayes_command_set_data(command, NULL);
+			hayes_command_set_data(command, NULL);
 		}
 	return status;
 }
@@ -3030,7 +2785,7 @@ static void _on_code_call_error(HayesChannel * channel, char const * answer)
 		? channel->queue->data : NULL;
 
 	if(command != NULL)
-		_hayes_command_set_status(command, HCS_ERROR);
+		hayes_command_set_status(command, HCS_ERROR);
 	_hayes_request_type(hayes, channel, HAYES_REQUEST_PHONE_ACTIVE);
 }
 
@@ -3224,7 +2979,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 	ModemEvent * event;
 
 	if(command != NULL)
-		_hayes_command_set_status(command, HCS_ERROR);
+		hayes_command_set_status(command, HCS_ERROR);
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	switch(u)
@@ -3244,12 +2999,11 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			/* repeat the command */
 			if(command == NULL)
 				break;
-			if((p = _hayes_command_new(command->attention)) == NULL)
+			if((p = hayes_command_new_copy(command)) == NULL)
 				break;
-			_hayes_command_set_callback(p, command->callback,
-					command->priv);
-			_hayes_command_set_data(p, command->data);
-			_hayes_command_set_data(command, NULL);
+			hayes_command_set_data(p,
+					hayes_command_get_data(command));
+			hayes_command_set_data(command, NULL);
 			channel->queue_timeout = g_slist_append(
 					channel->queue_timeout, p);
 			if(hayes->source == 0)
@@ -3303,7 +3057,7 @@ static void _on_code_cmgl(HayesChannel * channel, char const * answer)
 		return;
 	request.type = MODEM_REQUEST_MESSAGE;
 	request.message.id = id;
-	if(command != NULL && (data = _hayes_command_get_data(command)) != NULL)
+	if(command != NULL && (data = hayes_command_get_data(command)) != NULL)
 	{
 		folder = data->folder;
 		status = data->status;
@@ -3374,7 +3128,7 @@ static void _on_code_cmgr(HayesChannel * channel, char const * answer)
 	if(event->message.length == 0) /* XXX assumes this is text mode */
 	{
 		/* FIXME guarantee this would not happen */
-		if(command == NULL || (data = _hayes_command_get_data(command))
+		if(command == NULL || (data = hayes_command_get_data(command))
 				== NULL)
 			return;
 		event->message.id = data->id;
@@ -3391,7 +3145,7 @@ static void _on_code_cmgr(HayesChannel * channel, char const * answer)
 					&event->message.length)) == NULL)
 		return;
 	/* FIXME guarantee this would not happen */
-	if(command == NULL || (data = _hayes_command_get_data(command)) == NULL)
+	if(command == NULL || (data = hayes_command_get_data(command)) == NULL)
 		return;
 	event->message.id = data->id;
 	event->message.folder = data->folder;
@@ -3656,7 +3410,7 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 	HayesCommand * p;
 
 	if(command != NULL)
-		_hayes_command_set_status(command, HCS_ERROR);
+		hayes_command_set_status(command, HCS_ERROR);
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	switch(u)
@@ -3677,12 +3431,11 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			/* FIXME duplicated from _on_code_cme_error() */
 			if(command == NULL)
 				break;
-			if((p = _hayes_command_new(command->attention)) == NULL)
+			if((p = hayes_command_new_copy(command)) == NULL)
 				break;
-			_hayes_command_set_callback(p, command->callback,
-					command->priv);
-			_hayes_command_set_data(p, command->data);
-			_hayes_command_set_data(command, NULL);
+			hayes_command_set_data(p,
+					hayes_command_get_data(command));
+			hayes_command_set_data(command, NULL);
 			channel->queue_timeout = g_slist_append(
 					channel->queue_timeout, p);
 			if(hayes->source == 0)
@@ -3730,7 +3483,7 @@ static void _on_code_connect(HayesChannel * channel, char const * answer)
 	GError * error = NULL;
 
 	if(command != NULL) /* XXX else report error? */
-		_hayes_command_set_status(command, HCS_SUCCESS);
+		hayes_command_set_status(command, HCS_SUCCESS);
 	_hayes_set_mode(hayes, channel, HAYES_MODE_DATA);
 	if(channel->gprs_username != NULL)
 		argv[5] = channel->gprs_username;
@@ -4112,7 +3865,7 @@ static void _on_code_ext_error(HayesChannel * channel, char const * answer)
 	unsigned int u;
 
 	if(command != NULL)
-		_hayes_command_set_status(command, HCS_ERROR);
+		hayes_command_set_status(command, HCS_ERROR);
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	switch(u)

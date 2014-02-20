@@ -47,8 +47,8 @@ modems.o: modems.c
 plugins.o: plugins.c
 	$(CC) $(plugins_CFLAGS) -c plugins.c
 
-ussd.o: ussd.c ../src/modems/hayes.c
-	$(CC) $(ussd_CFLAGS) -c ussd.c
+ussd.o: ussd.c ../src/modems/hayes.c ../src/modems/hayes/command.c ../src/modems/hayes/command.h
+	$(CC) -I ../src/modems $(ussd_CFLAGS) -c ussd.c
 
 clean:
 	$(RM) -- $(modems_OBJS) $(plugins_OBJS) $(ussd_OBJS) $(tests.log_OBJS)

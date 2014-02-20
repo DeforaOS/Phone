@@ -15,6 +15,7 @@
 
 
 
+#include "../src/modems/hayes/command.c"
 #include "../src/modems/hayes.c"
 
 
