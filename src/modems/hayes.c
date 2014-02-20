@@ -46,12 +46,12 @@
 /* Hayes */
 /* private */
 /* types */
-typedef enum _HayesMode
+typedef enum _HayesChannelMode
 {
 	HAYES_MODE_INIT = 0,
 	HAYES_MODE_COMMAND,
 	HAYES_MODE_DATA
-} HayesMode;
+} HayesChannelMode;
 
 typedef struct _HayesChannel
 {
@@ -77,7 +77,7 @@ typedef struct _HayesChannel
 	FILE * fp;
 
 	/* queue */
-	HayesMode mode;
+	HayesChannelMode mode;
 	GSList * queue;
 	GSList * queue_timeout;
 
@@ -201,7 +201,7 @@ static int _hayes_trigger(Hayes * hayes, ModemEventType event);
 
 /* accessors */
 static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
-		HayesMode mode);
+		HayesChannelMode mode);
 
 /* useful */
 static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
@@ -758,7 +758,7 @@ static int _hayes_trigger(Hayes * hayes, ModemEventType event)
 /* accessors */
 /* hayes_set_mode */
 static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
-		HayesMode mode)
+		HayesChannelMode mode)
 {
 	ModemEvent * event;
 
