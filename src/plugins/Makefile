@@ -182,7 +182,7 @@ notify.o: notify.c ../../include/Phone.h
 openmoko.o: openmoko.c ../../include/Phone.h
 	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
-oss.o: oss.c ../../include/Phone.h
+oss.o: oss.c ../../include/Phone.h ../../config.h
 	$(CC) $(oss_CFLAGS) -c oss.c
 
 panel.o: panel.c ../../include/Phone.h
