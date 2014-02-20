@@ -109,7 +109,7 @@ typedef struct _ModemPlugin
 } Hayes;
 
 #ifdef DEBUG
-static const char * hayes_command_status[HCS_COUNT] =
+static const char * _hayes_command_status[HCS_COUNT] =
 {
 	"HCS_PENDING", "HCS_QUEUED", "HCS_ACTIVE", "HCS_TIMEOUT", "HCS_ERROR",
 	"HCS_SUCCESS"
@@ -2043,7 +2043,7 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%s (%u))\n", __func__,
-			hayes_command_status[status], status);
+			_hayes_command_status[status], status);
 #endif
 	status = _on_request_generic(command, status, hayes);
 	switch(status)
