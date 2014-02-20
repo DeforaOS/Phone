@@ -27,7 +27,7 @@ debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 libSystem`
 debug.so: $(debug_OBJS)
 	$(CCSHARED) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
 
-hayes_OBJS = hayes/command.o hayes.o
+hayes_OBJS = hayes/command.o hayes/quirks.o hayes.o
 hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem`
 hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
@@ -61,7 +61,10 @@ debug.o: debug.c
 hayes/command.o: hayes/command.c hayes/command.h
 	$(CC) $(hayes_CFLAGS) -o hayes/command.o -c hayes/command.c
 
-hayes.o: hayes.c hayes/command.h hayes.h
+hayes/quirks.o: hayes/quirks.c hayes/quirks.h
+	$(CC) $(hayes_CFLAGS) -o hayes/quirks.o -c hayes/quirks.c
+
+hayes.o: hayes.c hayes/command.h hayes/quirks.h hayes.h
 	$(CC) $(hayes_CFLAGS) -c hayes.c
 
 purple.o: purple.c ../../config.h

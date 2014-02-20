@@ -36,6 +36,7 @@
 #include <System.h>
 #include <Phone/modem.h>
 #include "hayes/command.h"
+#include "hayes/quirks.h"
 #include "hayes.h"
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -127,15 +128,6 @@ typedef struct _HayesRequestMessageData
 	ModemMessageFolder folder;
 	ModemMessageStatus status;
 } HayesRequestMessageData;
-
-typedef enum _HayesQuirk
-{
-	HAYES_QUIRK_BATTERY_70			= 0x1,
-	HAYES_QUIRK_CPIN_QUOTES			= 0x2,
-	HAYES_QUIRK_CONNECTED_LINE_DISABLED	= 0x4,
-	HAYES_QUIRK_WANT_SMSC_IN_PDU		= 0x8,
-	HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR	= 0x10
-} HayesQuirk;
 
 typedef struct _HayesRequestHandler
 {
@@ -390,29 +382,6 @@ static struct
 	{ 0x7d, 241	}, /* } */
 	{ 0x7e, 252	}, /* ~ */
 	{ 0x7f, 224	}
-};
-
-static const struct
-{
-	char const * model;
-	unsigned int quirks;
-} _hayes_quirks[] =
-{
-	{ "\"Neo1973 Embedded GSM Modem\"",
-		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
-			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
-	{ "\"Neo1973 GTA01/GTA02 Embedded GSM Modem\"",
-		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
-			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
-	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
-		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_WANT_SMSC_IN_PDU
-			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
-			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
-	{ "Nokia N900",
-		HAYES_QUIRK_CPIN_QUOTES | HAYES_QUIRK_BATTERY_70	},
-	{ NULL,	0							}
 };
 
 static HayesRequestHandler _hayes_request_handlers[] =
@@ -2908,10 +2877,10 @@ static void _on_code_cgmm(HayesChannel * channel, char const * answer)
 	channel->model_name = p;
 	event->model.name = p;
 	/* determine known quirks */
-	for(i = 0; _hayes_quirks[i].model != NULL; i++)
-		if(strcmp(_hayes_quirks[i].model, p) == 0)
+	for(i = 0; hayes_quirks[i].model != NULL; i++)
+		if(strcmp(hayes_quirks[i].model, p) == 0)
 		{
-			channel->quirks = _hayes_quirks[i].quirks;
+			channel->quirks = hayes_quirks[i].quirks;
 #ifdef DEBUG
 			fprintf(stderr, "DEBUG: %s() quirks=%u\n", __func__,
 					channel->quirks);
