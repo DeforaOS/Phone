@@ -17,7 +17,6 @@ static char const _license[] =
 /* TODO:
  * - in the dialer replace "clear" by "delete last character"
  * - keep track of missed calls
- * - improve the number detection algorithm
  * - let plug-ins keep track of the signal level */
 
 
@@ -2448,6 +2447,7 @@ static void _plugins_on_ok(gpointer data)
 
 /* phone_show_read */
 static void _show_read_buffer(Phone * phone, char const * content);
+static size_t _show_read_buffer_number(char const * content, size_t len);
 static void _show_read_window(Phone * phone);
 
 void phone_show_read(Phone * phone, gboolean show, ...)
@@ -2508,8 +2508,7 @@ static void _show_read_buffer(Phone * phone, char const * content)
 	gtk_text_buffer_get_start_iter(tbuf, &iter);
 	for(i = 0; i < len; i += j)
 	{
-		for(j = 0; i + j < len
-				&& isdigit((unsigned char)content[i + j]); j++);
+		j = _show_read_buffer_number(&content[i], len - i);
 		/* XXX ignore errors, memory leak */
 		if(j >= 3 && (p = malloc(j + 1)) != NULL)
 		{
@@ -2523,11 +2522,20 @@ static void _show_read_buffer(Phone * phone, char const * content)
 					&content[i], j, tag, NULL);
 			continue;
 		}
-		for(j = 1; i + j < len
-				&& !isdigit((unsigned char)content[i + j]);
-				j++);
+		for(j = 1; i + j < len && _show_read_buffer_number(
+					&content[i + j], 1) == 0; j++);
 		gtk_text_buffer_insert(tbuf, &iter, &content[i], j);
 	}
+}
+
+static size_t _show_read_buffer_number(char const * content, size_t len)
+{
+	size_t ret = 0;
+
+	if(len >= 1 && content[0] == '+')
+		ret++;
+	for(; ret < len && isdigit((unsigned char)content[ret]); ret++);
+	return ret;
 }
 
 static void _show_read_window(Phone * phone)
