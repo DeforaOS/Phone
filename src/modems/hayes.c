@@ -3248,17 +3248,15 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 	char * r;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s(%lu, %lu)\n", __func__, i, hdr);
 #endif
 	if((p = malloc(len - i + 1)) == NULL)
 		return NULL;
 	if(hdr != 0)
 	{
 		/* FIXME actually parse the header */
-		u = 2 + (hdr * 2);
-		if(u % 7 != 0) /* fill bits */
-			u += 7 - (u % 7);
-		i += u;
+		i += 2 + (hdr * 2);
+		shift = (hdr + 1) % 7;
 	}
 	p[0] = '\0';
 	for(j = 0, rest = 0; i + 1 < len; i+=2)
@@ -3267,10 +3265,12 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 		if(sscanf(q, "%02X", &u) != 1)
 			break; /* FIXME report an error instead? */
 		byte = u;
-		p[j] = (byte << (shift + 1) >> (shift + 1) << shift) & 0x7f;
+		p[j] = (((byte << (shift + 1)) >> (shift + 1)) << shift) & 0x7f;
 		p[j] |= rest;
 		p[j] = _hayes_convert_char_to_iso(p[j]);
-		j++;
+		/* ignore the first character if there is a header */
+		if(hdr == 0 || j != 0)
+			j++;
 		rest = (byte >> (7 - shift)) & 0x7f;
 		if(++shift == 7)
 		{
