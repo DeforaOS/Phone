@@ -40,8 +40,8 @@ smscrypt: $(smscrypt_OBJS)
 engineering.o: engineering.c ../include/Phone.h ../src/plugins/engineering.c
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
-pdu.o: pdu.c ../include/Phone.h ../src/modem.c
-	$(CC) $(pdu_CFLAGS) -c pdu.c
+pdu.o: pdu.c ../include/Phone.h ../src/modems/hayes.c
+	$(CC) -I../src/modems $(pdu_CFLAGS) -c pdu.c
 
 smscrypt.o: smscrypt.c ../include/Phone.h ../src/plugins/smscrypt.c
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c

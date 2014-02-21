@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include "../src/modems/hayes/command.c"
+#include "../src/modems/hayes/quirks.c"
 #include "../src/modems/hayes.c"
 
 
