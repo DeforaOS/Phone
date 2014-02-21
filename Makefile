@@ -104,6 +104,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/project.conf \
 		$(PACKAGE)-$(VERSION)/src/modems/debug.c \
 		$(PACKAGE)-$(VERSION)/src/modems/hayes/command.c \
+		$(PACKAGE)-$(VERSION)/src/modems/hayes/quirks.c \
 		$(PACKAGE)-$(VERSION)/src/modems/hayes.c \
 		$(PACKAGE)-$(VERSION)/src/modems/purple.c \
 		$(PACKAGE)-$(VERSION)/src/modems/sofia.c \
