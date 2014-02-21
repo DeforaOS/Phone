@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #$Id$
-#Copyright (c) 2013 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2013-2014 Pierre Pronchery <khorben@defora.org>
 #This file is part of DeforaOS Desktop Phone
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -98,6 +98,7 @@ target="$1"
 $DATE > "$target"
 FAILED=
 echo "Performing tests:" 1>&2
+_test "pdu"
 _test "ussd"
 echo "Expected failures:" 1>&2
 _fail "modems"
