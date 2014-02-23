@@ -50,15 +50,10 @@ void on_phone_contacts_write(gpointer data);
 
 /* dialer */
 void on_phone_dialer_call(gpointer data);
+void on_phone_dialer_changed(GtkWidget * widget, gpointer data);
 void on_phone_dialer_clear(gpointer data);
 void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);
-#if GTK_CHECK_VERSION(2, 18, 0)
-void on_phone_dialer_text_deleted(GtkEntryBuffer * buffer, guint position,
-		guint n_chars, gpointer data);
-void on_phone_dialer_text_inserted(GtkEntryBuffer * buffer, guint position,
-		gchar * chars, guint n_chars, gpointer data);
-#endif
 
 /* logs */
 void on_phone_logs_activated(gpointer data);

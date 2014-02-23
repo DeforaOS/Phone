@@ -1953,9 +1953,6 @@ static void _show_dialer_window(Phone * phone)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
-#if GTK_CHECK_VERSION(2, 18, 0)
-	GtkEntryBuffer * buf;
-#endif
 
 	phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1972,18 +1969,13 @@ static void _show_dialer_window(Phone * phone)
 	gtk_widget_modify_font(phone->di_entry, phone->bold);
 	g_signal_connect_swapped(G_OBJECT(phone->di_entry), "activate",
 			G_CALLBACK(on_phone_dialer_call), phone);
+	g_signal_connect(phone->di_entry, "changed", G_CALLBACK(
+				on_phone_dialer_changed), phone);
 #if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->di_entry),
 			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_CLEAR);
 	g_signal_connect_swapped(phone->di_entry, "icon-press", G_CALLBACK(
 				on_phone_dialer_clear), phone);
-# if GTK_CHECK_VERSION(2, 18, 0)
-	buf = gtk_entry_get_buffer(GTK_ENTRY(phone->di_entry));
-	g_signal_connect(buf, "deleted-text", G_CALLBACK(
-				on_phone_dialer_text_deleted), phone);
-	g_signal_connect(buf, "inserted-text", G_CALLBACK(
-				on_phone_dialer_text_inserted), phone);
-# endif
 #endif
 	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
 	widget = gtk_button_new();
