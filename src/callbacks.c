@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -247,6 +247,34 @@ void on_phone_dialer_hangup(gpointer data)
 	phone_event_type(phone, PHONE_EVENT_TYPE_KEY_TONE);
 	phone_dialer_hangup(phone);
 }
+
+
+#if GTK_CHECK_VERSION(2, 18, 0)
+/* on_phone_dialer_text_deleted */
+void on_phone_dialer_text_deleted(GtkEntryBuffer * buffer, guint position,
+		guint n_chars, gpointer data)
+{
+	Phone * phone = data;
+
+	on_phone_dialer_text_inserted(buffer, 0, NULL, 0, phone);
+}
+
+
+/* on_phone_dialer_text_inserted */
+void on_phone_dialer_text_inserted(GtkEntryBuffer * buffer, guint position,
+		gchar * chars, guint n_chars, gpointer data)
+{
+	Phone * phone = data;
+	char const * text;
+
+	text = gtk_entry_buffer_get_text(buffer);
+	if(strcmp(text, "*#06#") == 0)
+	{
+		phone_event_trigger(phone, MODEM_EVENT_TYPE_MODEL);
+		phone_dialer_clear(phone);
+	}
+}
+#endif
 
 
 /* logs */

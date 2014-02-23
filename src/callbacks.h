@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,12 @@ void on_phone_dialer_call(gpointer data);
 void on_phone_dialer_clear(gpointer data);
 void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);
+#if GTK_CHECK_VERSION(2, 18, 0)
+void on_phone_dialer_text_deleted(GtkEntryBuffer * buffer, guint position,
+		guint n_chars, gpointer data);
+void on_phone_dialer_text_inserted(GtkEntryBuffer * buffer, guint position,
+		gchar * chars, guint n_chars, gpointer data);
+#endif
 
 /* logs */
 void on_phone_logs_activated(gpointer data);

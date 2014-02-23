@@ -1015,6 +1015,13 @@ static int _event_type_starting(Phone * phone)
 }
 
 
+/* phone_event_trigger */
+int phone_event_trigger(Phone * phone, ModemEventType type)
+{
+	return _phone_trigger(phone, type);
+}
+
+
 /* phone_event_type */
 int phone_event_type(Phone * phone, PhoneEventType type, ...)
 {
@@ -1936,6 +1943,9 @@ static void _show_dialer_window(Phone * phone)
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
+#if GTK_CHECK_VERSION(2, 18, 0)
+	GtkEntryBuffer * buf;
+#endif
 
 	phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if GTK_CHECK_VERSION(2, 6, 0)
@@ -1955,8 +1965,15 @@ static void _show_dialer_window(Phone * phone)
 #if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->di_entry),
 			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_CLEAR);
-	g_signal_connect_swapped(G_OBJECT(phone->di_entry), "icon-press",
-			G_CALLBACK(on_phone_dialer_clear), phone);
+	g_signal_connect_swapped(phone->di_entry, "icon-press", G_CALLBACK(
+				on_phone_dialer_clear), phone);
+# if GTK_CHECK_VERSION(2, 18, 0)
+	buf = gtk_entry_get_buffer(GTK_ENTRY(phone->di_entry));
+	g_signal_connect(buf, "deleted-text", G_CALLBACK(
+				on_phone_dialer_text_deleted), phone);
+	g_signal_connect(buf, "inserted-text", G_CALLBACK(
+				on_phone_dialer_text_inserted), phone);
+# endif
 #endif
 	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
 	widget = gtk_button_new();
@@ -4141,6 +4158,10 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 			else
 				_phone_info(phone, phone->wr_window,
 						_("Message sent"), NULL);
+			break;
+		case MODEM_EVENT_TYPE_MODEL:
+			if(event->model.serial != NULL)
+				phone_info(phone, event->model.serial);
 			break;
 		case MODEM_EVENT_TYPE_NOTIFICATION:
 			phone_info(phone, event->notification.content);

@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2010-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,6 +73,8 @@ void phone_dialer_hangup(Phone * phone);
 /* events */
 int phone_event(Phone * phone, PhoneEvent * event);
 int phone_event_type(Phone * phone, PhoneEventType type, ...);
+
+int phone_event_trigger(Phone * phone, ModemEventType type);
 
 /* interface */
 void phone_show_about(Phone * phone, gboolean show);

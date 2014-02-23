@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* FIXME:
- * - implement *#06# (obtain IMEI)
  * - implement priorities again
  * - parse messages from within +CMGL already
  * - test with a SIM card without a PIN code
@@ -93,6 +92,7 @@ typedef struct _HayesChannel
 	char * model_name;
 	char * model_vendor;
 	char * model_version;
+	char * model_serial;
 	char * registration_media;
 	char * registration_operator;
 } HayesChannel;
@@ -179,6 +179,7 @@ enum
 	HAYES_REQUEST_REGISTRATION_DISABLED,
 	HAYES_REQUEST_REGISTRATION_UNSOLLICITED_DISABLE,
 	HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,
+	HAYES_REQUEST_SERIAL_NUMBER,
 	HAYES_REQUEST_SIM_PIN_VALID,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,
@@ -297,6 +298,7 @@ static void _on_code_cgatt(HayesChannel * channel, char const * answer);
 static void _on_code_cgmi(HayesChannel * channel, char const * answer);
 static void _on_code_cgmm(HayesChannel * channel, char const * answer);
 static void _on_code_cgmr(HayesChannel * channel, char const * answer);
+static void _on_code_cgsn(HayesChannel * channel, char const * answer);
 static void _on_code_clip(HayesChannel * channel, char const * answer);
 static void _on_code_cme_error(HayesChannel * channel, char const * answer);
 static void _on_code_cmgl(HayesChannel * channel, char const * answer);
@@ -452,6 +454,8 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,"AT+CREG=2",
 		_on_request_registration },
+	{ HAYES_REQUEST_SERIAL_NUMBER,			"AT+CGSN",
+		_on_request_model },
 	{ HAYES_REQUEST_SIM_PIN_VALID,			"AT+CPIN?",
 		_on_request_sim_pin_valid },
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,"AT+CUSD=2",
@@ -514,6 +518,7 @@ static HayesCodeHandler _hayes_code_handlers[] =
 	{ "+CGMI",	_on_code_cgmi		},
 	{ "+CGMM",	_on_code_cgmm		},
 	{ "+CGMR",	_on_code_cgmr		},
+	{ "+CGSN",	_on_code_cgsn		},
 	{ "+CLIP",	_on_code_clip		},
 	{ "+CME ERROR",	_on_code_cme_error	},
 	{ "+CMGL",	_on_code_cmgl		},
@@ -668,6 +673,7 @@ static void _stop_channel(Hayes * hayes, HayesChannel * channel)
 	_stop_string(&channel->model_name);
 	_stop_string(&channel->model_vendor);
 	_stop_string(&channel->model_version);
+	_stop_string(&channel->model_serial);
 	_stop_string(&channel->registration_media);
 	_stop_string(&channel->registration_operator);
 	/* reset events */
@@ -733,6 +739,8 @@ static int _hayes_trigger(Hayes * hayes, ModemEventType event)
 					HAYES_REQUEST_MODEL);
 			ret |= _hayes_request_type(hayes, channel,
 					HAYES_REQUEST_VERSION);
+			ret |= _hayes_request_type(hayes, channel,
+					HAYES_REQUEST_SERIAL_NUMBER);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			e = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
@@ -1034,7 +1042,7 @@ static int _hayes_parse_trigger(Hayes * hayes, HayesChannel * channel,
 		char const * answer, HayesCommand * command)
 {
 	size_t i;
-	size_t count = sizeof(_hayes_code_handlers)
+	const size_t count = sizeof(_hayes_code_handlers)
 		/ sizeof(*_hayes_code_handlers);
 	size_t len;
 	HayesCodeHandler * hch;
@@ -1281,7 +1289,7 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 	HayesCommand * command;
 	unsigned int type = request->type;
 	size_t i;
-	size_t count = sizeof(_hayes_request_handlers)
+	const size_t count = sizeof(_hayes_request_handlers)
 		/ sizeof(*_hayes_request_handlers);
 	char const * attention;
 	char * p = NULL;
@@ -1303,7 +1311,8 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 		return -hayes->helper->error(hayes->helper->modem,
 				"Unable to handle request", 1);
 #else
-		return -1;
+		return -hayes->helper->error(NULL, "Unable to handle request",
+				1);
 #endif
 	if((attention = _hayes_request_handlers[i].attention) == NULL)
 	{
@@ -2856,8 +2865,9 @@ static void _on_code_cgmi(HayesChannel * channel, char const * answer)
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MODEL];
 	char * p;
 
-	if((p = strdup(answer)) == NULL)
-		return; /* XXX report error? */
+	if(answer[0] == '\0' || strcmp(answer, "OK") == 0
+			|| (p = strdup(answer)) == NULL) /* XXX report error? */
+		return;
 	free(channel->model_vendor);
 	channel->model_vendor = p;
 	event->model.vendor = p;
@@ -2871,8 +2881,9 @@ static void _on_code_cgmm(HayesChannel * channel, char const * answer)
 	char * p;
 	size_t i;
 
-	if((p = strdup(answer)) == NULL)
-		return; /* XXX report error? */
+	if(answer[0] == '\0' || strcmp(answer, "OK") == 0
+			|| (p = strdup(answer)) == NULL) /* XXX report error? */
+		return;
 	free(channel->model_name);
 	channel->model_name = p;
 	event->model.name = p;
@@ -2892,16 +2903,31 @@ static void _on_code_cgmm(HayesChannel * channel, char const * answer)
 
 /* on_code_cgmr */
 static void _on_code_cgmr(HayesChannel * channel, char const * answer)
-	/* FIXME the output may be multi-line */
 {
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MODEL];
 	char * p;
 
-	if((p = strdup(answer)) == NULL)
-		return; /* XXX report error? */
+	if(answer[0] == '\0' || strcmp(answer, "OK") == 0
+			|| (p = strdup(answer)) == NULL) /* XXX report error? */
+		return;
 	free(channel->model_version);
 	channel->model_version = p;
 	event->model.version = p;
+}
+
+
+/* on_code_cgsn */
+static void _on_code_cgsn(HayesChannel * channel, char const * answer)
+{
+	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MODEL];
+	char * p;
+
+	if(answer[0] == '\0' || strcmp(answer, "OK") == 0
+			|| (p = strdup(answer)) == NULL) /* XXX report error? */
+		return;
+	free(channel->model_serial);
+	channel->model_serial = p;
+	event->model.serial = p;
 }
 
 
