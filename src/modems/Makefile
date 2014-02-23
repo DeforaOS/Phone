@@ -55,7 +55,7 @@ template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 template.so: $(template_OBJS)
 	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
 
-debug.o: debug.c
+debug.o: debug.c ../../config.h
 	$(CC) $(debug_CFLAGS) -c debug.c
 
 hayes/command.o: hayes/command.c hayes/command.h
