@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <Phone/modem.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#include "../../config.h"
 
 
 /* Debug */
@@ -58,6 +59,7 @@ static void _debug_destroy(ModemPlugin * modem);
 static int _debug_start(ModemPlugin * modem, unsigned int retry);
 static int _debug_stop(ModemPlugin * modem);
 static int _debug_request(ModemPlugin * modem, ModemRequest * request);
+static int _debug_trigger(ModemPlugin * modem, ModemEventType event);
 
 /* accessors */
 static void _debug_set_status(ModemPlugin * modem, char const * status);
@@ -82,7 +84,7 @@ ModemPluginDefinition plugin =
 	_debug_start,
 	_debug_stop,
 	_debug_request,
-	NULL
+	_debug_trigger
 };
 
 
@@ -397,6 +399,29 @@ static int _debug_request(ModemPlugin * modem, ModemRequest * request)
 			break;
 	}
 	return 0;
+}
+
+
+/* debug_trigger */
+static int _debug_trigger(ModemPlugin * modem, ModemEventType event)
+{
+	Debug * debug = modem;
+	ModemEvent e;
+
+	memset(&e, 0, sizeof(e));
+	switch(event)
+	{
+		case MODEM_EVENT_TYPE_MODEL:
+			e.type = MODEM_EVENT_TYPE_MODEL;
+			e.model.vendor = "Phone";
+			e.model.name = PACKAGE;
+			e.model.version = VERSION;
+			e.model.serial = "SERIAL-NUMBER";
+			debug->helper->event(debug->helper->modem, &e);
+			return 0;
+		default:
+			return 1;
+	}
 }
 
 
