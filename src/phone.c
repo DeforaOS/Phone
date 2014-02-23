@@ -739,21 +739,23 @@ void phone_code_clear(Phone * phone)
 
 /* contacts */
 /* phone_contacts_call_selected */
-void phone_contacts_call_selected(Phone * phone)
+int phone_contacts_call_selected(Phone * phone)
 {
+	int ret;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	gchar * number;
 
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 						phone->co_view))) == NULL)
-		return;
+		return -1;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
-		return;
+		return -1;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->co_store), &iter,
 			PHONE_CONTACT_COLUMN_NUMBER, &number, -1);
-	_phone_call_number(phone, number);
+	ret = _phone_call_number(phone, number);
 	g_free(number);
+	return ret;
 }
 
 
@@ -910,12 +912,16 @@ int phone_dialer_append(Phone * phone, char character)
 
 
 /* phone_dialer_call */
-void phone_dialer_call(Phone * phone, char const * number)
+int phone_dialer_call(Phone * phone, char const * number)
 {
 	/* FIXME check if it's either a name or number */
 	if(number == NULL)
+	{
+		if(phone->di_window == NULL)
+			return -1;
 		number = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
-	_phone_call_number(phone, number);
+	}
+	return _phone_call_number(phone, number);
 }
 
 
@@ -1202,24 +1208,26 @@ void phone_logs_append(Phone * phone, PhoneCallType type, char const * number)
 
 
 /* phone_logs_call_selected */
-void phone_logs_call_selected(Phone * phone)
+int phone_logs_call_selected(Phone * phone)
 	/* XXX code duplication */
 {
+	int ret;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	gchar * number = NULL;
 
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
 						phone->lo_view))) == NULL)
-		return;
+		return -1;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
-		return;
+		return -1;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
 			PHONE_LOGS_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
-		return;
-	_phone_call_number(phone, number);
+		return -1;
+	ret = _phone_call_number(phone, number);
 	g_free(number);
+	return ret;
 }
 
 
@@ -1253,8 +1261,9 @@ void phone_logs_write_selected(Phone * phone)
 
 /* messages */
 /* phone_messages_call_selected */
-void phone_messages_call_selected(Phone * phone)
+int phone_messages_call_selected(Phone * phone)
 {
+	int ret;
 	GtkWidget * view;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
@@ -1262,16 +1271,17 @@ void phone_messages_call_selected(Phone * phone)
 
 	view = _phone_messages_get_view(phone);
 	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view))) == NULL)
-		return;
+		return -1;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
-		return;
+		return -1;
 	_phone_messages_get_iter(phone, view, &iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
 			PHONE_MESSAGE_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
-		return;
-	_phone_call_number(phone, number);
+		return -1;
+	ret = _phone_call_number(phone, number);
 	g_free(number);
+	return ret;
 }
 
 
@@ -1442,15 +1452,15 @@ void phone_messages_write(Phone * phone, char const * number, char const * text)
 
 /* read */
 /* phone_read_call */
-void phone_read_call(Phone * phone)
+int phone_read_call(Phone * phone)
 {
 	char const * number;
 
 	if(phone->re_window == NULL)
-		return;
+		return -1;
 	if((number = gtk_label_get_text(GTK_LABEL(phone->re_number))) == NULL)
-		return;
-	_phone_call_number(phone, number);
+		return -1;
+	return _phone_call_number(phone, number);
 }
 
 
@@ -3439,8 +3449,9 @@ static int _phone_call_number(Phone * phone, char const * number)
 {
 	if(number == NULL)
 		return -1;
-	modem_request_type(phone->modem, MODEM_REQUEST_CALL,
-			MODEM_CALL_TYPE_VOICE, number, 0);
+	if(modem_request_type(phone->modem, MODEM_REQUEST_CALL,
+				MODEM_CALL_TYPE_VOICE, number, 0) != 0)
+		return -1;
 	/* add a log entry */
 	phone_logs_append(phone, PHONE_CALL_TYPE_OUTGOING, number);
 	return 0;
