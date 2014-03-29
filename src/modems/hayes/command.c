@@ -19,7 +19,7 @@
 # include <string.h>
 #endif
 #include <System.h>
-#include "hayes/command.h"
+#include "command.h"
 
 
 /* HayesCommand */
