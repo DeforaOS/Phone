@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2012 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2014 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -324,7 +324,7 @@ static void _panel_set_battery_level(Panel * panel, gdouble level,
 		gboolean charging)
 {
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(panel, %lf)\n", __func__, level);
+	fprintf(stderr, "DEBUG: %s(panel, %f)\n", __func__, level);
 #endif
 	if(level < 0.0)
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN, charging);
