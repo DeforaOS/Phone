@@ -1569,7 +1569,7 @@ static void _show_about_window(Phone * phone)
 	desktop_about_dialog_set_website(phone->ab_window,
 			"http://www.defora.org/");
 	gtk_window_set_position(GTK_WINDOW(phone->ab_window),
-			GTK_WIN_POS_CENTER_ALWAYS);
+			GTK_WIN_POS_CENTER);
 	g_signal_connect(phone->ab_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
 }
