@@ -114,6 +114,8 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/modems/template.c \
 		$(PACKAGE)-$(VERSION)/src/modems/hayes.h \
 		$(PACKAGE)-$(VERSION)/src/modems/Makefile \
+		$(PACKAGE)-$(VERSION)/src/modems/hayes/command.h \
+		$(PACKAGE)-$(VERSION)/src/modems/hayes/quirks.h \
 		$(PACKAGE)-$(VERSION)/src/modems/osmocom.c \
 		$(PACKAGE)-$(VERSION)/src/modems/project.conf \
 		$(PACKAGE)-$(VERSION)/src/plugins/blacklist.c \
