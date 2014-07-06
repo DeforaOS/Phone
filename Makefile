@@ -73,7 +73,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/docbook.sh \
 		$(PACKAGE)-$(VERSION)/doc/index.xml \
 		$(PACKAGE)-$(VERSION)/doc/index.xsl \
+		$(PACKAGE)-$(VERSION)/doc/manual.css.xml \
+		$(PACKAGE)-$(VERSION)/doc/phone.css.xml \
 		$(PACKAGE)-$(VERSION)/doc/phone.xml \
+		$(PACKAGE)-$(VERSION)/doc/phonectl.css.xml \
 		$(PACKAGE)-$(VERSION)/doc/phonectl.xml \
 		$(PACKAGE)-$(VERSION)/doc/pppd-ip-down \
 		$(PACKAGE)-$(VERSION)/doc/pppd-ip-up \

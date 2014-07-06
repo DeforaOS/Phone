@@ -15,13 +15,13 @@ index.html: index.xml index.xsl phone.xml phonectl.xml
 phone.1: phone.xml
 	./docbook.sh -P "$(PREFIX)" -- "phone.1"
 
-phone.html: phone.xml
+phone.html: manual.css.xml phone.css.xml phone.xml
 	./docbook.sh -P "$(PREFIX)" -- "phone.html"
 
 phonectl.1: phonectl.xml
 	./docbook.sh -P "$(PREFIX)" -- "phonectl.1"
 
-phonectl.html: phonectl.xml
+phonectl.html: manual.css.xml phonectl.css.xml phonectl.xml
 	./docbook.sh -P "$(PREFIX)" -- "phonectl.html"
 
 clean:
