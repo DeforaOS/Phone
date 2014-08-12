@@ -2120,6 +2120,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	HayesChannel * channel = data;
 	Hayes * hayes = channel->hayes;
 	ModemPluginHelper * helper = hayes->helper;
+	const int inc = 256;
 	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
@@ -2127,11 +2128,11 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 
 	if(condition != G_IO_IN || source != channel->channel)
 		return FALSE; /* should not happen */
-	if((p = realloc(channel->rd_buf, channel->rd_buf_cnt + 256)) == NULL)
+	if((p = realloc(channel->rd_buf, channel->rd_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
 	channel->rd_buf = p;
 	status = g_io_channel_read_chars(source,
-			&channel->rd_buf[channel->rd_buf_cnt], 256, &cnt,
+			&channel->rd_buf[channel->rd_buf_cnt], inc, &cnt,
 			&error);
 	/* logging */
 	if(channel->fp != NULL && (fputs("\nMODEM: ", channel->fp) == EOF
@@ -2150,6 +2151,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
+			/* fallback */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
 			if(hayes->retry > 0)
@@ -2184,6 +2186,7 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 	Hayes * hayes = channel->hayes;
 	ModemPluginHelper * helper = hayes->helper;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CONNECTION];
+	const int inc = 256;
 	gsize cnt = 0;
 	GError * error = NULL;
 	GIOStatus status;
@@ -2191,11 +2194,11 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 
 	if(condition != G_IO_IN || source != channel->rd_ppp_channel)
 		return FALSE; /* should not happen */
-	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + 256)) == NULL)
+	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + inc)) == NULL)
 		return TRUE; /* XXX retries immediately (delay?) */
 	channel->wr_buf = p;
 	status = g_io_channel_read_chars(source,
-			&channel->wr_buf[channel->wr_buf_cnt], 256, &cnt,
+			&channel->wr_buf[channel->wr_buf_cnt], inc, &cnt,
 			&error);
 	channel->wr_buf_cnt += cnt;
 	event->connection.out += cnt;
@@ -2206,6 +2209,7 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
+			/* fallback */
 		case G_IO_STATUS_EOF:
 		default:
 			channel->rd_ppp_source = 0;
@@ -2265,6 +2269,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
+			/* fallback */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
 			channel->wr_source = 0;
@@ -2316,6 +2321,7 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
+			/* fallback */
 		case G_IO_STATUS_EOF:
 		default:
 			channel->wr_ppp_source = 0;
