@@ -39,31 +39,65 @@ static char const * _hayes_helper_config_get(Modem * modem,
 		char const * variable);
 static int _hayes_helper_config_set(Modem * modem, char const * variable,
 		char const * value);
+static int _hayes_helper_error(Modem * modem, char const * message, int ret);
+static void _hayes_helper_event(Modem * modem, ModemEvent * event);
+
+
+/* variables */
+static GMainLoop * _loop;
 
 
 /* functions */
 /* hayes */
+static gboolean _hayes_on_start(gpointer data);
+static gboolean _hayes_on_stop(gpointer data);
+
 static int _hayes(void)
 {
 	Modem modem;
 	ModemPluginHelper helper;
-	Hayes * hayes;
 
 	if((modem.config = config_new()) == NULL)
 		return -error_print(PROGNAME);
+	config_set(modem.config, NULL, "device", "/dev/null");
+	config_set(modem.config, NULL, "hwflow", "0");
 	memset(&helper, 0, sizeof(helper));
 	helper.modem = &modem;
 	helper.config_get = _hayes_helper_config_get;
 	helper.config_set = _hayes_helper_config_set;
-	if((hayes = plugin.init(&helper)) == NULL)
-		return -1;
-	if(plugin.start(hayes, 0) == 0)
-		plugin.stop(hayes);
-	plugin.destroy(hayes);
+	helper.error = _hayes_helper_error;
+	helper.event = _hayes_helper_event;
+	_loop = g_main_loop_new(NULL, FALSE);
+	g_idle_add(_hayes_on_start, &helper);
+	g_main_loop_run(_loop);
+	g_main_loop_unref(_loop);
 	config_delete(modem.config);
 	return 0;
 }
 
+static gboolean _hayes_on_start(gpointer data)
+{
+	ModemPluginHelper * helper = data;
+	Hayes * hayes;
+
+	if((hayes = plugin.init(helper)) == NULL)
+		return FALSE;
+	if(plugin.start(hayes, 0) == 0)
+		g_timeout_add(1000, _hayes_on_stop, hayes);
+	else
+		g_main_loop_quit(_loop);
+	return FALSE;
+}
+
+static gboolean _hayes_on_stop(gpointer data)
+{
+	Hayes * hayes = data;
+
+	plugin.stop(hayes);
+	plugin.destroy(hayes);
+	g_main_loop_quit(_loop);
+	return FALSE;
+}
 
 /* helpers */
 /* hayes_helper_config_get */
@@ -79,6 +113,20 @@ static int _hayes_helper_config_set(Modem * modem, char const * variable,
 		char const * value)
 {
 	return config_set(modem->config, NULL, variable, value);
+}
+
+
+/* hayes_helper_error */
+static int _hayes_helper_error(Modem * modem, char const * message, int ret)
+{
+	fprintf(stderr, "%s: %s\n", PROGNAME, message);
+	return ret;
+}
+
+
+/* hayes_helper_event */
+static void _hayes_helper_event(Modem * modem, ModemEvent * event)
+{
 }
 
 
