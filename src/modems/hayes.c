@@ -1280,17 +1280,17 @@ static char * _request_attention_sim_puk(Hayes * hayes, HayesChannel * channel,
 		char const * password);
 static char * _request_attention_unsupported(Hayes * hayes,
 		ModemRequest * request);
+static int _request_channel_handler(Hayes * hayes, HayesChannel * channel,
+		ModemRequest * request, void * data,
+		HayesRequestHandler * handler);
 
 static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 		ModemRequest * request, void * data)
 {
-	HayesCommand * command;
 	unsigned int type = request->type;
 	size_t i;
 	const size_t count = sizeof(_hayes_request_handlers)
 		/ sizeof(*_hayes_request_handlers);
-	char const * attention;
-	char * p = NULL;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, (request != NULL)
@@ -1312,7 +1312,19 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 		return -hayes->helper->error(NULL, "Unable to handle request",
 				1);
 #endif
-	if((attention = _hayes_request_handlers[i].attention) == NULL)
+	return _request_channel_handler(hayes, channel, request, data,
+			&_hayes_request_handlers[i]);
+}
+
+static int _request_channel_handler(Hayes * hayes, HayesChannel * channel,
+		ModemRequest * request, void * data,
+		HayesRequestHandler * handler)
+{
+	HayesCommand * command;
+	char const * attention;
+	char * p = NULL;
+
+	if((attention = handler->attention) == NULL)
 	{
 		if((p = _request_attention(hayes, channel, request)) == NULL)
 			return 0; /* XXX errors should not be ignored */
@@ -1323,8 +1335,7 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 	free(p);
 	if(command == NULL)
 		return -1;
-	hayes_command_set_callback(command,
-			_hayes_request_handlers[i].callback, channel);
+	hayes_command_set_callback(command, handler->callback, channel);
 	if(_hayes_queue_command(hayes, channel, command) != 0)
 	{
 		hayes_command_delete(command);
