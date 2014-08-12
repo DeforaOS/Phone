@@ -3036,11 +3036,12 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			_hayes_request_type(hayes, channel,
 					HAYES_REQUEST_SIM_PIN_VALID);
 			break;
-		default: /* FIXME implement the rest */
-		case 3:  /* operation not allowed */
-		case 4:  /* operation not supported */
-		case 16: /* Incorrect SIM PIN/PUK */
-		case 20: /* Memory full */
+		default:  /* FIXME implement the rest */
+		case 3:   /* operation not allowed */
+		case 4:   /* operation not supported */
+		case 16:  /* Incorrect SIM PIN/PUK */
+		case 20:  /* Memory full */
+		case 263: /* Invalid block */
 			break;
 	}
 }
