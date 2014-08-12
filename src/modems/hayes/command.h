@@ -64,15 +64,18 @@ char * hayes_command_get_line(HayesCommand * command,
 HayesCommandPriority hayes_command_get_priority(HayesCommand * command);
 HayesCommandStatus hayes_command_get_status(HayesCommand * command);
 unsigned int hayes_command_get_timeout(HayesCommand * command);
+int hayes_command_is_complete(HayesCommand * command);
 void hayes_command_set_callback(HayesCommand * command,
 		HayesCommandCallback callback, void * priv);
 void hayes_command_set_data(HayesCommand * command, void * data);
 void hayes_command_set_priority(HayesCommand * command,
 		HayesCommandPriority priority);
-void hayes_command_set_status(HayesCommand * command,
+HayesCommandStatus hayes_command_set_status(HayesCommand * command,
 		HayesCommandStatus status);
 void hayes_command_set_timeout(HayesCommand * command,
 		unsigned int timeout);
+
+/* useful */
 int hayes_command_answer_append(HayesCommand * command,
 		char const * answer);
 HayesCommandStatus hayes_command_callback(HayesCommand * command);

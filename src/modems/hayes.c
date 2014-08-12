@@ -1027,8 +1027,7 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 	if((status = hayes_command_get_status(command)) == HCS_ACTIVE)
 		hayes_command_callback(command);
 	/* unqueue if complete */
-	if((status = hayes_command_get_status(command)) == HCS_SUCCESS
-			|| status == HCS_ERROR || status == HCS_TIMEOUT)
+	if(hayes_command_is_complete(command))
 	{
 		_hayes_queue_pop(hayes, channel);
 		_hayes_queue_push(hayes, channel);
@@ -1105,8 +1104,8 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 				return -1;
 		case HAYES_MODE_COMMAND:
 		case HAYES_MODE_DATA:
-			hayes_command_set_status(command, HCS_QUEUED);
-			if(hayes_command_get_status(command) != HCS_QUEUED)
+			if(hayes_command_set_status(command, HCS_QUEUED)
+					!= HCS_QUEUED)
 				return -1;
 			queue = channel->queue;
 			channel->queue = g_slist_append(channel->queue,
@@ -1217,8 +1216,7 @@ static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel)
 #else
 		return 0; /* XXX keep commands in the queue in DATA mode */
 #endif
-	hayes_command_set_status(command, HCS_ACTIVE);
-	if(hayes_command_get_status(command) != HCS_ACTIVE)
+	if(hayes_command_set_status(command, HCS_ACTIVE) != HCS_ACTIVE)
 		/* no longer push the command */
 		return 0;
 	attention = hayes_command_get_attention(command);

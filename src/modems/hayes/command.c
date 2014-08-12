@@ -94,6 +94,7 @@ void hayes_command_delete(HayesCommand * command)
 }
 
 
+/* accessors */
 /* hayes_command_get_answer */
 char const * hayes_command_get_answer(HayesCommand * command)
 {
@@ -166,6 +167,15 @@ unsigned int hayes_command_get_timeout(HayesCommand * command)
 }
 
 
+/* hayes_command_is_complete */
+int hayes_command_is_complete(HayesCommand * command)
+{
+	return command->status == HCS_SUCCESS
+		|| command->status == HCS_ERROR
+		|| command->status == HCS_TIMEOUT;
+}
+
+
 /* hayes_command_set_callback */
 void hayes_command_set_callback(HayesCommand * command,
 		HayesCommandCallback callback, void * priv)
@@ -191,11 +201,11 @@ void hayes_command_set_priority(HayesCommand * command,
 
 
 /* hayes_command_set_status */
-void hayes_command_set_status(HayesCommand * command,
+HayesCommandStatus hayes_command_set_status(HayesCommand * command,
 		HayesCommandStatus status)
 {
 	command->status = status;
-	hayes_command_callback(command);
+	return hayes_command_callback(command);
 }
 
 
@@ -207,6 +217,7 @@ void hayes_command_set_timeout(HayesCommand * command,
 }
 
 
+/* useful */
 /* hayes_command_answer_append */
 int hayes_command_answer_append(HayesCommand * command,
 		char const * answer)
