@@ -1,4 +1,4 @@
-TARGETS	= modems pdu plugins ussd tests.log
+TARGETS	= hayes modems pdu plugins ussd tests.log
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -16,6 +16,13 @@ INSTALL	= install
 
 
 all: $(TARGETS)
+
+hayes_OBJS = hayes.o
+hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
+hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+
+hayes: $(hayes_OBJS) ../src/modems/hayes.c
+	$(CC) -o hayes $(hayes_OBJS) $(hayes_LDFLAGS)
 
 modems_OBJS = modems.o
 modems_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -45,8 +52,11 @@ ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 ussd: $(ussd_OBJS)
 	$(CC) -o ussd $(ussd_OBJS) $(ussd_LDFLAGS)
 
-tests.log: modems pdu plugins tests.sh ussd
+tests.log: hayes modems pdu plugins tests.sh ussd
 	./tests.sh -P "$(PREFIX)" -- "tests.log"
+
+hayes.o: hayes.c
+	$(CC) $(hayes_CFLAGS) -c hayes.c
 
 modems.o: modems.c
 	$(CC) $(modems_CFLAGS) -c modems.c
@@ -61,7 +71,7 @@ ussd.o: ussd.c ../src/modems/hayes.c ../src/modems/hayes/command.c ../src/modems
 	$(CC) -I ../src/modems $(ussd_CFLAGS) -c ussd.c
 
 clean:
-	$(RM) -- $(modems_OBJS) $(pdu_OBJS) $(plugins_OBJS) $(ussd_OBJS) $(tests.log_OBJS)
+	$(RM) -- $(hayes_OBJS) $(modems_OBJS) $(pdu_OBJS) $(plugins_OBJS) $(ussd_OBJS) $(tests.log_OBJS)
 	./tests.sh -c -P "$(PREFIX)" -- "tests.log"
 
 distclean: clean
