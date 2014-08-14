@@ -601,11 +601,11 @@ static int _gprs_connect(GPRS * gprs)
 		widget = gtk_message_dialog_new(GTK_WINDOW(gprs->window), flags,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 6, 0)
-				"Warning");
+				"%s", "Warning");
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					widget),
 #endif
-				message);
+				"%s", message);
 		gtk_window_set_title(GTK_WINDOW(widget), "Warning");
 		res = gtk_dialog_run(GTK_DIALOG(widget));
 		gtk_widget_destroy(widget);
