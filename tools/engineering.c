@@ -20,34 +20,16 @@
 #include <string.h>
 #include <System.h>
 #include "../src/plugins/engineering.c"
+#include "common.c"
 
 
 /* private */
-/* types */
-typedef struct _PhoneEngineering
-{
-	Config * config;
-	PhonePluginDefinition * plugind;
-	PhonePlugin * plugin;
-} PhoneEngineering;
-
-
 /* functions */
-/* helper_config_get */
-static char const * _helper_config_get(Phone * phone, char const * section,
-		char const * variable)
-{
-	Config * config = (Config *)phone;
-
-	return config_get(config, section, variable);
-}
-
-
+/* helpers */
 /* helper_queue */
 #if 0 /* FIXME re-implement */
 static int _helper_queue(Phone * phone, char const * command)
 {
-	PhoneEngineering * pe = (PhoneEngineering *)phone;
 	char const * answers1[] =
 	{
 		"%EM: 860,21,21,20,24,59693,13,1,0,0,0,0,0,0,0,293,0,0,2,255",
@@ -88,9 +70,9 @@ static int _helper_queue(Phone * phone, char const * command)
 	else if(strcmp(command, "AT%EM=2,4") == 0)
 		answers = answers4;
 	else
-		return pe->callback(pe->plugin, "ERROR");
+		return phone->callback(phone->plugin, "ERROR");
 	for(i = 0; answers[i] != NULL; i++)
-		if(pe->callback(pe->plugin, answers[i]) != 0)
+		if(phone->callback(phone->plugin, answers[i]) != 0)
 			error_print("engineering");
 	return 0;
 }
@@ -101,18 +83,22 @@ static int _helper_queue(Phone * phone, char const * command)
 int main(int argc, char * argv[])
 {
 	PhonePluginHelper helper;
-	PhoneEngineering pe;
-	Phone * p;
+	Phone phone;
 
 	gtk_init(&argc, &argv);
-	pe.config = config_new();
-	config_load(pe.config, "/home/khorben/.phone"); /* FIXME hardcoded */
-	p = &pe;
-	helper.phone = p;
+	if((phone.config = config_new()) == NULL)
+		return 2;
+	phone.plugind = &plugin;
+	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
+	memset(&helper, 0, sizeof(helper));
+	helper.phone = &phone;
 	helper.config_get = _helper_config_get;
-	pe.plugin = _engineering_init(&helper);
+	helper.config_set = _helper_config_set;
+	helper.trigger = _helper_trigger;
+	if((phone.plugin = _engineering_init(&helper)) == NULL)
+		return 2;
 	gtk_main();
-	_engineering_destroy(pe.plugin);
-	config_delete(pe.config);
+	_engineering_destroy(phone.plugin);
+	config_delete(phone.config);
 	return 0;
 }

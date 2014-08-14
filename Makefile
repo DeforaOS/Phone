@@ -171,6 +171,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/tools/pdu.c \
 		$(PACKAGE)-$(VERSION)/tools/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \
+		$(PACKAGE)-$(VERSION)/tools/common.c \
 		$(PACKAGE)-$(VERSION)/tools/project.conf \
 		$(PACKAGE)-$(VERSION)/COPYING \
 		$(PACKAGE)-$(VERSION)/Makefile \

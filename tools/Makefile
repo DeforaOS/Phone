@@ -37,7 +37,7 @@ smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0`
 smscrypt: $(smscrypt_OBJS)
 	$(CC) -o smscrypt $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
 
-engineering.o: engineering.c ../include/Phone.h ../src/plugins/engineering.c
+engineering.o: engineering.c ../include/Phone.h ../src/plugins/engineering.c common.c
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
 pdu.o: pdu.c ../include/Phone.h ../src/modems/hayes.c
