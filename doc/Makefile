@@ -1,3 +1,6 @@
+MKDIR	= mkdir -m 0755 -p
+INSTALL	= install
+RM	= rm -f
 TARGETS	= index.html phone.1 phone.html phonectl.1 phonectl.html
 PREFIX	= /usr/local
 DESTDIR	=
@@ -36,11 +39,14 @@ install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phone.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phonectl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phonectl.html"
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
+	$(INSTALL) -m 0644 gprs.conf $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
 
 uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phone.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phone.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.html"
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
 
 .PHONY: all clean distclean install uninstall

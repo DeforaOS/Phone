@@ -164,7 +164,7 @@ debug.o: debug.c ../../include/Phone.h
 engineering.o: engineering.c ../../include/Phone.h
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
-gprs.o: gprs.c ../../include/Phone.h
+gprs.o: gprs.c ../../include/Phone.h ../../config.h
 	$(CC) $(gprs_CFLAGS) -c gprs.c
 
 gps.o: gps.c ../../include/Phone.h

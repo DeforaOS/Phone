@@ -22,6 +22,14 @@
 #include <gtk/gtk.h>
 #include <System.h>
 #include "Phone.h"
+#include "../../config.h"
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef SYSCONFDIR
+# define SYSCONFDIR	PREFIX "/etc"
+#endif
 
 
 /* GPRS */
@@ -59,20 +67,6 @@ typedef struct _PhonePlugin
 	GtkStatusIcon * icon;
 #endif
 } GPRS;
-
-typedef struct _GPRSOperator
-{
-	char const * _operator;
-	char const * apn;
-	char const * username;
-	char const * password;
-} GPRSOperator;
-
-/* constants */
-static GPRSOperator _gprs_operators[] =
-{
-	{ "BASE DE", "internet.eplus.de", "eplus", "eplus" }
-};
 
 
 /* prototypes */
@@ -729,22 +723,26 @@ static int _gprs_load_defaults(GPRS * gprs)
 /* gprs_load_operator */
 static int _gprs_load_operator(GPRS * gprs, char const * _operator)
 {
-	size_t i;
-	GPRSOperator * o;
+	Config * config;
+	String const * p;
 
-	if(_operator == NULL)
+	if((config = config_new()) == NULL)
 		return -1;
-	for(i = 0; i < sizeof(_gprs_operators) / sizeof(*_gprs_operators); i++)
+	if(config_load(config, SYSCONFDIR "/" PACKAGE "/gprs.conf") != 0
+			|| (p = config_get(config, _operator, "apn")) == NULL)
 	{
-		o = &_gprs_operators[i];
-		if(strcmp(o->_operator, _operator) != 0)
-			continue;
-		gtk_entry_set_text(GTK_ENTRY(gprs->apn), o->apn);
-		gtk_entry_set_text(GTK_ENTRY(gprs->username), o->username);
-		gtk_entry_set_text(GTK_ENTRY(gprs->password), o->password);
-		return 0;
+		config_delete(config);
+		return -1;
 	}
-	return -1;
+	gtk_entry_set_text(GTK_ENTRY(gprs->apn), p);
+	if((p = config_get(config, _operator, "username")) == NULL)
+		p = "";
+	gtk_entry_set_text(GTK_ENTRY(gprs->username), p);
+	if((p = config_get(config, _operator, "password")) == NULL)
+		p = "";
+	gtk_entry_set_text(GTK_ENTRY(gprs->password), p);
+	config_delete(config);
+	return 0;
 }
 
 
