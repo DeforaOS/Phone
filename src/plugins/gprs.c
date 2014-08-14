@@ -37,6 +37,7 @@ typedef struct _PhonePlugin
 	size_t out;
 	size_t glin;
 	size_t glout;
+	char * _operator;
 
 	gboolean active;
 	GtkWidget * window;
@@ -122,6 +123,7 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 	gprs->out = 0;
 	gprs->glin = 0;
 	gprs->glout = 0;
+	gprs->_operator = NULL;
 	gprs->active = FALSE;
 	gprs->window = NULL;
 #if GTK_CHECK_VERSION(2, 10, 0)
@@ -151,6 +153,7 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 /* gprs_destroy */
 static void _gprs_destroy(GPRS * gprs)
 {
+	free(gprs->_operator);
 	_gprs_counters_save(gprs);
 #if GTK_CHECK_VERSION(2, 10, 0)
 	g_object_unref(gprs->icon);
@@ -165,6 +168,7 @@ static void _gprs_destroy(GPRS * gprs)
 
 /* gprs_event */
 static int _gprs_event_modem(GPRS * gprs, ModemEvent * event);
+static void _gprs_event_modem_operator(GPRS * gprs, char const * _operator);
 
 static int _gprs_event(GPRS * gprs, PhoneEvent * event)
 {
@@ -195,7 +199,12 @@ static int _gprs_event_modem(GPRS * gprs, ModemEvent * event)
 					event->connection.out);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
+			/* operator */
+			_gprs_event_modem_operator(gprs,
+					event->registration._operator);
+			/* roaming */
 			gprs->roaming = event->registration.roaming;
+			/* status */
 			if(gprs->active != FALSE)
 				break;
 			if(event->registration.status
@@ -208,6 +217,13 @@ static int _gprs_event_modem(GPRS * gprs, ModemEvent * event)
 			break;
 	}
 	return 0;
+}
+
+static void _gprs_event_modem_operator(GPRS * gprs, char const * _operator)
+{
+
+	free(gprs->_operator);
+	gprs->_operator = (_operator != NULL) ? strdup(_operator) : NULL;
 }
 
 
