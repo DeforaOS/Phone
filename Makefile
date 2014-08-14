@@ -168,6 +168,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/tests/tests.sh \
 		$(PACKAGE)-$(VERSION)/tests/project.conf \
 		$(PACKAGE)-$(VERSION)/tools/engineering.c \
+		$(PACKAGE)-$(VERSION)/tools/gprs.c \
 		$(PACKAGE)-$(VERSION)/tools/pdu.c \
 		$(PACKAGE)-$(VERSION)/tools/smscrypt.c \
 		$(PACKAGE)-$(VERSION)/tools/Makefile \

@@ -1,4 +1,4 @@
-TARGETS	= engineering pdu smscrypt
+TARGETS	= engineering gprs pdu smscrypt
 PREFIX	= /usr/local
 DESTDIR	=
 BINDIR	= $(PREFIX)/bin
@@ -23,6 +23,13 @@ engineering_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2
 engineering: $(engineering_OBJS)
 	$(CC) -o engineering $(engineering_OBJS) $(engineering_LDFLAGS)
 
+gprs_OBJS = gprs.o
+gprs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
+gprs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0`
+
+gprs: $(gprs_OBJS)
+	$(CC) -o gprs $(gprs_OBJS) $(gprs_LDFLAGS)
+
 pdu_OBJS = pdu.o
 pdu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem glib-2.0`
 pdu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem glib-2.0`
@@ -40,6 +47,9 @@ smscrypt: $(smscrypt_OBJS)
 engineering.o: engineering.c ../include/Phone.h ../src/plugins/engineering.c common.c
 	$(CC) $(engineering_CFLAGS) -c engineering.c
 
+gprs.o: gprs.c ../include/Phone.h ../src/plugins/gprs.c common.c
+	$(CC) $(gprs_CFLAGS) -c gprs.c
+
 pdu.o: pdu.c ../include/Phone.h ../src/modems/hayes.c
 	$(CC) -I../src/modems $(pdu_CFLAGS) -c pdu.c
 
@@ -47,7 +57,7 @@ smscrypt.o: smscrypt.c ../include/Phone.h ../src/plugins/smscrypt.c
 	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
 
 clean:
-	$(RM) -- $(engineering_OBJS) $(pdu_OBJS) $(smscrypt_OBJS)
+	$(RM) -- $(engineering_OBJS) $(gprs_OBJS) $(pdu_OBJS) $(smscrypt_OBJS)
 
 distclean: clean
 	$(RM) -- $(TARGETS)
