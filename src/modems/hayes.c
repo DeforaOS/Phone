@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <termios.h>
 #include <errno.h>
+#include <libgen.h>
 #include <glib.h>
 #include <System.h>
 #include <Phone/modem.h>
@@ -3485,12 +3486,15 @@ static void _on_code_cmti(HayesChannel * channel, char const * answer)
 static void _on_code_connect(HayesChannel * channel, char const * answer)
 {
 	Hayes * hayes = channel->hayes;
+	ModemPluginHelper * helper = hayes->helper;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CONNECTION];
 	HayesCommand * command = (channel->queue != NULL)
 		? channel->queue->data : NULL;
 	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "phone",
 		"user", "", "password", "", NULL };
-	GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
+	char const * p;
+	gboolean res;
+	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
 	int wfd;
 	int rfd;
 	GError * error = NULL;
@@ -3498,12 +3502,28 @@ static void _on_code_connect(HayesChannel * channel, char const * answer)
 	if(command != NULL) /* XXX else report error? */
 		hayes_command_set_status(command, HCS_SUCCESS);
 	_hayes_set_mode(hayes, channel, HAYES_MODE_DATA);
+	/* pppd */
+	if((p = helper->config_get(helper->modem, "pppd")) != NULL)
+	{
+		if((argv[0] = strdup(p)) == NULL)
+		{
+			hayes->helper->error(NULL, strerror(errno), 1);
+			_hayes_reset(hayes);
+			return;
+		}
+		argv[1] = basename(argv[0]);
+	}
+	/* username */
 	if(channel->gprs_username != NULL)
 		argv[5] = channel->gprs_username;
+	/* password */
 	if(channel->gprs_password != NULL)
 		argv[7] = channel->gprs_password;
-	if(g_spawn_async_with_pipes(NULL, argv, NULL, flags, NULL, NULL, NULL,
-				&wfd, &rfd, NULL, &error) == FALSE)
+	res = g_spawn_async_with_pipes(NULL, argv, NULL, flags, NULL, NULL,
+			NULL, &wfd, &rfd, NULL, &error);
+	if(p != NULL)
+		free(argv[0]);
+	if(res == FALSE)
 	{
 		hayes->helper->error(NULL, error->message, 1);
 		g_error_free(error);
