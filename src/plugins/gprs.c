@@ -96,6 +96,7 @@ static void _gprs_counters_save(GPRS * gprs);
 static int _gprs_disconnect(GPRS * gprs);
 
 static int _gprs_load_defaults(GPRS * gprs);
+static int _gprs_load_operator(GPRS * gprs, char const * _operator);
 
 /* callbacks */
 static void _gprs_on_activate(gpointer data);
@@ -721,15 +722,22 @@ static int _gprs_disconnect(GPRS * gprs)
 /* gprs_load_defaults */
 static int _gprs_load_defaults(GPRS * gprs)
 {
+	return _gprs_load_operator(gprs, gprs->_operator);
+}
+
+
+/* gprs_load_operator */
+static int _gprs_load_operator(GPRS * gprs, char const * _operator)
+{
 	size_t i;
 	GPRSOperator * o;
 
-	if(gprs->_operator == NULL)
+	if(_operator == NULL)
 		return -1;
 	for(i = 0; i < sizeof(_gprs_operators) / sizeof(*_gprs_operators); i++)
 	{
 		o = &_gprs_operators[i];
-		if(strcmp(o->_operator, gprs->_operator) != 0)
+		if(strcmp(o->_operator, _operator) != 0)
 			continue;
 		gtk_entry_set_text(GTK_ENTRY(gprs->apn), o->apn);
 		gtk_entry_set_text(GTK_ENTRY(gprs->username), o->username);
