@@ -46,6 +46,7 @@ typedef struct _PhonePlugin
 	GtkWidget * apn;
 	GtkWidget * username;
 	GtkWidget * password;
+	GtkWidget * defaults;
 	GtkWidget * connect;
 	GtkWidget * st_image;
 	GtkWidget * st_label;
@@ -58,6 +59,20 @@ typedef struct _PhonePlugin
 	GtkStatusIcon * icon;
 #endif
 } GPRS;
+
+typedef struct _GPRSOperator
+{
+	char const * _operator;
+	char const * apn;
+	char const * username;
+	char const * password;
+} GPRSOperator;
+
+/* constants */
+static GPRSOperator _gprs_operators[] =
+{
+	{ "BASE DE", "internet.eplus.de", "eplus", "eplus" }
+};
 
 
 /* prototypes */
@@ -80,8 +95,11 @@ static void _gprs_counters_save(GPRS * gprs);
 
 static int _gprs_disconnect(GPRS * gprs);
 
+static int _gprs_load_defaults(GPRS * gprs);
+
 /* callbacks */
 static void _gprs_on_activate(gpointer data);
+static void _gprs_on_load_defaults(gpointer data);
 static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 		guint time, gpointer data);
 static gboolean _gprs_on_timeout(gpointer data);
@@ -221,9 +239,29 @@ static int _gprs_event_modem(GPRS * gprs, ModemEvent * event)
 
 static void _gprs_event_modem_operator(GPRS * gprs, char const * _operator)
 {
+	PhonePluginHelper * helper = gprs->helper;
+	char const * p;
 
 	free(gprs->_operator);
 	gprs->_operator = (_operator != NULL) ? strdup(_operator) : NULL;
+	if(gprs->window == NULL)
+		return;
+	gtk_widget_set_sensitive(gprs->defaults, (gprs->_operator != NULL)
+			? TRUE : FALSE);
+	/* FIXME also load the defaults when creating the window if relevant */
+	if(((p = gtk_entry_get_text(GTK_ENTRY(gprs->apn))) == NULL
+				|| strlen(p) == 0)
+			&& ((p = gtk_entry_get_text(GTK_ENTRY(gprs->username)))
+				== NULL || strlen(p) == 0)
+			&& ((p = gtk_entry_get_text(GTK_ENTRY(gprs->password)))
+				== NULL || strlen(p) == 0)
+			&& helper->config_get(helper->phone, "gprs", "apn")
+			== NULL
+			&& helper->config_get(helper->phone, "gprs", "username")
+			== NULL
+			&& helper->config_get(helper->phone, "gprs", "password")
+			== NULL)
+		_gprs_load_defaults(gprs);
 }
 
 
@@ -294,14 +332,23 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
+	GtkWidget * frame;
+	GtkWidget * vbox2;
 	GtkWidget * widget;
 
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	vbox = gtk_vbox_new(FALSE, 4);
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label(
 			"Force GPRS registration");
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->attach, FALSE, TRUE, 0);
+	/* systray */
+	gprs->systray = gtk_check_button_new_with_label("Show in system tray");
+	gtk_box_pack_start(GTK_BOX(vbox), gprs->systray, FALSE, TRUE, 0);
+	/* credentials */
+	frame = gtk_frame_new("Credentials");
+	vbox2 = gtk_vbox_new(FALSE, 4);
+	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
+	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* access point */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Access point:");
@@ -310,7 +357,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->apn = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->apn, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* username */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Username:");
@@ -319,7 +366,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gprs->username = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->username, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* password */
 	hbox = gtk_hbox_new(FALSE, 4);
 	widget = gtk_label_new("Password:");
@@ -329,10 +376,18 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gprs->password = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	/* systray */
-	gprs->systray = gtk_check_button_new_with_label("Show in system tray");
-	gtk_box_pack_start(GTK_BOX(vbox), gprs->systray, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	/* defaults */
+	hbox = gtk_hbox_new(FALSE, 4);
+	gprs->defaults = gtk_button_new_with_label("Load defaults");
+	gtk_widget_set_sensitive(gprs->defaults, (gprs->_operator != NULL)
+			? TRUE : FALSE);
+	g_signal_connect_swapped(gprs->defaults, "clicked", G_CALLBACK(
+				_gprs_on_load_defaults), gprs);
+	gtk_box_pack_end(GTK_BOX(hbox), gprs->defaults, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(frame), vbox2);
+	gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 0);
 	return vbox;
 }
 
@@ -663,6 +718,28 @@ static int _gprs_disconnect(GPRS * gprs)
 }
 
 
+/* gprs_load_defaults */
+static int _gprs_load_defaults(GPRS * gprs)
+{
+	size_t i;
+	GPRSOperator * o;
+
+	if(gprs->_operator == NULL)
+		return -1;
+	for(i = 0; i < sizeof(_gprs_operators) / sizeof(*_gprs_operators); i++)
+	{
+		o = &_gprs_operators[i];
+		if(strcmp(o->_operator, gprs->_operator) != 0)
+			continue;
+		gtk_entry_set_text(GTK_ENTRY(gprs->apn), o->apn);
+		gtk_entry_set_text(GTK_ENTRY(gprs->username), o->username);
+		gtk_entry_set_text(GTK_ENTRY(gprs->password), o->password);
+		return 0;
+	}
+	return -1;
+}
+
+
 /* callbacks */
 /* gprs_on_activate */
 static void _gprs_on_activate(gpointer data)
@@ -672,6 +749,29 @@ static void _gprs_on_activate(gpointer data)
 	_gprs_settings(gprs);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(gprs->notebook), 1);
 	gtk_window_present(GTK_WINDOW(gprs->window));
+}
+
+
+/* gprs_on_load_defaults */
+static void _gprs_on_load_defaults(gpointer data)
+{
+	GPRS * gprs = data;
+	GtkWidget * widget;
+	const GtkDialogFlags flags = GTK_DIALOG_MODAL
+		| GTK_DIALOG_DESTROY_WITH_PARENT;
+
+	if(_gprs_load_defaults(gprs) == 0)
+		return;
+	widget = gtk_message_dialog_new(GTK_WINDOW(gprs->window),
+			flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Error");
+		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
+					widget),
+#endif
+			"%s", "No defaults known for the current operator");
+	gtk_dialog_run(GTK_DIALOG(widget));
+	gtk_widget_destroy(widget);
 }
 
 
