@@ -6,9 +6,9 @@ SBINDIR	= $(PREFIX)/sbin
 CC	= cc
 CPPFLAGSF= -I ../include
 CPPFLAGS=
-CFLAGSF	= -W `pkg-config --cflags libDesktop`
+CFLAGSF	= -W
 CFLAGS	= -Wall -g -O2
-LDFLAGSF= -W `pkg-config --libs libDesktop`
+LDFLAGSF= -W
 RM	= rm -f
 LN	= ln -f
 MKDIR	= mkdir -m 0755 -p
@@ -18,36 +18,36 @@ INSTALL	= install
 all: $(TARGETS)
 
 hayes_OBJS = hayes.o
-hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0 libSystem`
+hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0 libSystem`
 
 hayes: $(hayes_OBJS) ../src/modems/hayes.c
 	$(CC) -o hayes $(hayes_OBJS) $(hayes_LDFLAGS)
 
 modems_OBJS = modems.o
-modems_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-modems_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+modems_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+modems_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 modems: $(modems_OBJS)
 	$(CC) -o modems $(modems_OBJS) $(modems_LDFLAGS)
 
 pdu_OBJS = pdu.o
-pdu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-pdu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+pdu_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0 libSystem`
+pdu_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0 libSystem`
 
 pdu: $(pdu_OBJS)
 	$(CC) -o pdu $(pdu_OBJS) $(pdu_LDFLAGS)
 
 plugins_OBJS = plugins.o
-plugins_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-plugins_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+plugins_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+plugins_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 plugins: $(plugins_OBJS)
 	$(CC) -o plugins $(plugins_OBJS) $(plugins_LDFLAGS)
 
 ussd_OBJS = ussd.o
-ussd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
+ussd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0 libSystem`
+ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0 libSystem`
 
 ussd: $(ussd_OBJS)
 	$(CC) -o ussd $(ussd_OBJS) $(ussd_LDFLAGS)
