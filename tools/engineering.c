@@ -20,11 +20,12 @@
 #include <string.h>
 #include <System.h>
 #include "../src/plugins/engineering.c"
-#include "common.c"
 
 #ifndef PROGNAME
 # define PROGNAME "engineering"
 #endif
+
+#include "common.c"
 
 
 /* private */

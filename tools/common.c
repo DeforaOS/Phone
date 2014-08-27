@@ -33,6 +33,7 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable);
 static int _helper_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value);
+static int _helper_error(Phone * phone, char const * message, int ret);
 static int _helper_request(Phone * phone, ModemRequest * request);
 static int _helper_trigger(Phone * phone, ModemEventType event);
 
@@ -45,6 +46,7 @@ static void _helper_init(PhonePluginHelper * helper, Phone * phone)
 	helper->phone = phone;
 	helper->config_get = _helper_config_get;
 	helper->config_set = _helper_config_set;
+	helper->error = _helper_error;
 	helper->request = _helper_request;
 	helper->trigger = _helper_trigger;
 }
@@ -67,11 +69,49 @@ static int _helper_config_set(Phone * phone, char const * section,
 }
 
 
+/* helper_error */
+static int _helper_error(Phone * phone, char const * message, int ret)
+{
+	fprintf(stderr, "%s: %s\n", PROGNAME, message);
+	return ret;
+}
+
+
 /* helper_request */
+static int _request_call(Phone * phone, ModemRequest * request);
+static int _request_authenticate(Phone * phone, ModemRequest * request);
+
 static int _helper_request(Phone * phone, ModemRequest * request)
 {
-	/* FIXME implement */
-	return -1;
+	switch(request->type)
+	{
+		case MODEM_REQUEST_AUTHENTICATE:
+			return _request_authenticate(phone, request);
+		case MODEM_REQUEST_CALL:
+			return _request_call(phone, request);
+		default:
+			/* FIXME implement more */
+			return -error_set_code(1, "Not implemented");
+	}
+}
+
+static int _request_authenticate(Phone * phone, ModemRequest * request)
+{
+	if(request->authenticate.name == NULL)
+		return -error_set_code(1, "Unknown authentication");
+	if(strcmp(request->authenticate.name, "APN") == 0
+			|| strcmp(request->authenticate.name, "GPRS") == 0)
+		/* FIXME really implement */
+		return 0;
+	return -error_set_code(1, "Unknown authentication");
+}
+
+static int _request_call(Phone * phone, ModemRequest * request)
+{
+	if(request->call.call_type != MODEM_CALL_TYPE_DATA)
+		return -error_set_code(1, "Unknown call type");
+	/* FIXME really implement */
+	return 0;
 }
 
 
