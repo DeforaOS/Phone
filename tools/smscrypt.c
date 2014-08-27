@@ -30,7 +30,7 @@ static void _helper_config_foreach(Phone * phone, char const * section,
 	Config * config = (Config*)phone;
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", %p, %p)\n", __func__,
-			(void*)phone, section, (void*)callback, priv);
+			(void *)phone, section, (void *)callback, priv);
 #endif
 	config_foreach_section(config, section, callback, priv);
 }
@@ -45,7 +45,7 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 	char const * ret;
 
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", \"%s\")\n", __func__,
-			(void*)phone, section, variable);
+			(void *)phone, section, variable);
 	ret = config_get(config, section, variable);
 	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, ret);
 	return ret;
