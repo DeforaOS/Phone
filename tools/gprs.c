@@ -34,7 +34,7 @@
 
 /* private */
 /* prototypes */
-static int _gprs(Config * config);
+static int _gprs(void);
 
 static int _usage(void);
 
@@ -43,19 +43,18 @@ static int _usage(void);
 /* gprs */
 static gboolean _gprs_on_idle(gpointer data);
 
-static int _gprs(Config * config)
+static int _gprs(void)
 {
-	PhonePluginHelper helper;
 	Phone phone;
 
-	phone.config = config;
-	phone.plugind = &plugin;
-	_helper_init(&helper, &phone);
-	if((phone.plugin = _gprs_init(&helper)) == NULL)
+	_phone_init(&phone, &plugin);
+	config_set(phone.config, "gprs", "systray", "1");
+	if((phone.plugin = _gprs_init(&phone.helper)) == NULL)
 		return -1;
 	g_idle_add(_gprs_on_idle, &phone);
 	gtk_main();
 	_gprs_destroy(phone.plugin);
+	_phone_destroy(&phone);
 	return 0;
 }
 
@@ -83,15 +82,8 @@ static int _usage(void)
 int main(int argc, char * argv[])
 {
 	int ret;
-	Config * config;
 	int o;
 
-	if((config = config_new()) == NULL)
-	{
-		error_print(PROGNAME);
-		return 2;
-	}
-	config_set(config, "gprs", "systray", "1");
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
 		{
@@ -101,8 +93,7 @@ int main(int argc, char * argv[])
 	if(optind != argc)
 		return _usage();
 	gtk_init(&argc, &argv);
-	if((ret = (_gprs(config) == 0) ? 0 : 2) != 0)
+	if((ret = (_gprs() == 0) ? 0 : 2) != 0)
 		error_print(PROGNAME);
-	config_delete(config);
 	return ret;
 }

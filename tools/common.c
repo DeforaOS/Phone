@@ -15,18 +15,27 @@
 
 
 
+#include <sys/ioctl.h>
+#include <string.h>
+#include <errno.h>
+#include <net/if.h>
+
+
 /* private */
 /* types */
 struct _Phone
 {
 	Config * config;
+	PhonePluginHelper helper;
 	PhonePluginDefinition * plugind;
 	PhonePlugin * plugin;
+	int fd;
 };
 
 
 /* prototypes */
-static void _helper_init(PhonePluginHelper * helper, Phone * phone);
+static int _phone_init(Phone * phone, PhonePluginDefinition * plugind);
+static void _phone_destroy(Phone * phone);
 
 /* helpers */
 static char const * _helper_config_get(Phone * phone, char const * section,
@@ -39,16 +48,30 @@ static int _helper_trigger(Phone * phone, ModemEventType event);
 
 
 /* functions */
-/* helper_init */
-static void _helper_init(PhonePluginHelper * helper, Phone * phone)
+/* phone_init */
+static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 {
-	memset(helper, 0, sizeof(*helper));
-	helper->phone = phone;
-	helper->config_get = _helper_config_get;
-	helper->config_set = _helper_config_set;
-	helper->error = _helper_error;
-	helper->request = _helper_request;
-	helper->trigger = _helper_trigger;
+	if((phone->config = config_new()) == NULL)
+		return -1;
+	memset(&phone->helper, 0, sizeof(phone->helper));
+	phone->helper.phone = phone;
+	phone->helper.config_get = _helper_config_get;
+	phone->helper.config_set = _helper_config_set;
+	phone->helper.error = _helper_error;
+	phone->helper.request = _helper_request;
+	phone->helper.trigger = _helper_trigger;
+	phone->plugind = plugind;
+	phone->plugin = NULL;
+	phone->fd = -1;
+	return 0;
+}
+
+
+/* phone_destroy */
+static void _phone_destroy(Phone * phone)
+{
+	if(phone->fd >= 0)
+		close(phone->fd);
 }
 
 
@@ -134,6 +157,16 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 {
 	PhoneEvent pevent;
 	ModemEvent mevent;
+#if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
+	/* FIXME no longer hardcode the interface */
+	const char interface[] = "ppp0";
+# ifdef SIOCGIFDATA
+	struct ifdatareq ifdr;
+# endif
+# ifdef SIOCGIFFLAGS
+	struct ifreq ifr;
+# endif
+#endif
 
 	memset(&pevent, 0, sizeof(pevent));
 	memset(&mevent, 0, sizeof(mevent));
@@ -143,5 +176,40 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 	mevent.connection.connected = FALSE;
 	mevent.connection.in = 0;
 	mevent.connection.out = 0;
+#if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
+	if(phone->fd < 0)
+		if((phone->fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+			error_set_print(PROGNAME, 1, "%s", strerror(errno));
+	if(phone->fd >= 0)
+	{
+# ifdef SIOCGIFDATA
+		memset(&ifdr, 0, sizeof(ifdr));
+		strncpy(ifdr.ifdr_name, interface, sizeof(ifdr.ifdr_name));
+		if(ioctl(phone->fd, SIOCGIFDATA, &ifdr) == -1)
+			error_set_print(PROGNAME, 1, "%s: %s", interface,
+					strerror(errno));
+		else
+		{
+			mevent.connection.connected = TRUE;
+			mevent.connection.in = ifdr.ifdr_data.ifi_ibytes;
+			mevent.connection.out = ifdr.ifdr_data.ifi_obytes;
+		}
+# endif
+# ifdef SIOCGIFFLAGS
+		memset(&ifr, 0, sizeof(ifr));
+		strncpy(ifr.ifr_name, interface, sizeof(ifr.ifr_name));
+		if(ioctl(phone->fd, SIOCGIFFLAGS, &ifr) == -1)
+			error_set_print(PROGNAME, 1, "%s: %s", interface,
+					strerror(errno));
+		else
+		{
+#  ifdef IFF_UP
+			mevent.connection.connected = (ifr.ifr_flags & IFF_UP)
+				? TRUE : FALSE;
+#  endif
+		}
+# endif
+#endif
+	}
 	return phone->plugind->event(phone->plugin, &pevent);
 }

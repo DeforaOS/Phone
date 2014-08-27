@@ -30,26 +30,25 @@
 
 /* private */
 /* prototypes */
-static int _engineering(Config * config);
+static int _engineering(void);
 
 static int _usage(void);
 
 
 /* functions */
 /* engineering */
-static int _engineering(Config * config)
+static int _engineering(void)
 {
 	PhonePluginHelper helper;
 	Phone phone;
 
-	phone.config = config;
-	phone.plugind = &plugin;
 	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
-	_helper_init(&helper, &phone);
+	_phone_init(&phone, &plugin);
 	if((phone.plugin = _engineering_init(&helper)) == NULL)
 		return -1;
 	gtk_main();
 	_engineering_destroy(phone.plugin);
+	_phone_destroy(&phone);
 	return 0;
 }
 
@@ -120,14 +119,8 @@ static int _helper_queue(Phone * phone, char const * command)
 int main(int argc, char * argv[])
 {
 	int ret;
-	Config * config;
 	int o;
 
-	if((config = config_new()) == NULL)
-	{
-		error_print(PROGNAME);
-		return 2;
-	}
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
 		{
@@ -137,8 +130,7 @@ int main(int argc, char * argv[])
 	if(optind != argc)
 		return _usage();
 	gtk_init(&argc, &argv);
-	if((ret = (_engineering(config) == 0) ? 0 : 2) != 0)
+	if((ret = (_engineering() == 0) ? 0 : 2) != 0)
 		error_print(PROGNAME);
-	config_delete(config);
 	return ret;
 }
