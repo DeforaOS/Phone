@@ -491,6 +491,7 @@ static void _settings_on_cancel(gpointer data)
 			!= NULL && strtoul(p, NULL, 10) != 0) ? TRUE : FALSE;
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gprs->systray), active);
 #endif
+	_gprs_set_connected(gprs, gprs->connected, NULL, gprs->in, gprs->out);
 }
 
 static gboolean _settings_on_closex(gpointer data)
