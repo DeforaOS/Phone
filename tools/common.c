@@ -140,6 +140,10 @@ static int _request_call(Phone * phone, ModemRequest * request)
 
 /* helper_trigger */
 static int _trigger_connection(Phone * phone, ModemEventType type);
+#if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
+static int _trigger_connection_interface(Phone * phone, PhoneEvent * event,
+		char const * interface);
+#endif
 
 static int _helper_trigger(Phone * phone, ModemEventType event)
 {
@@ -158,14 +162,7 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 	PhoneEvent pevent;
 	ModemEvent mevent;
 #if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
-	/* FIXME no longer hardcode the interface */
-	const char interface[] = "ppp0";
-# ifdef SIOCGIFDATA
-	struct ifdatareq ifdr;
-# endif
-# ifdef SIOCGIFFLAGS
-	struct ifreq ifr;
-# endif
+	char const * p;
 #endif
 
 	memset(&pevent, 0, sizeof(pevent));
@@ -177,39 +174,54 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 	mevent.connection.in = 0;
 	mevent.connection.out = 0;
 #if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
-	if(phone->fd < 0)
-		if((phone->fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-			error_set_print(PROGNAME, 1, "%s", strerror(errno));
-	if(phone->fd >= 0)
-	{
-# ifdef SIOCGIFDATA
-		memset(&ifdr, 0, sizeof(ifdr));
-		strncpy(ifdr.ifdr_name, interface, sizeof(ifdr.ifdr_name));
-		if(ioctl(phone->fd, SIOCGIFDATA, &ifdr) == -1)
-			error_set_print(PROGNAME, 1, "%s: %s", interface,
-					strerror(errno));
-		else
-		{
-			mevent.connection.connected = TRUE;
-			mevent.connection.in = ifdr.ifdr_data.ifi_ibytes;
-			mevent.connection.out = ifdr.ifdr_data.ifi_obytes;
-		}
-# endif
-# ifdef SIOCGIFFLAGS
-		memset(&ifr, 0, sizeof(ifr));
-		strncpy(ifr.ifr_name, interface, sizeof(ifr.ifr_name));
-		if(ioctl(phone->fd, SIOCGIFFLAGS, &ifr) == -1)
-			error_set_print(PROGNAME, 1, "%s: %s", interface,
-					strerror(errno));
-		else
-		{
-#  ifdef IFF_UP
-			mevent.connection.connected = (ifr.ifr_flags & IFF_UP)
-				? TRUE : FALSE;
-#  endif
-		}
-# endif
+	if((p = config_get(phone->config, plugin.name, "interface")) != NULL)
+		/* XXX ignore errors */
+		_trigger_connection_interface(phone, &pevent, p);
 #endif
-	}
 	return phone->plugind->event(phone->plugin, &pevent);
 }
+
+#if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
+static int _trigger_connection_interface(Phone * phone, PhoneEvent * event,
+		char const * interface)
+{
+	ModemEvent * mevent = event->modem_event.event;
+# ifdef SIOCGIFDATA
+	struct ifdatareq ifdr;
+# endif
+# ifdef SIOCGIFFLAGS
+	struct ifreq ifr;
+# endif
+
+	if(phone->fd < 0 && (phone->fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+		return -error_set_print(PROGNAME, 1, "%s", strerror(errno));
+# ifdef SIOCGIFDATA
+	memset(&ifdr, 0, sizeof(ifdr));
+	strncpy(ifdr.ifdr_name, interface, sizeof(ifdr.ifdr_name));
+	if(ioctl(phone->fd, SIOCGIFDATA, &ifdr) == -1)
+		error_set_print(PROGNAME, 1, "%s: %s", interface,
+				strerror(errno));
+	else
+	{
+		mevent->connection.connected = TRUE;
+		mevent->connection.in = ifdr.ifdr_data.ifi_ibytes;
+		mevent->connection.out = ifdr.ifdr_data.ifi_obytes;
+	}
+# endif
+# ifdef SIOCGIFFLAGS
+	memset(&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, interface, sizeof(ifr.ifr_name));
+	if(ioctl(phone->fd, SIOCGIFFLAGS, &ifr) == -1)
+		error_set_print(PROGNAME, 1, "%s: %s", interface,
+				strerror(errno));
+	else
+	{
+#  ifdef IFF_UP
+		mevent->connection.connected = (ifr.ifr_flags & IFF_UP)
+			? TRUE : FALSE;
+#  endif
+	}
+# endif
+	return 0;
+}
+#endif
