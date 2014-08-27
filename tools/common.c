@@ -116,7 +116,32 @@ static int _request_call(Phone * phone, ModemRequest * request)
 
 
 /* helper_trigger */
+static int _trigger_connection(Phone * phone, ModemEventType type);
+
 static int _helper_trigger(Phone * phone, ModemEventType event)
 {
-	return 0;
+	switch(event)
+	{
+		case MODEM_EVENT_TYPE_CONNECTION:
+			return _trigger_connection(phone, event);
+		default:
+			/* FIXME implement more */
+			return 0;
+	}
+}
+
+static int _trigger_connection(Phone * phone, ModemEventType type)
+{
+	PhoneEvent pevent;
+	ModemEvent mevent;
+
+	memset(&pevent, 0, sizeof(pevent));
+	memset(&mevent, 0, sizeof(mevent));
+	pevent.type = PHONE_EVENT_TYPE_MODEM_EVENT;
+	pevent.modem_event.event = &mevent;
+	mevent.type = type;
+	mevent.connection.connected = FALSE;
+	mevent.connection.in = 0;
+	mevent.connection.out = 0;
+	return phone->plugind->event(phone->plugin, &pevent);
 }
