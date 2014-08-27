@@ -33,6 +33,7 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable);
 static int _helper_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value);
+static int _helper_request(Phone * phone, ModemRequest * request);
 static int _helper_trigger(Phone * phone, ModemEventType event);
 
 
@@ -44,6 +45,7 @@ static void _helper_init(PhonePluginHelper * helper, Phone * phone)
 	helper->phone = phone;
 	helper->config_get = _helper_config_get;
 	helper->config_set = _helper_config_set;
+	helper->request = _helper_request;
 	helper->trigger = _helper_trigger;
 }
 
@@ -62,6 +64,14 @@ static int _helper_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value)
 {
 	return config_set(phone->config, section, variable, value);
+}
+
+
+/* helper_request */
+static int _helper_request(Phone * phone, ModemRequest * request)
+{
+	/* FIXME implement */
+	return -1;
 }
 
 
