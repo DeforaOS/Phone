@@ -1137,6 +1137,7 @@ int phone_load(Phone * phone, char const * plugin)
 	if((q = realloc(phone->plugins, sizeof(*q) * (phone->plugins_cnt + 1)))
 			== NULL)
 	{
+		pd->destroy(pp);
 		plugin_delete(p);
 		return -phone_error(NULL, strerror(errno), 1);
 	}
@@ -1148,6 +1149,7 @@ int phone_load(Phone * phone, char const * plugin)
 	q->pp = pp;
 	if(q->name == NULL)
 	{
+		pd->destroy(pp);
 		plugin_delete(p);
 		return -phone_error(NULL, strerror(errno), 1);
 	}
