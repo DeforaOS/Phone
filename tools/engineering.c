@@ -22,9 +22,45 @@
 #include "../src/plugins/engineering.c"
 #include "common.c"
 
+#ifndef PROGNAME
+# define PROGNAME "engineering"
+#endif
+
 
 /* private */
+/* prototypes */
+static int _engineering(Config * config);
+
+static int _usage(void);
+
+
 /* functions */
+/* engineering */
+static int _engineering(Config * config)
+{
+	PhonePluginHelper helper;
+	Phone phone;
+
+	phone.config = config;
+	phone.plugind = &plugin;
+	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
+	_helper_init(&helper, &phone);
+	if((phone.plugin = _engineering_init(&helper)) == NULL)
+		return -1;
+	gtk_main();
+	_engineering_destroy(phone.plugin);
+	return 0;
+}
+
+
+/* usage */
+static int _usage(void)
+{
+	fputs("Usage: " PROGNAME "\n", stderr);
+	return 1;
+}
+
+
 /* helpers */
 /* helper_queue */
 #if 0 /* FIXME re-implement */
@@ -82,19 +118,26 @@ static int _helper_queue(Phone * phone, char const * command)
 /* main */
 int main(int argc, char * argv[])
 {
-	PhonePluginHelper helper;
-	Phone phone;
+	int ret;
+	Config * config;
+	int o;
 
+	if((config = config_new()) == NULL)
+	{
+		error_print(PROGNAME);
+		return 2;
+	}
+	while((o = getopt(argc, argv, "")) != -1)
+		switch(o)
+		{
+			default:
+				return _usage();
+		}
+	if(optind != argc)
+		return _usage();
 	gtk_init(&argc, &argv);
-	if((phone.config = config_new()) == NULL)
-		return 2;
-	phone.plugind = &plugin;
-	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
-	_helper_init(&helper, &phone);
-	if((phone.plugin = _engineering_init(&helper)) == NULL)
-		return 2;
-	gtk_main();
-	_engineering_destroy(phone.plugin);
-	config_delete(phone.config);
-	return 0;
+	if((ret = (_engineering(config) == 0) ? 0 : 2) != 0)
+		error_print(PROGNAME);
+	config_delete(config);
+	return ret;
 }

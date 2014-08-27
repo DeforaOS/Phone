@@ -35,6 +35,8 @@
 /* prototypes */
 static int _gprs(Config * config);
 
+static int _usage(void);
+
 
 /* functions */
 /* gprs */
@@ -84,7 +86,10 @@ int main(int argc, char * argv[])
 	int o;
 
 	if((config = config_new()) == NULL)
+	{
+		error_print(PROGNAME);
 		return 2;
+	}
 	config_set(config, "gprs", "systray", "1");
 	while((o = getopt(argc, argv, "")) != -1)
 		switch(o)
