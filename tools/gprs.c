@@ -47,11 +47,7 @@ static int _gprs(Config * config)
 
 	phone.config = config;
 	phone.plugind = &plugin;
-	memset(&helper, 0, sizeof(helper));
-	helper.phone = &phone;
-	helper.config_get = _helper_config_get;
-	helper.config_set = _helper_config_set;
-	helper.trigger = _helper_trigger;
+	_helper_init(&helper, &phone);
 	if((phone.plugin = _gprs_init(&helper)) == NULL)
 		return -1;
 	g_idle_add(_gprs_on_idle, &phone);

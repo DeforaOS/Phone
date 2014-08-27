@@ -90,11 +90,7 @@ int main(int argc, char * argv[])
 		return 2;
 	phone.plugind = &plugin;
 	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
-	memset(&helper, 0, sizeof(helper));
-	helper.phone = &phone;
-	helper.config_get = _helper_config_get;
-	helper.config_set = _helper_config_set;
-	helper.trigger = _helper_trigger;
+	_helper_init(&helper, &phone);
 	if((phone.plugin = _engineering_init(&helper)) == NULL)
 		return 2;
 	gtk_main();

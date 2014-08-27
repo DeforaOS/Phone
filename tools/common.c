@@ -26,6 +26,8 @@ struct _Phone
 
 
 /* prototypes */
+static void _helper_init(PhonePluginHelper * helper, Phone * phone);
+
 /* helpers */
 static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable);
@@ -35,6 +37,17 @@ static int _helper_trigger(Phone * phone, ModemEventType event);
 
 
 /* functions */
+/* helper_init */
+static void _helper_init(PhonePluginHelper * helper, Phone * phone)
+{
+	memset(helper, 0, sizeof(*helper));
+	helper->phone = phone;
+	helper->config_get = _helper_config_get;
+	helper->config_set = _helper_config_set;
+	helper->trigger = _helper_trigger;
+}
+
+
 /* helpers */
 /* helper_config_get */
 static char const * _helper_config_get(Phone * phone, char const * section,
