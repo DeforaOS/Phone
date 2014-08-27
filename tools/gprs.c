@@ -100,7 +100,8 @@ int main(int argc, char * argv[])
 	if(optind != argc)
 		return _usage();
 	gtk_init(&argc, &argv);
-	ret = (_gprs(config) == 0) ? 0 : 2;
+	if((ret = (_gprs(config) == 0) ? 0 : 2) != 0)
+		error_print(PROGNAME);
 	config_delete(config);
 	return ret;
 }
