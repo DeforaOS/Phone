@@ -43,11 +43,7 @@ static int _gprs(void)
 {
 	Phone phone;
 
-	_phone_init(&phone, &plugin);
-	/* FIXME no longer hardcode the interface name */
-	config_set(phone.config, "gprs", "interface", "ppp0");
-	config_set(phone.config, "gprs", "systray", "1");
-	if((phone.plugin = plugin.init(&phone.helper)) == NULL)
+	if(_phone_init(&phone, &plugin) != 0)
 		return -1;
 	g_idle_add(_gprs_on_idle, &phone);
 	gtk_main();
