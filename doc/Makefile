@@ -41,6 +41,12 @@ install: $(TARGETS)
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phonectl.html"
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
 	$(INSTALL) -m 0644 gprs.conf $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
+	$(INSTALL) -m 0644 pppd-chat_gprs $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-chat_gprs
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
+	$(INSTALL) -m 0644 pppd-peers_gprs $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_gprs
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
+	$(INSTALL) -m 0644 pppd-peers_phone $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_phone
 
 uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phone.1"
@@ -48,5 +54,8 @@ uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.html"
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-chat_gprs
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_gprs
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_phone
 
 .PHONY: all clean distclean install uninstall
