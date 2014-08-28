@@ -16,6 +16,7 @@
 
 
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <signal.h>
 #include <libgen.h>
@@ -110,6 +111,7 @@ static int _helper_error(Phone * phone, char const * message, int ret)
 
 /* helper_request */
 static int _request_call(Phone * phone, ModemRequest * request);
+static void _request_call_child(gpointer data);
 static int _request_call_hangup(Phone * phone, ModemRequest * request);
 static int _request_authenticate(Phone * phone, ModemRequest * request);
 
@@ -181,7 +183,8 @@ static int _request_call(Phone * phone, ModemRequest * request)
 	}
 	argv[5] = phone->username;
 	argv[7] = phone->password;
-	res = g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error);
+	res = g_spawn_async(NULL, argv, NULL, flags, _request_call_child, NULL,
+			NULL, &error);
 	if(p != NULL)
 		free(argv[0]);
 	if(res == FALSE)
@@ -191,6 +194,12 @@ static int _request_call(Phone * phone, ModemRequest * request)
 		return -1;
 	}
 	return 0;
+}
+
+static void _request_call_child(gpointer data)
+{
+	/* XXX lets the PID file readable with higher privileges */
+	umask(022);
 }
 
 static int _request_call_hangup(Phone * phone, ModemRequest * request)
@@ -207,7 +216,6 @@ static int _request_call_hangup(Phone * phone, ModemRequest * request)
 	if((path = string_new_append("/var/run/", interface, ".pid", NULL))
 			== NULL)
 		return -1;
-	/* FIXME likely to not be readable */
 	if((fp = fopen(path, "r")) == NULL)
 		ret = -error_set_code(1, "%s: %s", path, strerror(errno));
 	else if(fread(buf, sizeof(*buf), sizeof(buf), fp) == 0)
