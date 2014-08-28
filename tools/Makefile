@@ -63,7 +63,10 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	$(MKDIR) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 0755 gprs $(DESTDIR)$(BINDIR)/gprs
 
 uninstall:
+	$(RM) -- $(DESTDIR)$(BINDIR)/gprs
 
 .PHONY: all clean distclean install uninstall
