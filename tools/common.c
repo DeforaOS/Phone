@@ -137,7 +137,28 @@ static int _helper_config_set(Phone * phone, char const * section,
 
 
 /* helper_error */
+static int _error_text(char const * message, int ret);
+
 static int _helper_error(Phone * phone, char const * message, int ret)
+{
+	GtkWidget * dialog;
+
+	if(phone == NULL)
+		return _error_text(message, ret);
+	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", "Error");
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+	return ret;
+}
+
+static int _error_text(char const * message, int ret)
 {
 	fprintf(stderr, "%s: %s\n", PROGNAME, message);
 	return ret;
