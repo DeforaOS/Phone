@@ -17,6 +17,7 @@
 
 #include <sys/ioctl.h>
 #include <string.h>
+#include <signal.h>
 #include <errno.h>
 #include <net/if.h>
 
@@ -102,6 +103,7 @@ static int _helper_error(Phone * phone, char const * message, int ret)
 
 /* helper_request */
 static int _request_call(Phone * phone, ModemRequest * request);
+static int _request_call_hangup(Phone * phone, ModemRequest * request);
 static int _request_authenticate(Phone * phone, ModemRequest * request);
 
 static int _helper_request(Phone * phone, ModemRequest * request)
@@ -112,6 +114,8 @@ static int _helper_request(Phone * phone, ModemRequest * request)
 			return _request_authenticate(phone, request);
 		case MODEM_REQUEST_CALL:
 			return _request_call(phone, request);
+		case MODEM_REQUEST_CALL_HANGUP:
+			return _request_call_hangup(phone, request);
 		default:
 			/* FIXME implement more */
 			return -error_set_code(1, "Not implemented");
@@ -135,6 +139,40 @@ static int _request_call(Phone * phone, ModemRequest * request)
 		return -error_set_code(1, "Unknown call type");
 	/* FIXME really implement */
 	return 0;
+}
+
+static int _request_call_hangup(Phone * phone, ModemRequest * request)
+{
+	int ret = 0;
+	char const * interface;
+	String * path;
+	FILE * fp;
+	char buf[16];
+	pid_t pid;
+
+	if((interface = config_get(phone->config, "gprs", "interface")) == NULL)
+		return -error_set_code(1, "Unknown interface");
+	if((path = string_new_append("/var/run/", interface, ".pid", NULL))
+			== NULL)
+		return -1;
+	/* FIXME likely to not be readable */
+	if((fp = fopen(path, "r")) == NULL)
+		ret = -error_set_code(1, "%s: %s", path, strerror(errno));
+	else if(fread(buf, sizeof(*buf), sizeof(buf), fp) == 0)
+		ret = -error_set_code(1, "%s: %s", path, strerror(errno));
+	else
+	{
+		buf[sizeof(buf) - 1] = '\0';
+		if(sscanf(buf, "%u", &pid) != 1)
+			ret = -error_set_code(1, "%s", strerror(errno));
+		else if(kill(pid, SIGHUP) != 0)
+			ret = -error_set_code(1, "%u: %s", pid,
+					strerror(errno));
+	}
+	if(fp != NULL)
+		fclose(fp);
+	string_delete(path);
+	return ret;
 }
 
 
