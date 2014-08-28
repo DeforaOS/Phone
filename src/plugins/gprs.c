@@ -505,12 +505,12 @@ static gboolean _settings_on_closex(gpointer data)
 static void _settings_on_connect(gpointer data)
 {
 	GPRS * gprs = data;
+	int res;
 
 	_settings_on_apply(gprs);
-	if(gprs->connected)
-		_gprs_disconnect(gprs);
-	else
-		_gprs_connect(gprs);
+	res = gprs->connected ? _gprs_disconnect(gprs) : _gprs_connect(gprs);
+	if(res != 0)
+		gprs->helper->error(gprs->helper->phone, error_get(), 1);
 }
 
 static void _settings_on_ok(gpointer data)
@@ -669,7 +669,8 @@ static int _gprs_connect(GPRS * gprs)
 	request.call.call_type = MODEM_CALL_TYPE_DATA;
 	request.call.number = "*99***1#"; /* XXX specific to GSM/GPRS */
 	if(gprs->helper->request(gprs->helper->phone, &request) != 0)
-		return -gprs->helper->error(NULL, error_get(), 1);
+		return -gprs->helper->error(gprs->helper->phone, error_get(),
+				1);
 	return 0;
 }
 
