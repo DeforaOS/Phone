@@ -109,7 +109,14 @@ static void _phone_destroy(Phone * phone)
 static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable)
 {
-	return config_get(phone->config, section, variable);
+	char const * ret;
+	String * s;
+
+	if((s = string_new_append("plugin::", section, NULL)) == NULL)
+		return NULL;
+	ret = config_get(phone->config, s, variable);
+	string_delete(s);
+	return ret;
 }
 
 
@@ -117,7 +124,15 @@ static char const * _helper_config_get(Phone * phone, char const * section,
 static int _helper_config_set(Phone * phone, char const * section,
 		char const * variable, char const * value)
 {
-	return config_set(phone->config, section, variable, value);
+	int ret;
+	String * s;
+
+	if((s = string_new_append("plugin::", section, NULL)) == NULL)
+		return -1;
+	ret = config_set(phone->config, section, variable, value);
+	string_delete(s);
+	/* FIXME save the configuration if successful */
+	return ret;
 }
 
 
@@ -198,7 +213,7 @@ static int _request_call(Phone * phone, ModemRequest * request)
 	if(request->call.call_type != MODEM_CALL_TYPE_DATA)
 		return -error_set_code(1, "Unknown call type");
 	/* pppd */
-	if((p = config_get(phone->config, "gprs", "pppd")) != NULL)
+	if((p = _helper_config_get(phone, "gprs", "pppd")) != NULL)
 	{
 		if((argv[0] = strdup(p)) == NULL)
 			return -error_set_code(1, "%s", strerror(errno));
@@ -246,7 +261,7 @@ static int _request_call_hangup(Phone * phone, ModemRequest * request)
 	char buf[16];
 	pid_t pid;
 
-	if((interface = config_get(phone->config, "gprs", "interface")) == NULL)
+	if((interface = _helper_config_get(phone, "gprs", "interface")) == NULL)
 		return -error_set_code(1, "Unknown interface");
 	if((path = string_new_append("/var/run/", interface, ".pid", NULL))
 			== NULL)
@@ -310,7 +325,7 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 	mevent.connection.in = 0;
 	mevent.connection.out = 0;
 #if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
-	if((p = config_get(phone->config, "gprs", "interface")) != NULL)
+	if((p = _helper_config_get(phone, "gprs", "interface")) != NULL)
 		/* XXX ignore errors */
 		_trigger_connection_interface(phone, &pevent, p);
 #endif
