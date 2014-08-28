@@ -35,6 +35,7 @@ struct _Phone
 	char * username;
 	char * password;
 	int fd;
+	guint source;
 };
 
 
@@ -70,6 +71,7 @@ static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 	phone->username = NULL;
 	phone->password = NULL;
 	phone->fd = -1;
+	phone->source = 0;
 	return 0;
 }
 
@@ -81,6 +83,8 @@ static void _phone_destroy(Phone * phone)
 	free(phone->password);
 	if(phone->fd >= 0)
 		close(phone->fd);
+	if(phone->source != 0)
+		g_source_remove(phone->source);
 }
 
 
@@ -112,6 +116,7 @@ static int _helper_error(Phone * phone, char const * message, int ret)
 /* helper_request */
 static int _request_call(Phone * phone, ModemRequest * request);
 static void _request_call_child(gpointer data);
+static void _request_call_child_watch(GPid pid, gint status, gpointer data);
 static int _request_call_hangup(Phone * phone, ModemRequest * request);
 static int _request_authenticate(Phone * phone, ModemRequest * request);
 
@@ -169,7 +174,9 @@ static int _request_call(Phone * phone, ModemRequest * request)
 		"user", NULL, "password", NULL, NULL };
 	char const * p;
 	gboolean res;
-	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
+	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO
+		| G_SPAWN_DO_NOT_REAP_CHILD;
+	GPid pid;
 	GError * error = NULL;
 
 	if(request->call.call_type != MODEM_CALL_TYPE_DATA)
@@ -184,7 +191,7 @@ static int _request_call(Phone * phone, ModemRequest * request)
 	argv[5] = phone->username;
 	argv[7] = phone->password;
 	res = g_spawn_async(NULL, argv, NULL, flags, _request_call_child, NULL,
-			NULL, &error);
+			&pid, &error);
 	if(p != NULL)
 		free(argv[0]);
 	if(res == FALSE)
@@ -193,6 +200,10 @@ static int _request_call(Phone * phone, ModemRequest * request)
 		g_error_free(error);
 		return -1;
 	}
+	if(phone->source != 0)
+		g_source_remove(phone->source);
+	phone->source = g_child_watch_add(pid, _request_call_child_watch,
+			phone);
 	return 0;
 }
 
@@ -200,6 +211,14 @@ static void _request_call_child(gpointer data)
 {
 	/* XXX lets the PID file readable with higher privileges */
 	umask(022);
+}
+
+static void _request_call_child_watch(GPid pid, gint status, gpointer data)
+{
+	Phone * phone = data;
+
+	phone->source = 0;
+	_helper_trigger(phone, MODEM_EVENT_TYPE_CONNECTION);
 }
 
 static int _request_call_hangup(Phone * phone, ModemRequest * request)
@@ -263,6 +282,9 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 	char const * p;
 #endif
 
+	if(phone->source != 0)
+		/* wait for the result of the connection */
+		return 0;
 	memset(&pevent, 0, sizeof(pevent));
 	memset(&mevent, 0, sizeof(mevent));
 	pevent.type = PHONE_EVENT_TYPE_MODEM_EVENT;
