@@ -1,0 +1,11 @@
+/dev/modem 460800
+#important: the APN has to be configured here
+connect '/usr/sbin/chat -T APN -f /etc/ppp/chat/gprs'
+defaultroute
+local
+lock
+noauth
+updetach
+usepeerdns
+#mru 296
+#mtu 296

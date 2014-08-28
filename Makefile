@@ -79,8 +79,10 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/phone.xml \
 		$(PACKAGE)-$(VERSION)/doc/phonectl.css.xml \
 		$(PACKAGE)-$(VERSION)/doc/phonectl.xml \
+		$(PACKAGE)-$(VERSION)/doc/pppd-chat_gprs \
 		$(PACKAGE)-$(VERSION)/doc/pppd-ip-down \
 		$(PACKAGE)-$(VERSION)/doc/pppd-ip-up \
+		$(PACKAGE)-$(VERSION)/doc/pppd-peers_gprs \
 		$(PACKAGE)-$(VERSION)/doc/pppd-peers_phone \
 		$(PACKAGE)-$(VERSION)/doc/project.conf \
 		$(PACKAGE)-$(VERSION)/include/Phone.h \
