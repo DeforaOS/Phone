@@ -31,6 +31,8 @@ struct _Phone
 	PhonePluginHelper helper;
 	PhonePluginDefinition * plugind;
 	PhonePlugin * plugin;
+	char * username;
+	char * password;
 	int fd;
 };
 
@@ -64,6 +66,8 @@ static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 	phone->helper.trigger = _helper_trigger;
 	phone->plugind = plugind;
 	phone->plugin = NULL;
+	phone->username = NULL;
+	phone->password = NULL;
 	phone->fd = -1;
 	return 0;
 }
@@ -72,6 +76,8 @@ static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 /* phone_destroy */
 static void _phone_destroy(Phone * phone)
 {
+	free(phone->username);
+	free(phone->password);
 	if(phone->fd >= 0)
 		close(phone->fd);
 }
@@ -105,14 +111,14 @@ static int _helper_error(Phone * phone, char const * message, int ret)
 /* helper_request */
 static int _request_call(Phone * phone, ModemRequest * request);
 static int _request_call_hangup(Phone * phone, ModemRequest * request);
-static int _request_authenticate(ModemRequest * request);
+static int _request_authenticate(Phone * phone, ModemRequest * request);
 
 static int _helper_request(Phone * phone, ModemRequest * request)
 {
 	switch(request->type)
 	{
 		case MODEM_REQUEST_AUTHENTICATE:
-			return _request_authenticate(request);
+			return _request_authenticate(phone, request);
 		case MODEM_REQUEST_CALL:
 			return _request_call(phone, request);
 		case MODEM_REQUEST_CALL_HANGUP:
@@ -123,20 +129,42 @@ static int _helper_request(Phone * phone, ModemRequest * request)
 	}
 }
 
-static int _request_authenticate(ModemRequest * request)
+static int _request_authenticate(Phone * phone, ModemRequest * request)
 {
+	char const * p;
+
 	if(request->authenticate.name == NULL)
 		return -error_set_code(1, "Unknown authentication");
-	if(strcmp(request->authenticate.name, "APN") == 0
-			|| strcmp(request->authenticate.name, "GPRS") == 0)
+	if(strcmp(request->authenticate.name, "APN") == 0)
 		/* FIXME really implement */
 		return 0;
+	else if(strcmp(request->authenticate.name, "GPRS") == 0)
+	{
+		free(phone->username);
+		free(phone->password);
+		p = (request->authenticate.username != NULL)
+			? request->authenticate.username : "";
+		phone->username = strdup(p);
+		p = (request->authenticate.password != NULL)
+			? request->authenticate.password : "";
+		phone->password = strdup(p);
+		if(phone->username == NULL || phone->password == NULL)
+		{
+			free(phone->username);
+			phone->username = NULL;
+			free(phone->password);
+			phone->password = NULL;
+			return -error_set_code(1, "%s", strerror(errno));
+		}
+		return 0;
+	}
 	return -error_set_code(1, "Unknown authentication");
 }
 
 static int _request_call(Phone * phone, ModemRequest * request)
 {
-	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "gprs", NULL };
+	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "gprs",
+		"user", NULL, "password", NULL, NULL };
 	char const * p;
 	gboolean res;
 	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
@@ -151,6 +179,8 @@ static int _request_call(Phone * phone, ModemRequest * request)
 			return -error_set_code(1, "%s", strerror(errno));
 		argv[1] = basename(argv[0]);
 	}
+	argv[5] = phone->username;
+	argv[7] = phone->password;
 	res = g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error);
 	if(p != NULL)
 		free(argv[0]);
