@@ -34,6 +34,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/9.wav \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-contacts.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-dialer.desktop \
+		$(PACKAGE)-$(VERSION)/data/deforaos-phone-gprs.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-log.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-messages.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-settings.desktop \
