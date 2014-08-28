@@ -57,8 +57,19 @@ static int _helper_trigger(Phone * phone, ModemEventType event);
 /* phone_init */
 static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 {
+	char const * homedir;
+	String * path;
+
 	if((phone->config = config_new()) == NULL)
 		return -1;
+	if((homedir = g_getenv("HOME")) == NULL)
+		homedir = g_get_home_dir();
+	if((path = string_new_append(homedir, "/.phone", NULL)) != 0)
+	{
+		if(config_load(phone->config, path) != 0)
+			error_print(PROGNAME);
+		string_delete(path);
+	}
 	memset(&phone->helper, 0, sizeof(phone->helper));
 	phone->helper.phone = phone;
 	phone->helper.config_get = _helper_config_get;
@@ -72,6 +83,11 @@ static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 	phone->password = NULL;
 	phone->fd = -1;
 	phone->source = 0;
+	if((phone->plugin = plugind->init(&phone->helper)) == NULL)
+	{
+		_phone_destroy(phone);
+		return -1;
+	}
 	return 0;
 }
 
