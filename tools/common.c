@@ -174,7 +174,7 @@ static int _trigger_connection(Phone * phone, ModemEventType type)
 	mevent.connection.in = 0;
 	mevent.connection.out = 0;
 #if defined(SIOCGIFDATA) || defined(SIOCGIFFLAGS)
-	if((p = config_get(phone->config, plugin.name, "interface")) != NULL)
+	if((p = config_get(phone->config, "gprs", "interface")) != NULL)
 		/* XXX ignore errors */
 		_trigger_connection_interface(phone, &pevent, p);
 #endif

@@ -49,8 +49,8 @@ static int _gprs(void)
 
 	_phone_init(&phone, &plugin);
 	/* FIXME no longer hardcode the interface name */
-	config_set(phone.config, plugin.name, "interface", "ppp0");
-	config_set(phone.config, plugin.name, "systray", "1");
+	config_set(phone.config, "gprs", "interface", "ppp0");
+	config_set(phone.config, "gprs", "systray", "1");
 	if((phone.plugin = plugin.init(&phone.helper)) == NULL)
 		return -1;
 	g_idle_add(_gprs_on_idle, &phone);
