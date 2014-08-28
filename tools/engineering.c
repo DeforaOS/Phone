@@ -44,7 +44,7 @@ static int _engineering(void)
 
 	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
 	_phone_init(&phone, &plugin);
-	if((phone.plugin = _engineering_init(&helper)) == NULL)
+	if((phone.plugin = plugin.init(&helper)) == NULL)
 		return -1;
 	gtk_main();
 	_engineering_destroy(phone.plugin);
