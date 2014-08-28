@@ -102,18 +102,18 @@ static int _helper_error(Phone * phone, char const * message, int ret)
 
 
 /* helper_request */
-static int _request_call(Phone * phone, ModemRequest * request);
+static int _request_call(ModemRequest * request);
 static int _request_call_hangup(Phone * phone, ModemRequest * request);
-static int _request_authenticate(Phone * phone, ModemRequest * request);
+static int _request_authenticate(ModemRequest * request);
 
 static int _helper_request(Phone * phone, ModemRequest * request)
 {
 	switch(request->type)
 	{
 		case MODEM_REQUEST_AUTHENTICATE:
-			return _request_authenticate(phone, request);
+			return _request_authenticate(request);
 		case MODEM_REQUEST_CALL:
-			return _request_call(phone, request);
+			return _request_call(request);
 		case MODEM_REQUEST_CALL_HANGUP:
 			return _request_call_hangup(phone, request);
 		default:
@@ -122,7 +122,7 @@ static int _helper_request(Phone * phone, ModemRequest * request)
 	}
 }
 
-static int _request_authenticate(Phone * phone, ModemRequest * request)
+static int _request_authenticate(ModemRequest * request)
 {
 	if(request->authenticate.name == NULL)
 		return -error_set_code(1, "Unknown authentication");
@@ -133,7 +133,7 @@ static int _request_authenticate(Phone * phone, ModemRequest * request)
 	return -error_set_code(1, "Unknown authentication");
 }
 
-static int _request_call(Phone * phone, ModemRequest * request)
+static int _request_call(ModemRequest * request)
 {
 	if(request->call.call_type != MODEM_CALL_TYPE_DATA)
 		return -error_set_code(1, "Unknown call type");
