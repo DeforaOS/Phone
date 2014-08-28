@@ -18,6 +18,7 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <signal.h>
+#include <libgen.h>
 #include <errno.h>
 #include <net/if.h>
 
@@ -102,7 +103,7 @@ static int _helper_error(Phone * phone, char const * message, int ret)
 
 
 /* helper_request */
-static int _request_call(ModemRequest * request);
+static int _request_call(Phone * phone, ModemRequest * request);
 static int _request_call_hangup(Phone * phone, ModemRequest * request);
 static int _request_authenticate(ModemRequest * request);
 
@@ -113,7 +114,7 @@ static int _helper_request(Phone * phone, ModemRequest * request)
 		case MODEM_REQUEST_AUTHENTICATE:
 			return _request_authenticate(request);
 		case MODEM_REQUEST_CALL:
-			return _request_call(request);
+			return _request_call(phone, request);
 		case MODEM_REQUEST_CALL_HANGUP:
 			return _request_call_hangup(phone, request);
 		default:
@@ -133,11 +134,32 @@ static int _request_authenticate(ModemRequest * request)
 	return -error_set_code(1, "Unknown authentication");
 }
 
-static int _request_call(ModemRequest * request)
+static int _request_call(Phone * phone, ModemRequest * request)
 {
+	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "gprs", NULL };
+	char const * p;
+	gboolean res;
+	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
+	GError * error = NULL;
+
 	if(request->call.call_type != MODEM_CALL_TYPE_DATA)
 		return -error_set_code(1, "Unknown call type");
-	/* FIXME really implement */
+	/* pppd */
+	if((p = config_get(phone->config, "gprs", "pppd")) != NULL)
+	{
+		if((argv[0] = strdup(p)) == NULL)
+			return -error_set_code(1, "%s", strerror(errno));
+		argv[1] = basename(argv[0]);
+	}
+	res = g_spawn_async(NULL, argv, NULL, flags, NULL, NULL, NULL, &error);
+	if(p != NULL)
+		free(argv[0]);
+	if(res == FALSE)
+	{
+		error_set_code(1, "%s", error->message);
+		g_error_free(error);
+		return -1;
+	}
 	return 0;
 }
 
