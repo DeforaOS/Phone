@@ -13,8 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 /* TODO:
- * - fix the counters upon start
- * - store the default settings for the operator in a configuration file
  * - actually call (and track) pppd */
 
 
