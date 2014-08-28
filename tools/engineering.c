@@ -39,7 +39,6 @@ static int _usage(void);
 /* engineering */
 static int _engineering(void)
 {
-	PhonePluginHelper helper;
 	Phone phone;
 
 	config_load(phone.config, "/home/khorben/.phone"); /* FIXME hardcoded */
