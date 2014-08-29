@@ -7,6 +7,7 @@
 <!ENTITY username  "khorben">
 <!ENTITY email     "khorben@defora.org">
 <!ENTITY package   "DeforaOS Phone">
+<!ENTITY gprs1     "gprs.xml">
 <!ENTITY phone1    "phone.xml">
 <!ENTITY phonectl1 "phonectl.xml">
 ]>
@@ -42,6 +43,7 @@
 	<chapter>
 		<title>Manual pages</title>
 		<section>
+			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&gprs1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&phone1;"/>
 			<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="&phonectl1;"/>
 		</section>

@@ -1,7 +1,7 @@
 MKDIR	= mkdir -m 0755 -p
 INSTALL	= install
 RM	= rm -f
-TARGETS	= index.html phone.1 phone.html phonectl.1 phonectl.html
+TARGETS	= gprs.1 gprs.html index.html phone.1 phone.html phonectl.1 phonectl.html
 PREFIX	= /usr/local
 DESTDIR	=
 RM	= rm -f
@@ -12,7 +12,13 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-index.html: index.xml index.xsl phone.xml phonectl.xml
+gprs.1: gprs.xml
+	./docbook.sh -P "$(PREFIX)" -- "gprs.1"
+
+gprs.html: manual.css.xml gprs.css.xml gprs.xml
+	./docbook.sh -P "$(PREFIX)" -- "gprs.html"
+
+index.html: gprs.xml index.xml index.xsl phone.xml phonectl.xml
 	./docbook.sh -P "$(PREFIX)" -- "index.html"
 
 phone.1: phone.xml
@@ -28,13 +34,15 @@ phonectl.html: manual.css.xml phonectl.css.xml phonectl.xml
 	./docbook.sh -P "$(PREFIX)" -- "phonectl.html"
 
 clean:
-	$(RM) -- $(index.html_OBJS) $(phone.1_OBJS) $(phone.html_OBJS) $(phonectl.1_OBJS) $(phonectl.html_OBJS)
+	$(RM) -- $(gprs.1_OBJS) $(gprs.html_OBJS) $(index.html_OBJS) $(phone.1_OBJS) $(phone.html_OBJS) $(phonectl.1_OBJS) $(phonectl.html_OBJS)
 	./docbook.sh -c -P "$(PREFIX)" -- "phonectl.html"
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "gprs.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "gprs.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phone.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phone.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phonectl.1"
@@ -49,6 +57,8 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 pppd-peers_phone $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_phone
 
 uninstall:
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "gprs.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "gprs.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phone.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phone.html"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.1"

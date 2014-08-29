@@ -9,8 +9,8 @@
 	<!ENTITY section   "1">
 	<!ENTITY title     "Phone User Manual">
 	<!ENTITY package   "DeforaOS Phone">
-	<!ENTITY name      "phonectl">
-	<!ENTITY purpose   "Control interface for the desktop telephony application">
+	<!ENTITY name      "gprs">
+	<!ENTITY purpose   "Desktop telephony application">
 ]>
 <refentry>
 	<refentryinfo>
@@ -27,7 +27,6 @@
 			</author>
 		</authorgroup>
 		<copyright>
-			<year>2013</year>
 			<year>2014</year>
 			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
 		</copyright>
@@ -50,77 +49,18 @@
 	<refsynopsisdiv>
 		<cmdsynopsis>
 			<command>&name;</command>
-			<group choice="plain">
-				<arg choice="plain">-C</arg>
-				<arg choice="plain">-D</arg>
-				<arg choice="plain">-L</arg>
-				<arg choice="plain">-M</arg>
-				<arg choice="plain">-S</arg>
-				<arg choice="plain">-W</arg>
-				<arg choice="plain">-r</arg>
-				<arg choice="plain">-s</arg>
-			</group>
 		</cmdsynopsis>
 	</refsynopsisdiv>
 	<refsect1 id="description">
 		<title>Description</title>
-		<para><command>&name;</command> is a control interface for the desktop
-			telephony application. It can show different elements of its user interface,
-			or help reacting to system events when required.</para>
+		<para><command>&name;</command> is a telephony application for desktop
+			environments and embedded devices. It allows connecting to Internet with the
+			<command>pppd<manvolnum>8</manvolnum></command> daemon.</para>
 	</refsect1>
 	<refsect1 id="options">
 		<title>Options</title>
-		<para>The following options are available:</para>
-		<variablelist>
-			<varlistentry>
-				<term><option>-C</option></term>
-				<listitem>
-					<para>Open the contacts window.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-D</option></term>
-				<listitem>
-					<para>Show the dialer.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-L</option></term>
-				<listitem>
-					<para>Open the phone log window.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-M</option></term>
-				<listitem>
-					<para>Open the messages window.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-S</option></term>
-				<listitem>
-					<para>Display the preferences window.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-W</option></term>
-				<listitem>
-					<para>Write a new message.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-r</option></term>
-				<listitem>
-					<para>Resume telephony operation.</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term><option>-s</option></term>
-				<listitem>
-					<para>Suspend telephony operation.</para>
-				</listitem>
-			</varlistentry>
-		</variablelist>
+		<para><command>&name;</command> does not accept any options from the command
+		line.</para>
 	</refsect1>
 	<refsect1 id="bugs">
 		<title>Bugs</title>
@@ -131,8 +71,8 @@
 		<title>See also</title>
 		<para>
 			<citerefentry>
-				<refentrytitle>gprs</refentrytitle>
-				<manvolnum>1</manvolnum>
+				<refentrytitle>chat</refentrytitle>
+				<manvolnum>8</manvolnum>
 			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>phone</refentrytitle>

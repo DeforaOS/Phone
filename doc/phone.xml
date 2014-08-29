@@ -28,6 +28,7 @@
 		</authorgroup>
 		<copyright>
 			<year>2013</year>
+			<year>2014</year>
 			<holder>&firstname; &surname; &lt;&email;&gt;</holder>
 		</copyright>
 		<legalnotice>
@@ -88,6 +89,10 @@
 	<refsect1 id="see_also">
 		<title>See also</title>
 		<para>
+			<citerefentry>
+				<refentrytitle>gprs</refentrytitle>
+				<manvolnum>1</manvolnum>
+			</citerefentry>,
 			<citerefentry>
 				<refentrytitle>phonectl</refentrytitle>
 				<manvolnum>1</manvolnum>
