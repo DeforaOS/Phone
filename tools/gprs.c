@@ -19,12 +19,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <System.h>
-#include "../src/plugins/gprs.c"
 
 #ifndef PROGNAME
 # define PROGNAME "gprs"
 #endif
 
+#include "../src/plugins/gprs.c"
 #include "common.c"
 
 
