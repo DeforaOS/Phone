@@ -54,7 +54,9 @@ typedef struct _PhonePlugin
 	GtkWidget * apn;
 	GtkWidget * username;
 	GtkWidget * password;
+#ifndef PROGNAME
 	GtkWidget * defaults;
+#endif
 	GtkWidget * connect;
 	GtkWidget * st_image;
 	GtkWidget * st_label;
@@ -241,8 +243,10 @@ static void _gprs_event_modem_operator(GPRS * gprs, char const * _operator)
 	gprs->_operator = (_operator != NULL) ? strdup(_operator) : NULL;
 	if(gprs->window == NULL)
 		return;
+#ifndef PROGNAME
 	gtk_widget_set_sensitive(gprs->defaults, (gprs->_operator != NULL)
 			? TRUE : FALSE);
+#endif
 	/* FIXME also load the defaults when creating the window if relevant */
 	if(((p = gtk_entry_get_text(GTK_ENTRY(gprs->apn))) == NULL
 				|| strlen(p) == 0)
@@ -372,6 +376,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+#ifndef PROGNAME
 	/* defaults */
 	hbox = gtk_hbox_new(FALSE, 4);
 	gprs->defaults = gtk_button_new_with_label("Load defaults");
@@ -381,6 +386,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 				_gprs_on_load_defaults), gprs);
 	gtk_box_pack_end(GTK_BOX(hbox), gprs->defaults, FALSE, TRUE, 0);
 	gtk_box_pack_end(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
+#endif
 	gtk_container_add(GTK_CONTAINER(frame), vbox2);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 0);
 	return vbox;
