@@ -24,8 +24,8 @@ engineering: $(engineering_OBJS)
 	$(CC) -o engineering $(engineering_OBJS) $(engineering_LDFLAGS)
 
 gprs_OBJS = gprs.o
-gprs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem gtk+-2.0`
-gprs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem gtk+-2.0`
+gprs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
+gprs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
 gprs: $(gprs_OBJS)
 	$(CC) -o gprs $(gprs_OBJS) $(gprs_LDFLAGS)

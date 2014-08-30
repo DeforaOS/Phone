@@ -21,6 +21,9 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <System.h>
+#ifdef PROGNAME
+# include <Desktop.h>
+#endif
 #include "Phone.h"
 #include "../../config.h"
 
@@ -272,6 +275,9 @@ static void _settings_on_apply(gpointer data);
 static void _settings_on_cancel(gpointer data);
 static gboolean _settings_on_closex(gpointer data);
 static void _settings_on_connect(gpointer data);
+#ifdef PROGNAME
+static void _settings_on_help(gpointer data);
+#endif
 static void _settings_on_ok(gpointer data);
 static void _settings_on_reset(gpointer data);
 
@@ -311,6 +317,12 @@ static void _gprs_settings(GPRS * gprs)
 	bbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
+#ifdef PROGNAME
+	widget = gtk_button_new_from_stock(GTK_STOCK_HELP);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				_settings_on_help), gprs);
+	gtk_container_add(GTK_CONTAINER(bbox), widget);
+#endif
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_settings_on_cancel), gprs);
@@ -518,6 +530,13 @@ static void _settings_on_connect(gpointer data)
 	if(res != 0)
 		gprs->helper->error(gprs->helper->phone, error_get(), 1);
 }
+
+#ifdef PROGNAME
+static void _settings_on_help(gpointer data)
+{
+	desktop_help_contents(PACKAGE, PROGNAME);
+}
+#endif
 
 static void _settings_on_ok(gpointer data)
 {
