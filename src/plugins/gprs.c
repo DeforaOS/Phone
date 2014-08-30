@@ -820,6 +820,14 @@ static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				_gprs_settings), gprs);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+#ifdef PROGNAME
+	menuitem = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+	/* quit */
+	menuitem = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
+	g_signal_connect(menuitem, "activate", G_CALLBACK(gtk_main_quit), NULL);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+#endif
 	gtk_widget_show_all(menu);
 	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, time);
 }
