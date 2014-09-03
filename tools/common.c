@@ -270,6 +270,7 @@ static void _request_call_child_watch(GPid pid, gint status, gpointer data)
 	Phone * phone = data;
 
 	phone->source = 0;
+	g_spawn_close_pid(pid);
 	_helper_trigger(phone, MODEM_EVENT_TYPE_CONNECTION);
 }
 
