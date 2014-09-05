@@ -83,7 +83,31 @@ static gboolean _hayes_on_start(gpointer data)
 	if((hayes = plugin.init(helper)) == NULL)
 		return FALSE;
 	if(plugin.start(hayes, 0) == 0)
+	{
+		_on_code_csq(&hayes->channel, "31,99");
+		_on_code_csq(&hayes->channel, "20,99");
+		_on_code_csq(&hayes->channel, "19,99");
+		_on_code_csq(&hayes->channel, "18,99");
+		_on_code_csq(&hayes->channel, "17,99");
+		_on_code_csq(&hayes->channel, "16,99");
+		_on_code_csq(&hayes->channel, "15,99");
+		_on_code_csq(&hayes->channel, "14,99");
+		_on_code_csq(&hayes->channel, "13,99");
+		_on_code_csq(&hayes->channel, "12,99");
+		_on_code_csq(&hayes->channel, "11,99");
+		_on_code_csq(&hayes->channel, "10,99");
+		_on_code_csq(&hayes->channel, "9,99");
+		_on_code_csq(&hayes->channel, "8,99");
+		_on_code_csq(&hayes->channel, "7,99");
+		_on_code_csq(&hayes->channel, "6,99");
+		_on_code_csq(&hayes->channel, "5,99");
+		_on_code_csq(&hayes->channel, "4,99");
+		_on_code_csq(&hayes->channel, "3,99");
+		_on_code_csq(&hayes->channel, "2,99");
+		_on_code_csq(&hayes->channel, "1,99");
+		_on_code_csq(&hayes->channel, "0,99");
 		g_timeout_add(1000, _hayes_on_stop, hayes);
+	}
 	else
 		g_main_loop_quit(_loop);
 	return FALSE;
@@ -127,6 +151,15 @@ static int _hayes_helper_error(Modem * modem, char const * message, int ret)
 /* hayes_helper_event */
 static void _hayes_helper_event(Modem * modem, ModemEvent * event)
 {
+	switch(event->type)
+	{
+		case MODEM_EVENT_TYPE_REGISTRATION:
+			printf("%s=%f\n", "modem.event.registration.signal",
+					event->registration.signal);
+			break;
+		default:
+			break;
+	}
 }
 
 
