@@ -3865,10 +3865,13 @@ static void _on_code_csq(HayesChannel * channel, char const * answer)
 		return;
 	if(u > 31)
 		event->registration.signal = 0.0 / 0.0;
-	else if(u <= 12)
+	else if(u >= 20)
 		event->registration.signal = 1.0;
 	else
-		event->registration.signal = (32.0 - u) / 20.0;
+	{
+		event->registration.signal = (u > 4) ? (u - 4) : 0;
+		event->registration.signal = event->registration.signal / 16.0;
+	}
 	/* this is usually worth an event */
 	hayes->helper->event(hayes->helper->modem, event);
 }
