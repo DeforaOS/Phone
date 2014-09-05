@@ -3008,6 +3008,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 		case 100: /* unknown error */
 			if((channel->quirks & HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
 				break;
+			/* fallback */
 		case 14: /* SIM busy */
 			/* repeat the command */
 			if(command == NULL)
