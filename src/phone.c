@@ -3624,7 +3624,8 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 {
 	GtkWidget * dialog;
-	int flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	const GtkDialogFlags flags = GTK_DIALOG_MODAL
+		| GTK_DIALOG_DESTROY_WITH_PARENT;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
@@ -3662,7 +3663,7 @@ static int _phone_confirm(Phone * phone, GtkWidget * window,
 {
 	GtkWidget * dialog;
 	GtkWindow * w = (window != NULL) ? GTK_WINDOW(window) : NULL;
-	int flags = (window != NULL)
+	const GtkDialogFlags flags = (window != NULL)
 		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 	int res;
 
@@ -3717,7 +3718,8 @@ static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 		GCallback callback)
 {
 	GtkWidget * dialog;
-	int flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	const GtkDialogFlags flags = GTK_DIALOG_MODAL
+		| GTK_DIALOG_DESTROY_WITH_PARENT;
 
 	if(callback == NULL)
 		callback = G_CALLBACK(gtk_widget_destroy);
