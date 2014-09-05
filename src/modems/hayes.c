@@ -2089,7 +2089,7 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			break;
 		case HCS_TIMEOUT: /* try again */
 		case HCS_ERROR:
-			_reset_settle(hayes);
+			_reset_settle(channel);
 			break;
 	}
 	return status;
