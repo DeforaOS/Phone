@@ -1680,7 +1680,7 @@ static char * _request_attention_message_send(Hayes * hayes,
 	len = sizeof(cmd) + 10 + pdulen + 1;
 	ret = malloc(len);
 	if(channel->quirks & HAYES_QUIRK_WANT_SMSC_IN_PDU)
-		pdulen-=2;
+		pdulen -= 2;
 	/* FIXME really issue using two separate commands */
 	if(ret != NULL)
 		snprintf(ret, len, "%s%lu\r\n%s", cmd, ((unsigned long)pdulen
