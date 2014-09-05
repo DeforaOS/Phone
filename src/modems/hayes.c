@@ -241,6 +241,8 @@ static void _hayes_reset(Hayes * hayes);
 /* callbacks */
 static gboolean _on_queue_timeout(gpointer data);
 static gboolean _on_reset(gpointer data);
+static gboolean _on_reset_settle(gpointer data);
+static gboolean _on_reset_settle2(gpointer data);
 static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
@@ -1857,9 +1859,6 @@ static int _reset_open(Hayes * hayes);
 static int _reset_configure(Hayes * hayes, char const * device, int fd);
 static unsigned int _reset_configure_baudrate(Hayes * hayes,
 		unsigned int baudrate);
-static gboolean _reset_settle(gpointer data);
-static HayesCommandStatus _on_reset_callback(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
 
 static gboolean _on_reset(gpointer data)
 {
@@ -1905,7 +1904,7 @@ static gboolean _on_reset(gpointer data)
 	g_io_channel_set_buffered(channel->channel, FALSE);
 	channel->rd_source = g_io_add_watch(channel->channel, G_IO_IN,
 			_on_watch_can_read, channel);
-	_reset_settle(channel);
+	hayes->source = g_idle_add(_on_reset_settle, channel);
 	return FALSE;
 }
 
@@ -2031,21 +2030,43 @@ static unsigned int _reset_configure_baudrate(Hayes * hayes,
 	}
 }
 
-static gboolean _reset_settle(gpointer data)
+
+/* on_reset_settle */
+static gboolean _reset_settle_command(HayesChannel * channel,
+		char const * string);
+static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
+
+static gboolean _on_reset_settle(gpointer data)
 {
 	HayesChannel * channel = data;
+
+	return _reset_settle_command(channel, "ATZE0V1");
+}
+
+static gboolean _on_reset_settle2(gpointer data)
+{
+	HayesChannel * channel = data;
+
+	/* try an alternative initialization string */
+	return _reset_settle_command(channel, "ATE0V1");
+}
+
+static gboolean _reset_settle_command(HayesChannel * channel,
+		char const * string)
+{
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
+	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, string);
 #endif
-	if((command = hayes_command_new("ATZE0V1")) == NULL)
+	if((command = hayes_command_new(string)) == NULL)
 	{
 		hayes->helper->error(hayes->helper->modem, error_get(), 1);
 		return FALSE;
 	}
-	hayes_command_set_callback(command, _on_reset_callback, channel);
+	hayes_command_set_callback(command, _on_reset_settle_callback, channel);
 	hayes_command_set_priority(command, HCP_IMMEDIATE);
 	hayes_command_set_timeout(command, 500);
 	if(_hayes_queue_command(hayes, channel, command) != 0)
@@ -2056,7 +2077,7 @@ static gboolean _reset_settle(gpointer data)
 	return FALSE;
 }
 
-static HayesCommandStatus _on_reset_callback(HayesCommand * command,
+static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	HayesChannel * channel = priv;
@@ -2089,7 +2110,10 @@ static HayesCommandStatus _on_reset_callback(HayesCommand * command,
 			break;
 		case HCS_TIMEOUT: /* try again */
 		case HCS_ERROR:
-			_reset_settle(channel);
+			if(hayes->source != 0)
+				g_source_remove(hayes->source);
+			hayes->source = g_timeout_add(hayes->retry,
+					_on_reset_settle2, channel);
 			break;
 	}
 	return status;
