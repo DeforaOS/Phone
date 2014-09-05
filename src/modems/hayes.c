@@ -2023,8 +2023,9 @@ static unsigned int _reset_configure_baudrate(Hayes * hayes,
 			return B921600;
 #endif
 		default:
-			error_set("%u%s", baudrate,
-					"Unsupported baudrate (using 115200)");
+			error_set("%u%s%u%s", baudrate,
+					"Unsupported baudrate (using ",
+					115200, ")");
 			hayes->helper->error(NULL, error_get(), 1);
 			return B115200;
 	}
