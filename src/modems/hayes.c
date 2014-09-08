@@ -2867,18 +2867,16 @@ static void _on_code_cfun(HayesChannel * channel, char const * answer)
 	{
 		case 1:
 			/* report being online */
-			event = &channel->events[MODEM_EVENT_TYPE_STATUS];
 			event->status.status = MODEM_STATUS_ONLINE;
-			hayes->helper->event(hayes->helper->modem, event);
 			break;
 		case 4: /* antennas disabled */
 		case 0: /* telephony disabled */
 		default:
 			/* FIXME this is maybe not the right event type */
 			event->status.status = MODEM_STATUS_OFFLINE;
-			hayes->helper->event(hayes->helper->modem, event);
 			break;
 	}
+	hayes->helper->event(hayes->helper->modem, event);
 }
 
 
