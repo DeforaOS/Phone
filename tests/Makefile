@@ -21,7 +21,7 @@ hayes_OBJS = hayes.o
 hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags glib-2.0 libSystem`
 hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0 libSystem`
 
-hayes: $(hayes_OBJS) ../src/modems/hayes.c
+hayes: $(hayes_OBJS)
 	$(CC) -o hayes $(hayes_OBJS) $(hayes_LDFLAGS)
 
 modems_OBJS = modems.o
@@ -55,19 +55,19 @@ ussd: $(ussd_OBJS)
 tests.log: hayes modems pdu plugins tests.sh ussd
 	./tests.sh -P "$(PREFIX)" -- "tests.log"
 
-hayes.o: hayes.c
+hayes.o: hayes.c ../src/modems/hayes.o
 	$(CC) $(hayes_CFLAGS) -c hayes.c
 
 modems.o: modems.c
 	$(CC) $(modems_CFLAGS) -c modems.c
 
-pdu.o: pdu.c ../src/modems/hayes.c ../src/modems/hayes/command.c ../src/modems/hayes/command.h
+pdu.o: pdu.c ../src/modems/hayes.o
 	$(CC) -I ../src/modems $(pdu_CFLAGS) -c pdu.c
 
 plugins.o: plugins.c
 	$(CC) $(plugins_CFLAGS) -c plugins.c
 
-ussd.o: ussd.c ../src/modems/hayes.c ../src/modems/hayes/command.c ../src/modems/hayes/command.h
+ussd.o: ussd.c ../src/modems/hayes.o
 	$(CC) -I ../src/modems $(ussd_CFLAGS) -c ussd.c
 
 clean:
