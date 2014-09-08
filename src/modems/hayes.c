@@ -1937,13 +1937,13 @@ static int _reset_configure(Hayes * hayes, char const * device, int fd)
 	char const * p;
 
 	/* baud rate */
-	if((p = helper->config_get(helper->modem, "baudrate")) == 0
-			|| strtoul(p, NULL, 10) == 0)
+	if((p = helper->config_get(helper->modem, "baudrate")) == NULL
+			|| (baudrate = strtoul(p, NULL, 10)) == 0)
 		baudrate = 115200;
 	baudrate = _reset_configure_baudrate(hayes, baudrate);
 	/* hardware flow */
-	if((p = helper->config_get(helper->modem, "hwflow")) == 0
-			|| strtoul(p, NULL, 10) == 0)
+	if((p = helper->config_get(helper->modem, "hwflow")) == NULL
+			|| (hwflow = strtoul(p, NULL, 10)) != 0)
 		hwflow = 1;
 	if(flock(fd, LOCK_EX | LOCK_NB) != 0)
 		return 1;
@@ -2024,7 +2024,7 @@ static unsigned int _reset_configure_baudrate(Hayes * hayes,
 #endif
 		default:
 			error_set("%u%s%u%s", baudrate,
-					"Unsupported baudrate (using ",
+					": Unsupported baudrate (using ",
 					115200, ")");
 			hayes->helper->error(NULL, error_get(), 1);
 			return B115200;
