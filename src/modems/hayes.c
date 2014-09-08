@@ -609,12 +609,25 @@ static int _hayes_request(Hayes * hayes, ModemRequest * request)
 
 
 /* hayes_start */
+static int _start_is_started(Hayes * hayes);
+
 static int _hayes_start(Hayes * hayes, unsigned int retry)
 {
 	hayes->retry = retry;
+	if(_start_is_started(hayes))
+		return 0;
 	if(hayes->source != 0)
 		g_source_remove(hayes->source);
 	hayes->source = g_idle_add(_on_reset, &hayes->channel);
+	return 0;
+}
+
+static int _start_is_started(Hayes * hayes)
+{
+	if(hayes->source != 0)
+		return 1;
+	if(hayes->channel.channel != NULL)
+		return 1;
 	return 0;
 }
 
