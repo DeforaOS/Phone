@@ -92,6 +92,9 @@ static void _profiles_destroy(Profiles * profiles);
 static int _profiles_event(Profiles * profiles, PhoneEvent * event);
 static void _profiles_settings(Profiles * profiles);
 
+/* accessors */
+static int _profiles_set(Profiles * profiles, ProfileType type);
+
 /* useful */
 static void _profiles_apply(Profiles * profiles, ProfileType type);
 static void _profiles_play(Profiles * profiles, char const * sound,
@@ -167,6 +170,7 @@ static void _profiles_destroy(Profiles * profiles)
 /* profiles_event */
 static int _event_key_tone(Profiles * profiles);
 static int _event_modem_event(Profiles * profiles, ModemEvent * event);
+static int _event_offline(Profiles * profiles);
 static int _event_starting(Profiles * profiles);
 static int _event_stopping(Profiles * profiles);
 
@@ -176,6 +180,8 @@ static int _profiles_event(Profiles * profiles, PhoneEvent * event)
 	{
 		case PHONE_EVENT_TYPE_KEY_TONE:
 			return _event_key_tone(profiles);
+		case PHONE_EVENT_TYPE_OFFLINE:
+			return _event_offline(profiles);
 		case PHONE_EVENT_TYPE_STARTING:
 			return _event_starting(profiles);
 		case PHONE_EVENT_TYPE_STOPPING:
@@ -223,6 +229,12 @@ static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 		default:
 			break;
 	}
+	return 0;
+}
+
+static int _event_offline(Profiles * profiles)
+{
+	_profiles_set(profiles, PROFILE_TYPE_OFFLINE);
 	return 0;
 }
 
@@ -396,14 +408,14 @@ static void _on_settings_ok(gpointer data)
 }
 
 
-/* profiles_apply */
-static void _profiles_apply(Profiles * profiles, ProfileType type)
+/* accessors */
+/* profiles_set */
+static int _profiles_set(Profiles * profiles, ProfileType type)
 {
 	PhonePluginHelper * helper = profiles->helper;
 
 	if(type > profiles->profiles_cnt)
-		/* XXX report error */
-		return;
+		return -helper->error(NULL, "Invalid profile", 1);
 	profiles->profiles_cur = type;
 	helper->config_set(helper->phone, "profiles", "default",
 			profiles->profiles[profiles->profiles_cur].name);
@@ -416,6 +428,15 @@ static void _profiles_apply(Profiles * profiles, ProfileType type)
 			helper->config_set(helper->phone, NULL, "online", NULL);
 			break;
 	}
+	return 0;
+}
+
+
+/* useful */
+/* profiles_apply */
+static void _profiles_apply(Profiles * profiles, ProfileType type)
+{
+	_profiles_set(profiles, type);
 }
 
 
