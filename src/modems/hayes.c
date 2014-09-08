@@ -1782,8 +1782,8 @@ static char * _request_attention_sim_pin(Hayes * hayes, HayesChannel * channel,
 		hayes->helper->error(NULL, strerror(errno), 1);
 		return NULL;
 	}
-	format = (channel->quirks & HAYES_QUIRK_CPIN_QUOTES) ? "%s\"%s\""
-		: "%s%s";
+	format = (channel->quirks & HAYES_QUIRK_CPIN_NO_QUOTES) ? "%s%s"
+		: "%s\"%s\"";
 	snprintf(ret, len, format, cmd, password);
 	return ret;
 }
@@ -1804,8 +1804,8 @@ static char * _request_attention_sim_puk(Hayes * hayes, HayesChannel * channel,
 		hayes->helper->error(NULL, strerror(errno), 1);
 		return NULL;
 	}
-	format = (channel->quirks & HAYES_QUIRK_CPIN_QUOTES) ? "%s\"%s\","
-		: "%s%s,";
+	format = (channel->quirks & HAYES_QUIRK_CPIN_NO_QUOTES) ? "%s%s,"
+		: "%s\"%s\",";
 	snprintf(ret, len, format, cmd, password);
 	return ret;
 }
