@@ -998,34 +998,40 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel);
 static int _hayes_parse(Hayes * hayes, HayesChannel * channel)
 {
 	int ret = 0;
-	size_t i = 0;
+	size_t i;
 	char * p;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__,
 			(unsigned long)channel->rd_buf_cnt);
 #endif
-	while(i < channel->rd_buf_cnt)
+	for(i = 0; i < channel->rd_buf_cnt;)
 	{
-		if(channel->rd_buf[i++] != '\r'
-				&& channel->rd_buf[i - 1] != '\n')
-			continue;
-		channel->rd_buf[i - 1] = '\0';
-		if(i < channel->rd_buf_cnt && channel->rd_buf[i] == '\n')
+		if(channel->rd_buf[i] == '\r')
+		{
+			if(i + 1 < channel->rd_buf_cnt
+					&& channel->rd_buf[i + 1] == '\n')
+				channel->rd_buf[i++] = '\0';
+		}
+		else if(channel->rd_buf[i] != '\n')
+		{
 			i++;
+			continue;
+		}
+		channel->rd_buf[i] = '\0';
 		if(channel->rd_buf[0] != '\0')
 			ret |= _parse_do(hayes, channel);
 		channel->rd_buf_cnt -= i;
-		memmove(channel->rd_buf, &channel->rd_buf[i],
+		memmove(channel->rd_buf, &channel->rd_buf[i + 1],
 				channel->rd_buf_cnt);
-		if((p = realloc(channel->rd_buf, channel->rd_buf_cnt)) != NULL)
-			/* we can ignore errors... */
-			channel->rd_buf = p;
-		else if(channel->rd_buf_cnt == 0)
-			/* ...except when it's not one */
-			channel->rd_buf = NULL;
 		i = 0;
 	}
+	if((p = realloc(channel->rd_buf, channel->rd_buf_cnt)) != NULL)
+		/* we can ignore errors... */
+		channel->rd_buf = p;
+	else if(channel->rd_buf_cnt == 0)
+		/* ...except when it's not one */
+		channel->rd_buf = NULL;
 	return ret;
 }
 
