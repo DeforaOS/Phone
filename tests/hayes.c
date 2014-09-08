@@ -84,6 +84,9 @@ static gboolean _hayes_on_start(gpointer data)
 		return FALSE;
 	if(plugin.start(hayes, 0) == 0)
 	{
+		_on_code_cfun(&hayes->channel, "0");
+		_on_code_cfun(&hayes->channel, "1");
+		_on_code_cfun(&hayes->channel, "4");
 		_on_code_csq(&hayes->channel, "31,99");
 		_on_code_csq(&hayes->channel, "20,99");
 		_on_code_csq(&hayes->channel, "19,99");
@@ -157,6 +160,9 @@ static void _hayes_helper_event(Modem * modem, ModemEvent * event)
 			printf("%s=%f\n", "modem.event.registration.signal",
 					event->registration.signal);
 			break;
+		case MODEM_EVENT_TYPE_STATUS:
+			printf("%s=%u\n", "modem.event.status.status",
+					event->status.status);
 		default:
 			break;
 	}
