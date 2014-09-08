@@ -2182,9 +2182,9 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 			/* fallback */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
+			channel->rd_source = 0;
 			if(hayes->retry > 0)
 				_hayes_reset(hayes);
-			channel->rd_source = 0;
 			return FALSE;
 	}
 	switch(channel->mode)
