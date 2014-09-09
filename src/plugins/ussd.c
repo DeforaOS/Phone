@@ -93,17 +93,19 @@ static USSDCode _ussd_codes_in_vodafone[] =
 static const struct
 {
 	char const * name;
+	char const * _operator;
 	USSDCode * codes;
 } _ussd_operators[] =
 {
-	{ "E-Plus",	_ussd_codes_de_eplus				},
-	{ "FYVE",	_ussd_codes_de_fyve				},
-	{ "Monacell",	_ussd_codes_fr_virgin				},
-	{ "MTN",	_ussd_codes_za_mtn				},
-	{ "NRJ",	_ussd_codes_fr_virgin				},
-	{ "Virgin",	_ussd_codes_fr_virgin				},
-	{ "Vodafone",	_ussd_codes_in_vodafone				},
-	{ NULL,		NULL						}
+	/* FIXME obtain the corresponding operator names */
+	{ "E-Plus",	NULL,	_ussd_codes_de_eplus			},
+	{ "FYVE",	NULL,	_ussd_codes_de_fyve			},
+	{ "Monacell",	NULL,	_ussd_codes_fr_virgin			},
+	{ "MTN",	NULL,	_ussd_codes_za_mtn			},
+	{ "NRJ",	NULL,	_ussd_codes_fr_virgin			},
+	{ "Virgin",	NULL,	_ussd_codes_fr_virgin			},
+	{ "Vodafone",	NULL,	_ussd_codes_in_vodafone			},
+	{ NULL,		NULL,	NULL					}
 };
 
 
@@ -113,6 +115,9 @@ static USSD * _ussd_init(PhonePluginHelper * helper);
 static void _ussd_destroy(USSD * ussd);
 static int _ussd_event(USSD * ussd, PhoneEvent * event);
 static void _ussd_settings(USSD * ussd);
+
+/* useful */
+static int _ussd_load_operator(USSD * ussd, char const * _operator);
 
 /* callbacks */
 static void _ussd_on_operators_changed(gpointer data);
@@ -161,9 +166,33 @@ static void _ussd_destroy(USSD * ussd)
 
 
 /* ussd_event */
+static int _event_modem(USSD * ussd, ModemEvent * event);
+
 static int _ussd_event(USSD * ussd, PhoneEvent * event)
 {
-	return 0;
+	switch(event->type)
+	{
+		case PHONE_EVENT_TYPE_MODEM_EVENT:
+			return _event_modem(ussd, event->modem_event.event);
+		default:
+			/* not relevant */
+			return 0;
+	}
+}
+
+static int _event_modem(USSD * ussd, ModemEvent * event)
+{
+	switch(event->type)
+	{
+		case MODEM_EVENT_TYPE_REGISTRATION:
+			_ussd_load_operator(ussd,
+					event->registration._operator);
+			/* XXX ignore errors */
+			return 0;
+		default:
+			/* not relevant */
+			return 0;
+	}
 }
 
 
@@ -276,6 +305,29 @@ static void _settings_window(USSD * ussd)
 	gtk_container_add(GTK_CONTAINER(ussd->window), vbox);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->operators), 0);
 	gtk_widget_show_all(vbox);
+}
+
+
+/* useful */
+/* ussd_load_operator */
+static int _ussd_load_operator(USSD * ussd, char const * _operator)
+{
+	size_t i;
+
+	if(_operator == NULL)
+		return -1;
+	for(i = 0; _ussd_operators[i].name != NULL; i++)
+		if(_ussd_operators[i]._operator == NULL)
+			continue;
+		else if(strcmp(_ussd_operators[i]._operator, _operator) == 0)
+		{
+			/* FIXME keep track of the operator instead */
+			if(ussd->window != NULL)
+				gtk_combo_box_set_active(GTK_COMBO_BOX(
+							ussd->operators), i);
+			break;
+		}
+	return 0;
 }
 
 
