@@ -3,6 +3,6 @@ Name=VoIP telephony
 Comment=Voice over IP telephony application (SIP)
 TryExec=phone
 Exec=phone -m sofia
-Icon=phone-dialer
+Icon=call-start
 Type=Application
 Categories=Network;Telephony;GTK;

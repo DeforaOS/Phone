@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=GPRS
-Comment=Connect to Internet with a 2G/3G/4G modem connection
+Name=Dial-up networking
+Comment=Connect to Internet with a modem or cell phone
 TryExec=gprs
 Exec=gprs
-Icon=stock_connect
+Icon=phone-gprs
 Type=Application
 Categories=Network;Telephony;GTK;

@@ -13,7 +13,7 @@ distclean: clean
 
 install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps
-	$(INSTALL) -m 0644 phone-dialer.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-dialer.png
+	$(INSTALL) -m 0644 phone-gprs.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-gprs.png
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps
 	$(INSTALL) -m 0644 phone-drafts.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-drafts.png
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps
@@ -22,7 +22,7 @@ install:
 	$(INSTALL) -m 0644 phone-sent.png $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-sent.png
 
 uninstall:
-	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-dialer.png
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-gprs.png
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-drafts.png
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-inbox.png
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/icons/hicolor/24x24/apps/phone-sent.png

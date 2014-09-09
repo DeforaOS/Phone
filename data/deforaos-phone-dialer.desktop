@@ -3,6 +3,6 @@ Name=Dialer
 Comment=Telephony dialer
 TryExec=phonectl
 Exec=phonectl -D
-Icon=phone-dialer
+Icon=call-start
 Type=Application
 Categories=Network;Telephony;GTK;

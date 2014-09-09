@@ -109,8 +109,8 @@ static gboolean _gprs_on_timeout(gpointer data);
 /* variables */
 PhonePluginDefinition plugin =
 {
-	"GPRS",
-	"stock_internet",
+	"Dial-up networking",
+	"phone-gprs",
 	NULL,
 	_gprs_init,
 	_gprs_destroy,
@@ -145,12 +145,12 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 	gprs->active = FALSE;
 	gprs->window = NULL;
 #if GTK_CHECK_VERSION(2, 10, 0)
-	gprs->icon = gtk_status_icon_new_from_icon_name("stock_internet");
+	gprs->icon = gtk_status_icon_new_from_icon_name("phone-gprs");
 # if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_status_icon_set_tooltip_text(gprs->icon, "Not connected");
 # endif
 # if GTK_CHECK_VERSION(2, 18, 0)
-	gtk_status_icon_set_title(gprs->icon, "GPRS");
+	gtk_status_icon_set_title(gprs->icon, "Dial-up networking");
 #  if GTK_CHECK_VERSION(2, 20, 0)
 	gtk_status_icon_set_name(gprs->icon, "phone-gprs");
 #  endif
@@ -297,9 +297,9 @@ static void _gprs_settings(GPRS * gprs)
 	gtk_container_set_border_width(GTK_CONTAINER(gprs->window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(gprs->window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "stock_internet");
+	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "phone-gprs");
 #endif
-	gtk_window_set_title(GTK_WINDOW(gprs->window), "GPRS");
+	gtk_window_set_title(GTK_WINDOW(gprs->window), "Dial-up networking");
 	g_signal_connect_swapped(gprs->window, "delete-event", G_CALLBACK(
 				_settings_on_closex), gprs);
 	vbox = gtk_vbox_new(FALSE, 4);

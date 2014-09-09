@@ -43,13 +43,13 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/star.wav \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \
-		$(PACKAGE)-$(VERSION)/data/16x16/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/16x16/phone-gprs.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/phone-drafts.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/phone-inbox.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/16x16/project.conf \
 		$(PACKAGE)-$(VERSION)/data/22x22/Makefile \
-		$(PACKAGE)-$(VERSION)/data/22x22/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/22x22/phone-gprs.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-00.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-25.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-50.png \
@@ -57,16 +57,16 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/22x22/phone-signal-100.png \
 		$(PACKAGE)-$(VERSION)/data/22x22/project.conf \
 		$(PACKAGE)-$(VERSION)/data/24x24/Makefile \
-		$(PACKAGE)-$(VERSION)/data/24x24/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/24x24/phone-gprs.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/phone-drafts.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/phone-inbox.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/24x24/project.conf \
 		$(PACKAGE)-$(VERSION)/data/32x32/Makefile \
-		$(PACKAGE)-$(VERSION)/data/32x32/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/32x32/phone-gprs.png \
 		$(PACKAGE)-$(VERSION)/data/32x32/project.conf \
 		$(PACKAGE)-$(VERSION)/data/48x48/Makefile \
-		$(PACKAGE)-$(VERSION)/data/48x48/phone-dialer.png \
+		$(PACKAGE)-$(VERSION)/data/48x48/phone-gprs.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/phone-inbox.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/phone-sent.png \
 		$(PACKAGE)-$(VERSION)/data/48x48/project.conf \

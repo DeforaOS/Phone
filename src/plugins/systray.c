@@ -77,7 +77,7 @@ static Systray * _systray_init(PhonePluginHelper * helper)
 	if((systray = object_new(sizeof(*systray))) == NULL)
 		return NULL;
 	systray->helper = helper;
-	systray->icon = gtk_status_icon_new_from_icon_name("phone-dialer");
+	systray->icon = gtk_status_icon_new_from_icon_name("call-start");
 # if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_status_icon_set_tooltip_text(systray->icon, "Phone");
 # endif
@@ -142,7 +142,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 	} items[] = {
 		{ "stock_addressbook", "Show _contacts",
 			_popup_menu_on_show_contacts },
-		{ "phone-dialer", "Show _dialer", _popup_menu_on_show_dialer },
+		{ "call-start", "Show _dialer", _popup_menu_on_show_dialer },
 		{ "logviewer", "Show _logs", _popup_menu_on_show_logs },
 		{ "stock_mail-compose", "Show _messages",
 			_popup_menu_on_show_messages },
