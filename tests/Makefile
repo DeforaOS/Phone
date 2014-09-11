@@ -55,7 +55,7 @@ ussd: $(ussd_OBJS)
 tests.log: hayes modems pdu plugins tests.sh ussd
 	./tests.sh -P "$(PREFIX)" -- "tests.log"
 
-hayes.o: hayes.c ../src/modems/hayes.o
+hayes.o: hayes.c ../src/modems/hayes.o ../config.h
 	$(CC) $(hayes_CFLAGS) -c hayes.c
 
 modems.o: modems.c
