@@ -1230,7 +1230,15 @@ static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel)
 
 
 /* hayes_queue_push */
+static int _queue_push_do(Hayes * hayes, HayesChannel * channel);
+
 static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel)
+{
+	while(_queue_push_do(hayes, channel) != 0);
+	return 0;
+}
+
+static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 {
 	HayesCommand * command;
 	char const * prefix = "";
@@ -1250,16 +1258,23 @@ static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel)
 		return 0; /* XXX keep commands in the queue in DATA mode */
 #endif
 	if(hayes_command_set_status(command, HCS_PENDING) != HCS_PENDING)
+	{
 		/* no longer push the command */
-		return 0;
+		_hayes_queue_pop(hayes, channel);
+		return -1;
+	}
 	attention = hayes_command_get_attention(command);
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() pushing \"%s\"\n", __func__, attention);
 #endif
 	size = strlen(prefix) + strlen(attention) + sizeof(suffix);
 	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + size)) == NULL)
+	{
+		hayes_command_set_status(command, HCS_ERROR);
+		_hayes_queue_pop(hayes, channel);
 		return -hayes->helper->error(hayes->helper->modem, strerror(
 					errno), 1);
+	}
 	channel->wr_buf = p;
 	snprintf(&channel->wr_buf[channel->wr_buf_cnt], size, "%s%s%s", prefix,
 			attention, suffix);
