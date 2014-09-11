@@ -1562,8 +1562,7 @@ static void _show_about_window(Phone * phone)
 			_("Telephony application for the DeforaOS desktop"));
 	desktop_about_dialog_set_copyright(phone->ab_window, _copyright);
 	desktop_about_dialog_set_license(phone->ab_window, _license);
-	desktop_about_dialog_set_logo_icon_name(phone->ab_window,
-			"phone-dialer");
+	desktop_about_dialog_set_logo_icon_name(phone->ab_window, "call-start");
 	desktop_about_dialog_set_name(phone->ab_window, PACKAGE);
 	desktop_about_dialog_set_translator_credits(phone->ab_window,
 			_("translator-credits"));
