@@ -326,8 +326,19 @@ static void _panel_set_battery_level(Panel * panel, gdouble level,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(panel, %f)\n", __func__, level);
 #endif
+#if GTK_CHECK_VERSION(2, 12, 0)
+	char buf[32];
+
+	snprintf(buf, sizeof(buf), "%.0f%%%s", level * 100.0, charging
+			? " (charging)" : "");
+#endif
 	if(level < 0.0)
+	{
+#if GTK_CHECK_VERSION(2, 12, 0)
+		snprintf(buf, sizeof(buf), "%s", "Unknown status");
+#endif
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN, charging);
+	}
 	else if(level <= 0.01)
 		_set_battery_image(panel, PANEL_BATTERY_EMPTY, charging);
 	else if(level <= 0.1)
@@ -339,7 +350,15 @@ static void _panel_set_battery_level(Panel * panel, gdouble level,
 	else if(level <= 1.0)
 		_set_battery_image(panel, PANEL_BATTERY_FULL, charging);
 	else
+	{
+#if GTK_CHECK_VERSION(2, 12, 0)
+		snprintf(buf, sizeof(buf), "%s", "Error");
+#endif
 		_set_battery_image(panel, PANEL_BATTERY_ERROR, FALSE);
+	}
+#if GTK_CHECK_VERSION(2, 12, 0)
+	gtk_widget_set_tooltip_text(panel->battery_image, buf);
+#endif
 }
 
 static void _set_battery_image(Panel * panel, PanelBattery battery,
