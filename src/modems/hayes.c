@@ -2131,6 +2131,8 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 			_hayes_request_type(hayes, channel,
 					HAYES_REQUEST_VERBOSE_ENABLE);
 			_hayes_request_type(hayes, channel,
+					HAYES_REQUEST_VENDOR);
+			_hayes_request_type(hayes, channel,
 					HAYES_REQUEST_MODEL);
 			_hayes_request_type(hayes, channel,
 					HAYES_REQUEST_EXTENDED_ERRORS);
@@ -2948,7 +2950,6 @@ static void _on_code_cgmm(HayesChannel * channel, char const * answer)
 {
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MODEL];
 	char * p;
-	size_t i;
 
 	if(answer[0] == '\0' || strcmp(answer, "OK") == 0
 			|| (p = strdup(answer)) == NULL) /* XXX report error? */
@@ -2956,17 +2957,7 @@ static void _on_code_cgmm(HayesChannel * channel, char const * answer)
 	free(channel->model_name);
 	channel->model_name = p;
 	event->model.name = p;
-	/* determine known quirks */
-	for(i = 0; hayes_quirks[i].model != NULL; i++)
-		if(strcmp(hayes_quirks[i].model, p) == 0)
-		{
-			channel->quirks = hayes_quirks[i].quirks;
-#ifdef DEBUG
-			fprintf(stderr, "DEBUG: %s() quirks=%u\n", __func__,
-					channel->quirks);
-#endif
-			break;
-		}
+	channel->quirks = hayes_quirks(event->model.vendor, p);
 }
 
 

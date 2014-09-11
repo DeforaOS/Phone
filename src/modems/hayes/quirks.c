@@ -15,28 +15,51 @@
 
 
 
-#include <stddef.h>
+#include <sys/types.h>
+#include <string.h>
 #include "quirks.h"
 
 
 /* HayesQuirks */
-/* public */
+/* private */
 /* constants */
-HayesQuirks hayes_quirks[] =
+static HayesQuirks _hayes_quirks[] =
 {
-	{ "\"Neo1973 Embedded GSM Modem\"",
+	{ "Openmomo", "\"Neo1973 Embedded GSM Modem\"",
 		HAYES_QUIRK_WANT_SMSC_IN_PDU
 			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
 			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
-	{ "\"Neo1973 GTA01/GTA02 Embedded GSM Modem\"",
+	{ "Openmoko", "\"Neo1973 GTA01/GTA02 Embedded GSM Modem\"",
 		HAYES_QUIRK_WANT_SMSC_IN_PDU
 			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
 			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
-	{ "\"Neo1973 GTA02 Embedded GSM Modem\"",
+	{ "Openmoko", "\"Neo1973 GTA02 Embedded GSM Modem\"",
 		HAYES_QUIRK_WANT_SMSC_IN_PDU
 			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
 			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
-	{ "Nokia N900",
-		HAYES_QUIRK_BATTERY_70					},
-	{ NULL,	0							}
+	{ "Nokia", "Nokia N900",
+		HAYES_QUIRK_BATTERY_70					}
 };
+
+
+/* public */
+/* functions */
+/* hayes_quirks */
+unsigned int hayes_quirks(char const * vendor, char const * model)
+{
+	size_t i;
+
+	if(vendor == NULL || model == NULL)
+		return 0;
+	for(i = 0; i < sizeof(_hayes_quirks) / sizeof(*_hayes_quirks); i++)
+		if(strcmp(_hayes_quirks[i].vendor, vendor) == 0
+				&& strcmp(_hayes_quirks[i].model, model) == 0)
+		{
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() quirks=%u\n", __func__,
+					_hayes_quirks[i].quirks);
+#endif
+			return _hayes_quirks[i].quirks;
+		}
+	return 0;
+}

@@ -33,12 +33,13 @@ typedef enum _HayesQuirk
 
 typedef const struct _HayesQuirks
 {
+	char const * vendor;
 	char const * model;
 	unsigned int quirks;
 } HayesQuirks;
 
 
-/* constants */
-extern HayesQuirks hayes_quirks[];
+/* functions */
+unsigned int hayes_quirks(char const * vendor, char const * model);
 
 #endif /* PHONE_MODEM_HAYES_QUIRKS_H */
