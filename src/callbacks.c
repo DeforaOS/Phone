@@ -226,7 +226,12 @@ void on_phone_dialer_changed(GtkWidget * widget, gpointer data)
 	gchar * text;
 
 	text = gtk_editable_get_chars(GTK_EDITABLE(widget), 0, -1);
-	if(strcmp(text, "*#06#") == 0)
+	if(strcmp(text, "*#0000#") == 0)
+	{
+		phone_show_about(phone, TRUE);
+		phone_dialer_clear(phone);
+	}
+	else if(strcmp(text, "*#06#") == 0)
 	{
 		phone_event_trigger(phone, MODEM_EVENT_TYPE_MODEL);
 		phone_dialer_clear(phone);
