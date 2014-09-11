@@ -2554,7 +2554,9 @@ static size_t _show_read_buffer_number(char const * content, size_t len)
 
 	if(len >= 1 && content[0] == '+')
 		ret++;
-	for(; ret < len && isdigit((unsigned char)content[ret]); ret++);
+	for(; ret < len && (isdigit((unsigned char)content[ret])
+				|| content[ret] == '*'
+				|| content[ret] == '#'); ret++);
 	return ret;
 }
 
