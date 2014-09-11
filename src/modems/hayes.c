@@ -90,10 +90,11 @@ typedef struct _HayesChannel
 	char * gprs_username;
 	char * gprs_password;
 	char * message_number;
+	char * model_identity;
 	char * model_name;
+	char * model_serial;
 	char * model_vendor;
 	char * model_version;
-	char * model_serial;
 	char * registration_media;
 	char * registration_operator;
 } HayesChannel;
@@ -182,6 +183,7 @@ enum
 	HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,
 	HAYES_REQUEST_SERIAL_NUMBER,
 	HAYES_REQUEST_SIM_PIN_VALID,
+	HAYES_REQUEST_SUBSCRIBER_IDENTITY,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,
 	HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_DISABLE,
@@ -302,6 +304,7 @@ static void _on_code_cgmi(HayesChannel * channel, char const * answer);
 static void _on_code_cgmm(HayesChannel * channel, char const * answer);
 static void _on_code_cgmr(HayesChannel * channel, char const * answer);
 static void _on_code_cgsn(HayesChannel * channel, char const * answer);
+static void _on_code_cimi(HayesChannel * channel, char const * answer);
 static void _on_code_clip(HayesChannel * channel, char const * answer);
 static void _on_code_cme_error(HayesChannel * channel, char const * answer);
 static void _on_code_cmgl(HayesChannel * channel, char const * answer);
@@ -458,9 +461,11 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ HAYES_REQUEST_REGISTRATION_UNSOLLICITED_ENABLE,"AT+CREG=2",
 		_on_request_registration },
 	{ HAYES_REQUEST_SERIAL_NUMBER,			"AT+CGSN",
-		_on_request_model },
+		_on_request_generic },
 	{ HAYES_REQUEST_SIM_PIN_VALID,			"AT+CPIN?",
 		_on_request_sim_pin_valid },
+	{ HAYES_REQUEST_SUBSCRIBER_IDENTITY,		"AT+CIMI",
+		_on_request_generic },
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_CANCEL,"AT+CUSD=2",
 		_on_request_generic },
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_DISABLE,"AT+CUSD=0",
@@ -468,13 +473,13 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ HAYES_REQUEST_SUPPLEMENTARY_SERVICE_DATA_ENABLE,"AT+CUSD=1",
 		_on_request_generic },
 	{ HAYES_REQUEST_VENDOR,				"AT+CGMI",
-		_on_request_model },
+		_on_request_generic },
 	{ HAYES_REQUEST_VERBOSE_DISABLE,		"ATV0",
 		_on_request_generic },
 	{ HAYES_REQUEST_VERBOSE_ENABLE,			"ATV1",
 		_on_request_generic },
 	{ HAYES_REQUEST_VERSION,			"AT+CGMR",
-		_on_request_model },
+		_on_request_generic },
 	{ MODEM_REQUEST_AUTHENTICATE,			NULL,
 		_on_request_authenticate },
 	{ MODEM_REQUEST_BATTERY_LEVEL,			"AT+CBC",
@@ -522,6 +527,7 @@ static HayesCodeHandler _hayes_code_handlers[] =
 	{ "+CGMM",	_on_code_cgmm		},
 	{ "+CGMR",	_on_code_cgmr		},
 	{ "+CGSN",	_on_code_cgsn		},
+	{ "+CIMI",	_on_code_cimi		},
 	{ "+CLIP",	_on_code_clip		},
 	{ "+CME ERROR",	_on_code_cme_error	},
 	{ "+CMGL",	_on_code_cmgl		},
@@ -688,10 +694,11 @@ static void _stop_channel(Hayes * hayes, HayesChannel * channel)
 	_stop_string(&channel->gprs_username);
 	_stop_string(&channel->gprs_password);
 	_stop_string(&channel->message_number);
+	_stop_string(&channel->model_identity);
 	_stop_string(&channel->model_name);
+	_stop_string(&channel->model_serial);
 	_stop_string(&channel->model_vendor);
 	_stop_string(&channel->model_version);
-	_stop_string(&channel->model_serial);
 	_stop_string(&channel->registration_media);
 	_stop_string(&channel->registration_operator);
 	/* reset events */
@@ -754,11 +761,13 @@ static int _hayes_trigger(Hayes * hayes, ModemEventType event)
 			ret |= _hayes_request_type(hayes, channel,
 					HAYES_REQUEST_VENDOR);
 			ret |= _hayes_request_type(hayes, channel,
-					HAYES_REQUEST_MODEL);
-			ret |= _hayes_request_type(hayes, channel,
 					HAYES_REQUEST_VERSION);
 			ret |= _hayes_request_type(hayes, channel,
 					HAYES_REQUEST_SERIAL_NUMBER);
+			ret |= _hayes_request_type(hayes, channel,
+					HAYES_REQUEST_SUBSCRIBER_IDENTITY);
+			ret |= _hayes_request_type(hayes, channel,
+					HAYES_REQUEST_MODEL);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			e = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
@@ -2988,6 +2997,21 @@ static void _on_code_cgsn(HayesChannel * channel, char const * answer)
 	free(channel->model_serial);
 	channel->model_serial = p;
 	event->model.serial = p;
+}
+
+
+/* on_code_cimi */
+static void _on_code_cimi(HayesChannel * channel, char const * answer)
+{
+	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MODEL];
+	char * p;
+
+	if(answer[0] == '\0' || strcmp(answer, "OK") == 0
+			|| (p = strdup(answer)) == NULL) /* XXX report error? */
+		return;
+	free(channel->model_identity);
+	channel->model_identity = p;
+	event->model.identity = p;
 }
 
 

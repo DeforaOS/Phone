@@ -275,6 +275,7 @@ typedef union _ModemEvent
 		char const * name;
 		char const * version;
 		char const * serial;
+		char const * identity;
 	} model;
 
 	/* MODEM_EVENT_TYPE_NOTIFICATION */
