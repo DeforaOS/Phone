@@ -18,6 +18,7 @@
 #include "../src/modems/hayes/command.c"
 #include "../src/modems/hayes/quirks.c"
 #include "../src/modems/hayes.c"
+#include "../config.h"
 
 #ifndef PROGNAME
 # define PROGNAME "hayes"
@@ -84,9 +85,16 @@ static gboolean _hayes_on_start(gpointer data)
 		return FALSE;
 	if(plugin.start(hayes, 0) == 0)
 	{
+		_hayes_parse(hayes, &hayes->channel);
 		_on_code_cfun(&hayes->channel, "0");
 		_on_code_cfun(&hayes->channel, "1");
 		_on_code_cfun(&hayes->channel, "4");
+		_on_code_cgmi(&hayes->channel, "DeforaOS");
+		_on_code_cgmm(&hayes->channel, PACKAGE);
+		_on_code_cgmr(&hayes->channel, VERSION);
+		_on_code_cgsn(&hayes->channel, "IMEI");
+		_on_code_cimi(&hayes->channel, "IMSI");
+		_on_request_model(NULL, HCS_SUCCESS, &hayes->channel);
 		_on_code_csq(&hayes->channel, "31,99");
 		_on_code_csq(&hayes->channel, "20,99");
 		_on_code_csq(&hayes->channel, "19,99");
@@ -156,6 +164,18 @@ static void _hayes_helper_event(Modem * modem, ModemEvent * event)
 {
 	switch(event->type)
 	{
+		case MODEM_EVENT_TYPE_MODEL:
+			printf("%s=%s\n", "modem.event.model.vendor",
+					event->model.vendor);
+			printf("%s=%s\n", "modem.event.model.name",
+					event->model.name);
+			printf("%s=%s\n", "modem.event.model.serial",
+					event->model.serial);
+			printf("%s=%s\n", "modem.event.model.version",
+					event->model.version);
+			printf("%s=%s\n", "modem.event.model.identity",
+					event->model.identity);
+			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			printf("%s=%f\n", "modem.event.registration.signal",
 					event->registration.signal);
