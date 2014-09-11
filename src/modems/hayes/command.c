@@ -54,7 +54,7 @@ HayesCommand * hayes_command_new(char const * attention)
 	if((command = object_new(sizeof(*command))) == NULL)
 		return NULL;
 	command->priority = HCP_NORMAL;
-	command->status = HCS_PENDING;
+	command->status = HCS_UNKNOWN;
 	command->attention = string_new(attention);
 	command->timeout = 30000;
 	command->callback = NULL;

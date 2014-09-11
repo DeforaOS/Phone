@@ -32,8 +32,9 @@ typedef enum _HayesCommandPriority
 
 typedef enum _HayesCommandStatus
 {
-	HCS_PENDING = 0,
+	HCS_UNKNOWN = 0,
 	HCS_QUEUED,
+	HCS_PENDING,
 	HCS_ACTIVE,
 	HCS_TIMEOUT,
 	HCS_ERROR,

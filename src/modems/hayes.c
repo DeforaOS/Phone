@@ -113,8 +113,8 @@ typedef struct _ModemPlugin
 #ifdef DEBUG
 static const char * _hayes_command_status[HCS_COUNT] =
 {
-	"HCS_PENDING", "HCS_QUEUED", "HCS_ACTIVE", "HCS_TIMEOUT", "HCS_ERROR",
-	"HCS_SUCCESS"
+	"HCS_UNKNOWN", "HCS_QUEUED", "HCS_UNKNOWN", "HCS_ACTIVE", "HCS_TIMEOUT",
+	"HCS_ERROR", "HCS_SUCCESS"
 };
 #endif
 
@@ -1027,11 +1027,11 @@ static int _hayes_parse(Hayes * hayes, HayesChannel * channel)
 			i++;
 			continue;
 		}
-		channel->rd_buf[i] = '\0';
+		channel->rd_buf[i++] = '\0';
 		if(channel->rd_buf[0] != '\0')
 			ret |= _parse_do(hayes, channel);
 		channel->rd_buf_cnt -= i;
-		memmove(channel->rd_buf, &channel->rd_buf[i + 1],
+		memmove(channel->rd_buf, &channel->rd_buf[i],
 				channel->rd_buf_cnt);
 		i = 0;
 	}
@@ -1249,7 +1249,7 @@ static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel)
 #else
 		return 0; /* XXX keep commands in the queue in DATA mode */
 #endif
-	if(hayes_command_set_status(command, HCS_ACTIVE) != HCS_ACTIVE)
+	if(hayes_command_set_status(command, HCS_PENDING) != HCS_PENDING)
 		/* no longer push the command */
 		return 0;
 	attention = hayes_command_get_attention(command);
@@ -2119,8 +2119,9 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 	status = _on_request_generic(command, status, hayes);
 	switch(status)
 	{
-		case HCS_PENDING: /* ignore */
+		case HCS_UNKNOWN: /* ignore */
 		case HCS_QUEUED:
+		case HCS_PENDING:
 			break;
 		case HCS_ACTIVE: /* give it another chance */
 			break;
@@ -2288,6 +2289,8 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		gpointer data)
 {
 	HayesChannel * channel = data;
+	HayesCommand * command = (channel->queue) != NULL
+		? channel->queue->data : NULL;
 	Hayes * hayes = channel->hayes;
 	ModemPluginHelper * helper = hayes->helper;
 	gsize cnt = 0;
@@ -2338,6 +2341,8 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 	if(channel->wr_buf_cnt > 0) /* there is more data to write */
 		return TRUE;
 	channel->wr_source = 0;
+	if(command != NULL)
+		hayes_command_set_status(command, HCS_ACTIVE);
 	return FALSE;
 }
 
@@ -2717,8 +2722,9 @@ static HayesCommandStatus _on_request_registration_automatic(
 	status = _on_request_generic(command, status, priv);
 	switch(status)
 	{
-		case HCS_PENDING:
+		case HCS_UNKNOWN:
 		case HCS_QUEUED:
+		case HCS_PENDING:
 			break;
 		case HCS_ACTIVE:
 			event->registration.mode
