@@ -25,6 +25,9 @@
 /* constants */
 static HayesQuirks _hayes_quirks[] =
 {
+	{ "Ericsson", "F3507g",
+		HAYES_QUIRK_CPIN_SLOW
+			| HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR		},
 	{ "Openmoko", "\"Neo1973 Embedded GSM Modem\"",
 		HAYES_QUIRK_WANT_SMSC_IN_PDU
 			| HAYES_QUIRK_CONNECTED_LINE_DISABLED
