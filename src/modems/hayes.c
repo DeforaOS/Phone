@@ -1961,10 +1961,13 @@ static gboolean _on_reset(gpointer data)
 	event->status.status = MODEM_STATUS_UNKNOWN;
 	/* logging */
 	logfile = helper->config_get(helper->modem, "logfile");
-	if(logfile != NULL && (channel->fp = fopen(logfile, "w")) == NULL)
-		hayes->helper->error(NULL, strerror(errno), 1);
-	else if(channel->fp != NULL)
-		setvbuf(channel->fp, NULL, _IONBF, BUFSIZ);
+	if(logfile != NULL)
+	{
+		if((channel->fp = fopen(logfile, "w")) == NULL)
+			hayes->helper->error(NULL, strerror(errno), 1);
+		else
+			setvbuf(channel->fp, NULL, _IONBF, BUFSIZ);
+	}
 	channel->channel = g_io_channel_unix_new(fd);
 	if(g_io_channel_set_encoding(channel->channel, NULL, &error)
 			!= G_IO_STATUS_NORMAL)
