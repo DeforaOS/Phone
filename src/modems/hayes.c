@@ -221,6 +221,7 @@ static char * _hayes_message_to_pdu(Hayes * hayes, HayesChannel * channel,
 /* conversions */
 static unsigned char _hayes_convert_char_to_iso(unsigned char c);
 static char * _hayes_convert_number_to_address(char const * number);
+static void _hayes_convert_string_to_iso(char * str);
 
 /* parser */
 static int _hayes_parse(Hayes * hayes, HayesChannel * channel);
@@ -997,6 +998,17 @@ static char * _hayes_convert_number_to_address(char const * number)
 	}
 	ret[i] = '\0';
 	return ret;
+}
+
+
+/* hayes_convert_string_to_iso */
+static void _hayes_convert_string_to_iso(char * str)
+{
+	unsigned char * ustr = (unsigned char *)str;
+	size_t i;
+
+	for(i = 0; str[i] != '\0'; i++)
+		ustr[i] = _hayes_convert_char_to_iso(ustr[i]);
 }
 
 
@@ -3793,14 +3805,15 @@ static void _on_code_cpbr(HayesChannel * channel, char const * answer)
 	channel->contact_number = strdup(number);
 	event->contact.number = channel->contact_number;
 	name[sizeof(name) - 1] = '\0';
-#if 1 /* FIXME is it really always in ISO-8859-1? */
+#if 1 /* FIXME is it really always in GSM? */
+	_hayes_convert_string_to_iso(name);
+#endif
 	if((p = g_convert(name, -1, "UTF-8", "ISO-8859-1", NULL, NULL, NULL))
 			                        != NULL)
 	{
 		snprintf(name, sizeof(name), "%s", p);
 		g_free(p);
 	}
-#endif
 	free(channel->contact_name);
 	channel->contact_name = strdup(name);
 	event->contact.name = channel->contact_name;
