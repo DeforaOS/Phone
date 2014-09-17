@@ -60,6 +60,7 @@ typedef struct _HayesChannel
 	unsigned int quirks;
 
 	guint timeout;
+	guint source_authenticate;
 
 	GIOChannel * channel;
 	char * rd_buf;
@@ -242,6 +243,7 @@ static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel);
 static void _hayes_reset(Hayes * hayes);
 
 /* callbacks */
+static gboolean _on_authenticate(gpointer data);
 static gboolean _on_queue_timeout(gpointer data);
 static gboolean _on_reset(gpointer data);
 static gboolean _on_reset_settle(gpointer data);
@@ -1215,6 +1217,8 @@ static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel)
 	if(channel->wr_ppp_source != 0)
 		g_source_remove(channel->wr_ppp_source);
 	channel->wr_ppp_source = 0;
+	if(channel->source_authenticate != 0)
+		g_source_remove(channel->source_authenticate);
 	if(channel->timeout != 0)
 		g_source_remove(channel->timeout);
 	channel->timeout = 0;
@@ -1886,6 +1890,18 @@ static void _hayes_reset(Hayes * hayes)
 
 
 /* callbacks */
+/* on_authenticate */
+static gboolean _on_authenticate(gpointer data)
+{
+	HayesChannel * channel = data;
+	Hayes * hayes = channel->hayes;
+
+	channel->source_authenticate = 0;
+	_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
+	return FALSE;
+}
+
+
 /* on_queue_timeout */
 static gboolean _on_queue_timeout(gpointer data)
 {
@@ -2434,6 +2450,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
+	guint timeout;
 
 	switch((status = _on_request_generic(command, status, priv)))
 	{
@@ -2451,9 +2468,15 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 					event->authentication.name) == 0
 				|| strcmp("SIM PUK",
 					event->authentication.name) == 0))
+	{
 		/* verify that it really worked */
-		_hayes_request_type(hayes, channel,
-				HAYES_REQUEST_SIM_PIN_VALID);
+		timeout = (channel->quirks & HAYES_QUIRK_CPIN_SLOW) ? 3000 : 0;
+		if(channel->source_authenticate != 0)
+			g_source_remove(channel->source_authenticate);
+		/* give it three seconds to settle */
+		channel->source_authenticate = g_timeout_add(timeout,
+				_on_authenticate, channel);
+	}
 	else
 	{
 		event->authentication.status = MODEM_AUTHENTICATION_STATUS_OK;
