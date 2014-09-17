@@ -381,11 +381,17 @@ static void _set_battery_image(Panel * panel, PanelBattery battery,
 
 	if(panel->battery_level == battery)
 		return;
-	panel->battery_level = battery;
-	/* XXX may not be the correct size */
-	gtk_image_set_from_icon_name(GTK_IMAGE(panel->battery_image), charging
-			? icons[battery].charging : icons[battery].icon,
-			GTK_ICON_SIZE_SMALL_TOOLBAR);
+	if((panel->battery_level = battery) == PANEL_BATTERY_ERROR)
+		gtk_widget_hide(panel->battery_image);
+	else
+	{
+		/* XXX may not be the correct size */
+		gtk_image_set_from_icon_name(GTK_IMAGE(panel->battery_image),
+				charging ? icons[battery].charging
+				: icons[battery].icon,
+				GTK_ICON_SIZE_SMALL_TOOLBAR);
+		gtk_widget_show(panel->battery_image);
+	}
 }
 
 
