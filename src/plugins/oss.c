@@ -128,7 +128,7 @@ static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_open(OSS * oss, char const * device,
 		WaveFormat * wf);
-static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
+static int _event_audio_play_write(OSS * oss, RIFFChunk * rc, RIFFChunk * rc2,
 		FILE * fp, int fd);
 static int _event_volume_get(OSS * oss, gdouble * level);
 static int _event_volume_set(OSS * oss, gdouble level);
@@ -138,12 +138,17 @@ static int _oss_event(OSS * oss, PhoneEvent * event)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_AUDIO_PLAY:
-			return _event_audio_play(oss,
-					event->audio_play.sample);
+			/* XXX ignore errors */
+			_event_audio_play(oss, event->audio_play.sample);
+			return 0;
 		case PHONE_EVENT_TYPE_VOLUME_GET:
-			return _event_volume_get(oss, &event->volume_get.level);
+			/* XXX ignore errors */
+			_event_volume_get(oss, &event->volume_get.level);
+			return 0;
 		case PHONE_EVENT_TYPE_VOLUME_SET:
-			return _event_volume_set(oss, event->volume_set.level);
+			/* XXX ignore errors */
+			_event_volume_set(oss, event->volume_set.level);
+			return 0;
 		default: /* not relevant */
 			break;
 	}
@@ -153,23 +158,29 @@ static int _oss_event(OSS * oss, PhoneEvent * event)
 static int _event_audio_play(OSS * oss, char const * sample)
 {
 	const char path[] = DATADIR "/sounds/" PACKAGE;
+	const char ext[] = ".wav";
 	String * s;
 	FILE * fp;
+	char buf[128];
 
-	/* XXX ignore errors */
-	if((s = string_new_append(path, "/", sample, ".wav", NULL)) == NULL)
-		return oss->helper->error(NULL, error_get(), 0);
+	if((s = string_new_append(path, "/", sample, ext, NULL)) == NULL)
+		return -oss->helper->error(NULL, error_get(), 1);
 	/* open the audio file */
 	if((fp = fopen(s, "rb")) == NULL)
 	{
-		oss->helper->error(NULL, strerror(errno), 0);
+		snprintf(buf, sizeof(buf), "%s: %s", s, strerror(errno));
+		oss->helper->error(NULL, buf, 1);
 		string_delete(s);
-		return 0;
+		return -1;
 	}
 	string_delete(s);
 	/* go through every chunk */
 	while(_event_audio_play_chunk(oss, fp) == 0);
-	fclose(fp);
+	if(fclose(fp) != 0)
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", s, strerror(errno));
+		return -oss->helper->error(NULL, buf, 1);
+	}
 	return 0;
 }
 
@@ -209,9 +220,10 @@ static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(rc->ckSize < sizeof(riffid)
-			|| fread(&riffid, sizeof(riffid), 1, fp) != 1)
+	if(rc->ckSize < sizeof(riffid))
 		return -1;
+	if(fread(&riffid, sizeof(riffid), 1, fp) != 1)
+		return -oss->helper->error(NULL, strerror(errno), 1);
 	rc->ckSize -= sizeof(riffid);
 	if(strncmp(riffid, wave, sizeof(wave)) == 0)
 		return _event_audio_play_chunk_wave(oss, fp, rc);
@@ -234,9 +246,10 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 	while(rc->ckSize > 0)
 	{
 		/* read the current WAVE chunk */
-		if(rc->ckSize < sizeof(rc2)
-				|| fread(&rc2, sizeof(rc2), 1, fp) != 1)
+		if(rc->ckSize < sizeof(rc2))
 			return -1;
+		if(fread(&rc2, sizeof(rc2), 1, fp) != 1)
+			return -oss->helper->error(NULL, strerror(errno), 1);
 #if 0 /* FIXME for big endian */
 		/* FIXME implement */
 #endif
@@ -278,7 +291,7 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 #endif
 			if(fd < 0)
 				return -1;
-			if(_event_audio_play_write(rc, &rc2, fp, fd) != 0)
+			if(_event_audio_play_write(oss, rc, &rc2, fp, fd) != 0)
 				break;
 		}
 		/* skip the rest of the chunk */
@@ -307,6 +320,7 @@ static int _event_audio_play_open(OSS * oss, char const * device,
 	int format;
 	int channels;
 	int samplerate;
+	char buf[128];
 
 	switch(wf->wFormatTag)
 	{
@@ -321,18 +335,22 @@ static int _event_audio_play_open(OSS * oss, char const * device,
 	channels = wf->wChannels;
 	samplerate = wf->dwSamplesPerSec;
 	if((fd = open(device, O_WRONLY)) < 0)
-		return -oss->helper->error(NULL, device, 1);
+	{
+		snprintf(buf, sizeof(buf), "%s: %s", device, strerror(errno));
+		return -oss->helper->error(NULL, buf, 1);
+	}
 	if(ioctl(fd, SNDCTL_DSP_SETFMT, &format) < 0
 			|| ioctl(fd, SNDCTL_DSP_CHANNELS, &channels) < 0
 			|| ioctl(fd, SNDCTL_DSP_SPEED, &samplerate) < 0)
 	{
 		close(fd);
-		return -oss->helper->error(NULL, device, 1);
+		snprintf(buf, sizeof(buf), "%s: %s", device, strerror(errno));
+		return -oss->helper->error(NULL, buf, 1);
 	}
 	return fd;
 }
 
-static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
+static int _event_audio_play_write(OSS * oss, RIFFChunk * rc, RIFFChunk * rc2,
 		FILE * fp, int fd)
 {
 	uint8_t u8[4096];
@@ -344,8 +362,9 @@ static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
 	{
 		if((s = fread(&u8, sizeof(*u8), s, fp)) == 0)
 			break;
-		if((ss = write(fd, &u8, s)) < 0
-				|| (size_t)ss != s) /* XXX */
+		if((ss = write(fd, &u8, s)) < 0)
+			return -oss->helper->error(NULL, strerror(errno), 1);
+		else if((size_t)ss != s) /* XXX */
 			return -1;
 	}
 	return 0;
@@ -353,9 +372,8 @@ static int _event_audio_play_write(RIFFChunk * rc, RIFFChunk * rc2,
 
 static int _event_volume_get(OSS * oss, gdouble * level)
 {
-	int ret = 0;
 	int v;
-	char buf[256];
+	char buf[128];
 
 	if(oss->fd < 0)
 		return 1;
@@ -363,18 +381,17 @@ static int _event_volume_get(OSS * oss, gdouble * level)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", "MIXER_READ", strerror(
 					errno));
-		ret |= oss->helper->error(NULL, buf, 0);
+		return -oss->helper->error(NULL, buf, 1);
 	}
 	*level = (((v & 0xff00) >> 8) + (v & 0xff)) / 2;
 	*level /= 100;
-	return ret;
+	return 0;
 }
 
 static int _event_volume_set(OSS * oss, gdouble level)
 {
-	int ret = 0;
 	int v = level * 100;
-	char buf[256];
+	char buf[128];
 
 	if(oss->fd < 0)
 		return 1;
@@ -383,9 +400,9 @@ static int _event_volume_set(OSS * oss, gdouble level)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", "MIXER_WRITE", strerror(
 					errno));
-		ret |= oss->helper->error(NULL, buf, 0);
+		return -oss->helper->error(NULL, buf, 1);
 	}
-	return ret;
+	return 0;
 }
 
 
@@ -393,17 +410,17 @@ static int _event_volume_set(OSS * oss, gdouble level)
 static int _oss_open(OSS * oss)
 {
 	char const * p;
-	char buf[256];
+	char buf[128];
 
-	if(oss->fd >= 0)
-		close(oss->fd);
+	if(oss->fd >= 0 && close(oss->fd) != 0)
+		oss->helper->error(NULL, strerror(errno), 1);
 	if((p = oss->helper->config_get(oss->helper->phone, "oss", "mixer"))
 			== NULL)
 		p = "/dev/mixer";
 	if((oss->fd = open(p, O_RDWR)) < 0)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", p, strerror(errno));
-		return oss->helper->error(NULL, buf, 1);
+		return -oss->helper->error(NULL, buf, 1);
 	}
 	return 0;
 }
