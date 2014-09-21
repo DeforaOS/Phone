@@ -561,7 +561,7 @@ static HayesCodeHandler _hayes_code_handlers[] =
 ModemPluginDefinition plugin =
 {
 	"Hayes",
-	NULL,
+	"phone",
 	_hayes_config,
 	_hayes_init,
 	_hayes_destroy,
