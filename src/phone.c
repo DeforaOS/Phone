@@ -1556,19 +1556,40 @@ void phone_show_about(Phone * phone, gboolean show)
 
 static void _show_about_window(Phone * phone)
 {
+	char const * p;
+	char const ** q;
+	char const * authors[] = { NULL, NULL };
+
 	phone->ab_window = desktop_about_dialog_new();
-	desktop_about_dialog_set_authors(phone->ab_window, _authors);
-	desktop_about_dialog_set_comments(phone->ab_window,
-			_("Telephony application for the DeforaOS desktop"));
-	desktop_about_dialog_set_copyright(phone->ab_window, _copyright);
-	desktop_about_dialog_set_license(phone->ab_window, _license);
-	desktop_about_dialog_set_logo_icon_name(phone->ab_window, "call-start");
-	desktop_about_dialog_set_name(phone->ab_window, PACKAGE);
-	desktop_about_dialog_set_translator_credits(phone->ab_window,
-			_("translator-credits"));
-	desktop_about_dialog_set_version(phone->ab_window, VERSION);
-	desktop_about_dialog_set_website(phone->ab_window,
-			"http://www.defora.org/");
+	if((authors[0] = config_get(phone->config, "about", "authors")) != NULL)
+		q = authors;
+	else
+		q = _authors;
+	desktop_about_dialog_set_authors(phone->ab_window, q);
+	if((p = config_get(phone->config, "about", "comment")) == NULL)
+		p = _("Telephony application for the DeforaOS desktop");
+	desktop_about_dialog_set_comments(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "copyright")) == NULL)
+		p = _copyright;
+	desktop_about_dialog_set_copyright(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "license")) == NULL)
+		p = _license;
+	desktop_about_dialog_set_license(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "icon")) == NULL)
+		p = "call-start";
+	desktop_about_dialog_set_logo_icon_name(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "name")) == NULL)
+		p = PACKAGE;
+	desktop_about_dialog_set_name(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "translator")) == NULL)
+		p = _("translator-credits");
+	desktop_about_dialog_set_translator_credits(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "version")) == NULL)
+		p = VERSION;
+	desktop_about_dialog_set_version(phone->ab_window, p);
+	if((p = config_get(phone->config, "about", "website")) == NULL)
+			p = "http://www.defora.org/";
+	desktop_about_dialog_set_website(phone->ab_window, p);
 	gtk_window_set_position(GTK_WINDOW(phone->ab_window),
 			GTK_WIN_POS_CENTER);
 	g_signal_connect(phone->ab_window, "delete-event", G_CALLBACK(
