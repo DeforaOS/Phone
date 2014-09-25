@@ -279,7 +279,7 @@ static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
-static HayesCommandStatus _on_request_contact_new(HayesCommand * command,
+static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_functional(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
@@ -508,10 +508,12 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ MODEM_REQUEST_CONTACT_DELETE,			NULL,
 		_on_request_contact_delete },
+	{ MODEM_REQUEST_CONTACT_EDIT,			NULL,
+		_on_request_contact_list },
 	{ MODEM_REQUEST_CONTACT_LIST,			"AT+CPBR=?",
 		_on_request_generic },
 	{ MODEM_REQUEST_CONTACT_NEW,			NULL,
-		_on_request_contact_new },
+		_on_request_contact_list },
 	{ MODEM_REQUEST_DTMF_SEND,			NULL,
 		_on_request_generic },
 	{ MODEM_REQUEST_MESSAGE,			NULL,
@@ -1351,9 +1353,11 @@ static char * _request_attention_connectivity(Hayes * hayes,
 		HayesChannel * channel, unsigned int enabled);
 static char * _request_attention_contact_delete(HayesChannel * channel,
 		unsigned int id);
-static char * _request_attention_contact_list(ModemRequest * request);
-static char * _request_attention_contact_new(HayesChannel * channel,
+static char * _request_attention_contact_edit(unsigned int id,
 		char const * name, char const * number);
+static char * _request_attention_contact_list(ModemRequest * request);
+static char * _request_attention_contact_new(char const * name,
+		char const * number);
 static char * _request_attention_dtmf_send(ModemRequest * request);
 static char * _request_attention_gprs(Hayes * hayes, HayesChannel * channel,
 		char const * username, char const * password);
@@ -1489,8 +1493,13 @@ static char * _request_attention(Hayes * hayes, HayesChannel * channel,
 		case MODEM_REQUEST_CONTACT_DELETE:
 			return _request_attention_contact_delete(channel,
 					request->contact_delete.id);
+		case MODEM_REQUEST_CONTACT_EDIT:
+			return _request_attention_contact_edit(
+					request->contact_edit.id,
+					request->contact_edit.name,
+					request->contact_edit.number);
 		case MODEM_REQUEST_CONTACT_NEW:
-			return _request_attention_contact_new(channel,
+			return _request_attention_contact_new(
 					request->contact_new.name,
 					request->contact_new.number);
 		case MODEM_REQUEST_DTMF_SEND:
@@ -1643,6 +1652,25 @@ static char * _request_attention_contact_delete(HayesChannel * channel,
 	return strdup(buf);
 }
 
+static char * _request_attention_contact_edit(unsigned int id,
+		char const * name, char const * number)
+{
+	char const cmd[] = "AT+CPBW=";
+	char buf[128];
+
+	if(number == NULL || strlen(number) == 0
+			|| name == NULL || strlen(name) == 0)
+		/* XXX report error */
+		return NULL;
+	if(snprintf(buf, sizeof(buf), "%s%u%s\"%s\"%s%u%s\"%s\"", cmd, id, ",",
+				(number[0] == '+') ? &number[1] : number, ",",
+				(number[0] == '+') ? 145 : 129, ",", name)
+			>= (int)sizeof(buf))
+		/* XXX report error */
+		return NULL;
+	return strdup(buf);
+}
+
 static char * _request_attention_contact_list(ModemRequest * request)
 {
 	HayesRequestContactList * list = request->plugin.data;
@@ -1655,8 +1683,8 @@ static char * _request_attention_contact_list(ModemRequest * request)
 	return strdup(buf);
 }
 
-static char * _request_attention_contact_new(HayesChannel * channel,
-		char const * name, char const * number)
+static char * _request_attention_contact_new(char const * name,
+		char const * number)
 {
 	char const cmd[] = "AT+CPBW=";
 	char buf[128];
@@ -1668,7 +1696,7 @@ static char * _request_attention_contact_new(HayesChannel * channel,
 	if(snprintf(buf, sizeof(buf), "%s%s\"%s\"%s%u%s\"%s\"", cmd, ",",
 				(number[0] == '+') ? &number[1] : number, ",",
 				(number[0] == '+') ? 145 : 129, ",", name)
-			> (int)sizeof(buf))
+			>= (int)sizeof(buf))
 		/* XXX report error */
 		return NULL;
 	return strdup(buf);
@@ -2643,8 +2671,8 @@ static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
 }
 
 
-/* on_request_contact_new */
-static HayesCommandStatus _on_request_contact_new(HayesCommand * command,
+/* on_request_contact_list */
+static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
 	HayesChannel * channel = priv;
