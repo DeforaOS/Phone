@@ -296,7 +296,7 @@ static void _settings_window(USSD * ussd)
 	hbox = gtk_hbutton_box_new();
 #endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
+	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_ussd_on_settings_close), ussd);

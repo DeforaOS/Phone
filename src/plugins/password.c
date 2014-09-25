@@ -168,7 +168,7 @@ static void _password_settings(PasswordPhonePlugin * password)
 	/* buttons */
 	hbox = gtk_hbutton_box_new();
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
-	gtk_button_box_set_spacing(GTK_BUTTON_BOX(hbox), 4);
+	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_on_settings_cancel), password);
