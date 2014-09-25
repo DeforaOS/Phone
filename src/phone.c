@@ -1844,9 +1844,8 @@ static void _show_code_window(Phone * phone)
 			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_CLEAR);
 	g_signal_connect_swapped(phone->en_entry, "icon-press", G_CALLBACK(
 				on_phone_code_clear), phone);
-#endif
 	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
-#if !GTK_CHECK_VERSION(2, 16, 0)
+#else
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"edit-undo", GTK_ICON_SIZE_BUTTON));
@@ -1854,6 +1853,7 @@ static void _show_code_window(Phone * phone)
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_code_clear), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
 #endif
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),
