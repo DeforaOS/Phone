@@ -213,6 +213,8 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 /* conversions */
 static unsigned char _hayes_convert_gsm_to_iso(unsigned char c);
 static void _hayes_convert_gsm_string_to_iso(char * str);
+static unsigned char _hayes_convert_iso_to_gsm(unsigned char c);
+static void _hayes_convert_iso_string_to_gsm(char * str);
 static char * _hayes_convert_number_to_address(char const * number);
 
 /* messages */
@@ -996,6 +998,29 @@ static void _hayes_convert_gsm_string_to_iso(char * str)
 }
 
 
+/* hayes_convert_iso_to_gsm */
+static unsigned char _hayes_convert_iso_to_gsm(unsigned char c)
+{
+	size_t i;
+
+	for(i = 0; i < sizeof(_hayes_gsm_iso) / sizeof(*_hayes_gsm_iso); i++)
+		if(_hayes_gsm_iso[i].iso == c)
+			return _hayes_gsm_iso[i].gsm;
+	return c;
+}
+
+
+/* hayes_convert_iso_string_to_gsm */
+static void _hayes_convert_iso_string_to_gsm(char * str)
+{
+	unsigned char * ustr = (unsigned char *)str;
+	size_t i;
+
+	for(i = 0; str[i] != '\0'; i++)
+		ustr[i] = _hayes_convert_iso_to_gsm(ustr[i]);
+}
+
+
 /* hayes_convert_number_to_address */
 static char * _hayes_convert_number_to_address(char const * number)
 {
@@ -1024,17 +1049,6 @@ static char * _hayes_convert_number_to_address(char const * number)
 	}
 	ret[i] = '\0';
 	return ret;
-}
-
-
-/* hayes_convert_string_to_iso */
-static void _hayes_convert_string_to_iso(char * str)
-{
-	unsigned char * ustr = (unsigned char *)str;
-	size_t i;
-
-	for(i = 0; str[i] != '\0'; i++)
-		ustr[i] = _hayes_convert_char_to_iso(ustr[i]);
 }
 
 
@@ -1668,16 +1682,27 @@ static char * _request_attention_contact_edit(unsigned int id,
 {
 	char const cmd[] = "AT+CPBW=";
 	char buf[128];
+	char * p;
 
 	if(!_is_number(number) || name == NULL || strlen(name) == 0)
 		/* XXX report error */
 		return NULL;
+	if((p = g_convert(name, -1, "ISO-8859-1", "UTF-8", NULL, NULL, NULL))
+			!= NULL)
+	{
+		_hayes_convert_iso_string_to_gsm(p);
+		name = p;
+	}
 	if(snprintf(buf, sizeof(buf), "%s%u%s\"%s\"%s%u%s\"%s\"", cmd, id, ",",
 				(number[0] == '+') ? &number[1] : number, ",",
 				(number[0] == '+') ? 145 : 129, ",", name)
 			>= (int)sizeof(buf))
+	{
+		g_free(p);
 		/* XXX report error */
 		return NULL;
+	}
+	g_free(p);
 	return strdup(buf);
 }
 
@@ -1698,16 +1723,27 @@ static char * _request_attention_contact_new(char const * name,
 {
 	char const cmd[] = "AT+CPBW=";
 	char buf[128];
+	char * p;
 
 	if(!_is_number(number) || name == NULL || strlen(name) == 0)
 		/* XXX report error */
 		return NULL;
+	if((p = g_convert(name, -1, "ISO-8859-1", "UTF-8", NULL, NULL, NULL))
+			!= NULL)
+	{
+		_hayes_convert_iso_string_to_gsm(p);
+		name = p;
+	}
 	if(snprintf(buf, sizeof(buf), "%s%s\"%s\"%s%u%s\"%s\"", cmd, ",",
 				(number[0] == '+') ? &number[1] : number, ",",
 				(number[0] == '+') ? 145 : 129, ",", name)
 			>= (int)sizeof(buf))
+	{
+		g_free(p);
 		/* XXX report error */
 		return NULL;
+	}
+	g_free(p);
 	return strdup(buf);
 }
 
