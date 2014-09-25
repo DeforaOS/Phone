@@ -60,7 +60,8 @@ typedef struct _HayesChannel
 	unsigned int quirks;
 
 	guint timeout;
-	guint source_authenticate;
+	guint authenticate_count;
+	guint authenticate_source;
 
 	GIOChannel * channel;
 	char * rd_buf;
@@ -1217,8 +1218,9 @@ static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel)
 	if(channel->wr_ppp_source != 0)
 		g_source_remove(channel->wr_ppp_source);
 	channel->wr_ppp_source = 0;
-	if(channel->source_authenticate != 0)
-		g_source_remove(channel->source_authenticate);
+	channel->authenticate_count = 0;
+	if(channel->authenticate_source != 0)
+		g_source_remove(channel->authenticate_source);
 	if(channel->timeout != 0)
 		g_source_remove(channel->timeout);
 	channel->timeout = 0;
@@ -1895,9 +1897,23 @@ static gboolean _on_authenticate(gpointer data)
 {
 	HayesChannel * channel = data;
 	Hayes * hayes = channel->hayes;
+	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 
-	channel->source_authenticate = 0;
-	_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
+	if(channel->authenticate_count++ < 10)
+	{
+		channel->authenticate_source = g_timeout_add(1000,
+				_on_authenticate, channel);
+		/* FIXME this must stop the "checking for SIM PIN" dialog */
+		_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
+	}
+	else
+	{
+		channel->authenticate_count = 0;
+		channel->authenticate_source = 0;
+		event->authentication.status
+			= MODEM_AUTHENTICATION_STATUS_ERROR;
+		hayes->helper->event(hayes->helper->modem, event);
+	}
 	return FALSE;
 }
 
@@ -2473,11 +2489,11 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 					event->authentication.name) == 0))
 	{
 		/* verify that it really worked */
-		timeout = (channel->quirks & HAYES_QUIRK_CPIN_SLOW) ? 3000 : 0;
-		if(channel->source_authenticate != 0)
-			g_source_remove(channel->source_authenticate);
-		/* give it three seconds to settle */
-		channel->source_authenticate = g_timeout_add(timeout,
+		timeout = (channel->quirks & HAYES_QUIRK_CPIN_SLOW) ? 1000 : 0;
+		channel->authenticate_count = 0;
+		if(channel->authenticate_source != 0)
+			g_source_remove(channel->authenticate_source);
+		channel->authenticate_source = g_timeout_add(timeout,
 				_on_authenticate, channel);
 	}
 	else
@@ -3859,7 +3875,13 @@ static void _on_code_cpin(HayesChannel * channel, char const * answer)
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, answer);
 #endif
 	if(strcmp(answer, "READY") == 0)
+	{
 		event->authentication.status = MODEM_AUTHENTICATION_STATUS_OK;
+		if(channel->authenticate_source != 0)
+			g_source_remove(channel->authenticate_source);
+		channel->authenticate_source = 0;
+		channel->authenticate_count = 0;
+	}
 	else if(strcmp(answer, "SIM PIN") == 0
 			|| strcmp(answer, "SIM PUK") == 0)
 	{
