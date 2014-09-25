@@ -211,9 +211,9 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 
 /* useful */
 /* conversions */
-static unsigned char _hayes_convert_char_to_iso(unsigned char c);
+static unsigned char _hayes_convert_gsm_to_iso(unsigned char c);
+static void _hayes_convert_gsm_string_to_iso(char * str);
 static char * _hayes_convert_number_to_address(char const * number);
-static void _hayes_convert_string_to_iso(char * str);
 
 /* messages */
 static char * _hayes_message_to_pdu(Hayes * hayes, HayesChannel * channel,
@@ -973,8 +973,8 @@ static char * _text_to_sept(char const * text, size_t length)
 
 
 /* conversions */
-/* hayes_convert_char_to_iso */
-static unsigned char _hayes_convert_char_to_iso(unsigned char c)
+/* hayes_convert_gsm_to_iso */
+static unsigned char _hayes_convert_gsm_to_iso(unsigned char c)
 {
 	size_t i;
 
@@ -982,6 +982,17 @@ static unsigned char _hayes_convert_char_to_iso(unsigned char c)
 		if(_hayes_gsm_iso[i].gsm == c)
 			return _hayes_gsm_iso[i].iso;
 	return c;
+}
+
+
+/* hayes_convert_gsm_string_to_iso */
+static void _hayes_convert_gsm_string_to_iso(char * str)
+{
+	unsigned char * ustr = (unsigned char *)str;
+	size_t i;
+
+	for(i = 0; str[i] != '\0'; i++)
+		ustr[i] = _hayes_convert_gsm_to_iso(ustr[i]);
 }
 
 
@@ -3551,7 +3562,7 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 		byte = u;
 		p[j] = (((byte << (shift + 1)) >> (shift + 1)) << shift) & 0x7f;
 		p[j] |= rest;
-		p[j] = _hayes_convert_char_to_iso(p[j]);
+		p[j] = _hayes_convert_gsm_to_iso(p[j]);
 		/* ignore the first character if there is a header */
 		if(hdr == 0 || j != 0)
 			j++;
@@ -3956,7 +3967,7 @@ static void _on_code_cpbr(HayesChannel * channel, char const * answer)
 	event->contact.number = channel->contact_number;
 	name[sizeof(name) - 1] = '\0';
 #if 1 /* FIXME is it really always in GSM? */
-	_hayes_convert_string_to_iso(name);
+	_hayes_convert_gsm_string_to_iso(name);
 #endif
 	if((p = g_convert(name, -1, "UTF-8", "ISO-8859-1", NULL, NULL, NULL))
 			                        != NULL)
