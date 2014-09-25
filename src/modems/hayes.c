@@ -210,20 +210,19 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 		HayesChannelMode mode);
 
 /* useful */
-static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
-		ModemRequest * request, void * data);
-static int _hayes_request_type(Hayes * hayes, HayesChannel * channel,
-		ModemRequestType type);
+/* conversions */
+static unsigned char _hayes_convert_char_to_iso(unsigned char c);
+static char * _hayes_convert_number_to_address(char const * number);
+static void _hayes_convert_string_to_iso(char * str);
 
 /* messages */
 static char * _hayes_message_to_pdu(Hayes * hayes, HayesChannel * channel,
 		char const * number, ModemMessageEncoding encoding,
 		size_t length, char const * content);
 
-/* conversions */
-static unsigned char _hayes_convert_char_to_iso(unsigned char c);
-static char * _hayes_convert_number_to_address(char const * number);
-static void _hayes_convert_string_to_iso(char * str);
+/* logging */
+static void _hayes_log(Hayes * hayes, HayesChannel * channel,
+		char const * prefix, char const * buf, size_t cnt);
 
 /* parser */
 static int _hayes_parse(Hayes * hayes, HayesChannel * channel);
@@ -241,6 +240,13 @@ static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel);
 static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel);
 static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel);
 
+/* requests */
+static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
+		ModemRequest * request, void * data);
+static int _hayes_request_type(Hayes * hayes, HayesChannel * channel,
+		ModemRequestType type);
+
+/* reset */
 static void _hayes_reset(Hayes * hayes);
 
 /* callbacks */
@@ -1012,6 +1018,25 @@ static void _hayes_convert_string_to_iso(char * str)
 
 	for(i = 0; str[i] != '\0'; i++)
 		ustr[i] = _hayes_convert_char_to_iso(ustr[i]);
+}
+
+
+/* logging */
+/* hayes_log */
+static void _hayes_log(Hayes * hayes, HayesChannel * channel,
+		char const * prefix, char const * buf, size_t cnt)
+{
+	ModemPluginHelper * helper = hayes->helper;
+
+	if(channel->fp == NULL)
+		return;
+	if(fprintf(channel->fp, "\n%s: ", prefix) == EOF
+			|| fwrite(buf, sizeof(*buf), cnt, channel->fp) < cnt)
+	{
+		helper->error(NULL, strerror(errno), 1);
+		fclose(channel->fp);
+		channel->fp = NULL;
+	}
 }
 
 
@@ -2255,15 +2280,8 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	status = g_io_channel_read_chars(source,
 			&channel->rd_buf[channel->rd_buf_cnt], inc, &cnt,
 			&error);
-	/* logging */
-	if(channel->fp != NULL && (fputs("\nMODEM: ", channel->fp) == EOF
-				|| fwrite(&channel->rd_buf[channel->rd_buf_cnt],
-					sizeof(*p), cnt, channel->fp) < cnt))
-	{
-		helper->error(NULL, strerror(errno), 1);
-		fclose(channel->fp);
-		channel->fp = NULL;
-	}
+	_hayes_log(hayes, channel, "MODEM",
+			&channel->rd_buf[channel->rd_buf_cnt], cnt);
 	channel->rd_buf_cnt += cnt;
 	switch(status)
 	{
@@ -2364,15 +2382,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		return FALSE; /* should not happen */
 	status = g_io_channel_write_chars(source, channel->wr_buf,
 			channel->wr_buf_cnt, &cnt, &error);
-	/* logging */
-	if(channel->fp != NULL && (fputs("\nPHONE: ", channel->fp) == EOF
-				|| fwrite(channel->wr_buf, sizeof(*p), cnt,
-					channel->fp) < cnt))
-	{
-		hayes->helper->error(NULL, strerror(errno), 1);
-		fclose(channel->fp);
-		channel->fp = NULL;
-	}
+	_hayes_log(hayes, channel, "PHONE", channel->wr_buf, cnt);
 	if(cnt != 0) /* some data may have been written anyway */
 	{
 		channel->wr_buf_cnt -= cnt;
