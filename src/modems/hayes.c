@@ -1658,8 +1658,7 @@ static char * _request_attention_contact_edit(unsigned int id,
 	char const cmd[] = "AT+CPBW=";
 	char buf[128];
 
-	if(number == NULL || strlen(number) == 0
-			|| name == NULL || strlen(name) == 0)
+	if(!_is_number(number) || name == NULL || strlen(name) == 0)
 		/* XXX report error */
 		return NULL;
 	if(snprintf(buf, sizeof(buf), "%s%u%s\"%s\"%s%u%s\"%s\"", cmd, id, ",",
@@ -1689,8 +1688,7 @@ static char * _request_attention_contact_new(char const * name,
 	char const cmd[] = "AT+CPBW=";
 	char buf[128];
 
-	if(number == NULL || strlen(number) == 0
-			|| name == NULL || strlen(name) == 0)
+	if(!_is_number(number) || name == NULL || strlen(name) == 0)
 		/* XXX report error */
 		return NULL;
 	if(snprintf(buf, sizeof(buf), "%s%s\"%s\"%s%u%s\"%s\"", cmd, ",",
