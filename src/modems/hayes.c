@@ -2489,6 +2489,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 			event->authentication.status
 				= MODEM_AUTHENTICATION_STATUS_ERROR;
 			hayes->helper->event(hayes->helper->modem, event);
+			/* fallback */
 		default:
 			return status;
 	}
@@ -3166,6 +3167,20 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 				hayes->source = g_timeout_add(5000,
 						_on_queue_timeout, channel);
 			break;
+		case 30:  /* No network service */
+			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
+			free(channel->registration_operator);
+			channel->registration_operator = NULL;
+			event->registration._operator
+				= channel->registration_operator;
+			event->registration.signal = 0.0 / 0.0;
+			hayes->helper->event(hayes->helper->modem, event);
+			break;
+		case 31:  /* Network timeout */
+			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
+			event->registration.signal = 0.0 / 0.0;
+			hayes->helper->event(hayes->helper->modem, event);
+			break;
 		case 32: /* emergency calls only */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(channel->registration_media);
@@ -3182,11 +3197,22 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			_hayes_request_type(hayes, channel,
 					HAYES_REQUEST_SIM_PIN_VALID);
 			break;
+		case 112: /* Location area not allowed */
+		case 113: /* Roaming not allowed in this location area */
+			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
+			event->registration.status
+				= MODEM_REGISTRATION_STATUS_DENIED;
+			hayes->helper->event(hayes->helper->modem, event);
+			break;
 		default:  /* FIXME implement the rest */
-		case 3:   /* operation not allowed */
-		case 4:   /* operation not supported */
+		case 3:   /* Operation not allowed */
+		case 4:   /* Operation not supported */
+		case 10:  /* SIM not inserted */
 		case 16:  /* Incorrect SIM PIN/PUK */
 		case 20:  /* Memory full */
+		case 107: /* GPRS services not allowed */
+		case 148: /* Unspecified GPRS error */
+		case 262: /* SIM blocked */
 		case 263: /* Invalid block */
 			break;
 	}
@@ -3580,9 +3606,10 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			_on_code_cpin(channel, "SIM PUK");
 			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
-		case 500: /* unknown error */
+		case 500: /* Unknown error */
 			if((channel->quirks & HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
 				break;
+			/* fallback */
 		case 314: /* SIM busy */
 			/* repeat the command */
 			/* FIXME duplicated from _on_code_cme_error() */
@@ -3599,7 +3626,8 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 				hayes->source = g_timeout_add(5000,
 						_on_queue_timeout, channel);
 			break;
-		case 321: /* invalid memory index */
+		case 303: /* Operation not supported */
+		case 321: /* Invalid memory index */
 		default: /* FIXME implement the rest */
 			break;
 	}
