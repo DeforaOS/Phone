@@ -82,6 +82,7 @@ typedef struct _PhonePlugin
 /* plug-in */
 static VideoPhonePlugin * _video_init(PhonePluginHelper * helper);
 static void _video_destroy(VideoPhonePlugin * video);
+static void _video_settings(VideoPhonePlugin * video);
 
 /* useful */
 static int _video_ioctl(VideoPhonePlugin * video, unsigned long request,
@@ -112,7 +113,7 @@ PhonePluginDefinition plugin =
 	_video_init,
 	_video_destroy,
 	NULL,
-	NULL
+	_video_settings
 };
 
 
@@ -206,6 +207,14 @@ static void _video_destroy(VideoPhonePlugin * video)
 	free(video->raw_buffer);
 	string_delete(video->device);
 	object_delete(video);
+}
+
+
+/* video_settings */
+static void _video_settings(VideoPhonePlugin * video)
+{
+	gtk_window_present(GTK_WINDOW(video->window));
+	_video_start(video);
 }
 
 
