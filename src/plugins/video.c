@@ -19,6 +19,7 @@
 
 
 #include <sys/ioctl.h>
+#include <sys/mman.h>
 #ifdef __NetBSD__
 # include <sys/videoio.h>
 #else
@@ -40,6 +41,12 @@
 /* Video */
 /* private */
 /* types */
+typedef struct _VideoBuffer
+{
+	void * start;
+	size_t length;
+} VideoBuffer;
+
 typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
@@ -59,6 +66,9 @@ typedef struct _PhonePlugin
 	GIOChannel * channel;
 
 	/* input data */
+	/* XXX for mmap() */
+	VideoBuffer * buffers;
+	size_t buffers_cnt;
 	char * raw_buffer;
 	size_t raw_buffer_cnt;
 
@@ -92,6 +102,8 @@ static void _video_start(VideoPhonePlugin * video);
 static void _video_stop(VideoPhonePlugin * video);
 
 /* callbacks */
+static gboolean _video_on_can_mmap(GIOChannel * channel, GIOCondition condition,
+		gpointer data);
 static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 		gpointer data);
 static gboolean _video_on_closex(gpointer data);
@@ -146,6 +158,8 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	video->fd = -1;
 	memset(&video->cap, 0, sizeof(video->cap));
 	video->channel = NULL;
+	video->buffers = NULL;
+	video->buffers_cnt = 0;
 	video->raw_buffer = NULL;
 	video->raw_buffer_cnt = 0;
 	video->rgb_buffer = NULL;
@@ -187,6 +201,8 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 /* video_destroy */
 static void _video_destroy(VideoPhonePlugin * video)
 {
+	size_t i;
+
 	_video_stop(video);
 	if(video->channel != NULL)
 	{
@@ -204,6 +220,11 @@ static void _video_destroy(VideoPhonePlugin * video)
 		close(video->fd);
 	if((char *)video->rgb_buffer != video->raw_buffer)
 		free(video->rgb_buffer);
+	for(i = 0; i < video->buffers_cnt; i++)
+		if(video->buffers[i].start != MAP_FAILED)
+			munmap(video->buffers[i].start,
+					video->buffers[i].length);
+	free(video->buffers);
 	free(video->raw_buffer);
 	string_delete(video->device);
 	object_delete(video);
@@ -252,6 +273,35 @@ static void _video_stop(VideoPhonePlugin * video)
 
 
 /* callbacks */
+/* video_on_can_mmap */
+static gboolean _video_on_can_mmap(GIOChannel * channel, GIOCondition condition,
+		gpointer data)
+{
+	VideoPhonePlugin * video = data;
+	PhonePluginHelper * helper = video->helper;
+	struct v4l2_buffer buf;
+
+	if(channel != video->channel || condition != G_IO_IN)
+		return FALSE;
+	if(_video_ioctl(video, VIDIOC_DQBUF, &buf) == -1)
+	{
+		helper->error(helper->phone, "Could not save picture", 1);
+		return FALSE;
+	}
+	video->raw_buffer = video->buffers[buf.index].start;
+	video->raw_buffer_cnt = buf.bytesused;
+#if 0 /* FIXME the raw buffer is not meant to be free()'d */
+	video->source = g_idle_add(_video_on_refresh, video);
+	return FALSE;
+#else
+	_video_on_refresh(video);
+	video->raw_buffer = NULL;
+	video->raw_buffer_cnt = 0;
+	return TRUE;
+#endif
+}
+
+
 /* video_on_can_read */
 static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 		gpointer data)
@@ -273,6 +323,7 @@ static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 			return TRUE;
 		close(video->fd);
 		video->fd = -1;
+		/* FIXME also free video->buffers */
 		helper->error(helper->phone, strerror(errno), 1);
 		video->source = 0;
 		return FALSE;
@@ -339,6 +390,10 @@ static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
 
 /* video_on_open */
 static int _open_setup(VideoPhonePlugin * video);
+#ifdef NOTYET
+static int _open_setup_mmap(VideoPhonePlugin * video);
+#endif
+static int _open_setup_read(VideoPhonePlugin * video);
 
 static gboolean _video_on_open(gpointer data)
 {
@@ -379,22 +434,19 @@ static gboolean _video_on_open(gpointer data)
 
 static int _open_setup(VideoPhonePlugin * video)
 {
+	int ret;
 	struct v4l2_cropcap cropcap;
 	struct v4l2_crop crop;
-	size_t cnt;
-	char * p;
 	GError * error = NULL;
 
-	/* check for errors */
+	/* check for capabilities */
 	if(_video_ioctl(video, VIDIOC_QUERYCAP, &video->cap) == -1)
 		return -error_set_code(1, "%s: %s (%s)", video->device,
 				"Could not obtain the capabilities",
 				strerror(errno));
-	if((video->cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0
-			/* FIXME also implement mmap() and streaming */
-			|| (video->cap.capabilities & V4L2_CAP_READWRITE) == 0)
+	if((video->cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) == 0)
 		return -error_set_code(1, "%s: %s", video->device,
-				"Unsupported capabilities");
+				"Not a video capture device");
 	/* reset cropping */
 	memset(&cropcap, 0, sizeof(cropcap));
 	cropcap.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -417,6 +469,87 @@ static int _open_setup(VideoPhonePlugin * video)
 	if(video->format.type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
 		return -error_set_code(1, "%s: %s", video->device,
 				"Unsupported video capture type");
+	if((video->cap.capabilities & V4L2_CAP_STREAMING) != 0)
+#ifdef NOTYET
+		ret = _open_setup_mmap(video);
+#else
+		ret = _open_setup_read(video);
+#endif
+	else if((video->cap.capabilities & V4L2_CAP_READWRITE) != 0)
+		ret = _open_setup_read(video);
+	else
+		ret = -error_set_code(1, "%s: %s", video->device,
+				"Unsupported capabilities");
+	if(ret != 0)
+		return ret;
+	/* setup a IO channel */
+	video->channel = g_io_channel_unix_new(video->fd);
+	if(g_io_channel_set_encoding(video->channel, NULL, &error)
+			!= G_IO_STATUS_NORMAL)
+	{
+		error_set_code(1, "%s", error->message);
+		g_error_free(error);
+		return -1;
+	}
+	g_io_channel_set_buffered(video->channel, FALSE);
+	video->source = g_io_add_watch(video->channel, G_IO_IN,
+			_video_on_can_read, video);
+	return 0;
+}
+
+#ifdef NOTYET
+static int _open_setup_mmap(VideoPhonePlugin * video)
+{
+	struct v4l2_requestbuffers req;
+	size_t i;
+	struct v4l2_buffer buf;
+
+	/* memory mapping support */
+	req.count = 4;
+	req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+	req.memory = V4L2_MEMORY_MMAP;
+	if(_video_ioctl(video, VIDIOC_REQBUFS, &req) == -1)
+		return -error_set_code(1, "%s: %s", video->device,
+				"Could not request buffers");
+	if(req.count < 2)
+		return -error_set_code(1, "%s: %s", video->device,
+				"Could not obtain enough buffers");
+	if((video->buffers = malloc(sizeof(*video->buffers) * req.count))
+			== NULL)
+		return -error_set_code(1, "%s: %s", video->device,
+				"Could not allocate buffers");
+	video->buffers_cnt = req.count;
+	/* initialize the buffers */
+	memset(video->buffers, 0, sizeof(*video->buffers) * video->buffers_cnt);
+	for(i = 0; i < video->buffers_cnt; i++)
+		video->buffers[i].start = MAP_FAILED;
+	/* map the buffers */
+	for(i = 0; i < video->buffers_cnt; i++)
+	{
+		memset(&buf, 0, sizeof(buf));
+		buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		buf.memory = V4L2_MEMORY_MMAP;
+		buf.index = i;
+		if(_video_ioctl(video, VIDIOC_QUERYBUF, &buf) == -1)
+			return -error_set_code(1, "%s: %s", video->device,
+					"Could not setup buffers");
+		video->buffers[i].start = mmap(NULL, buf.length,
+				PROT_READ | PROT_WRITE, MAP_SHARED, video->fd,
+				buf.m.offset);
+		if(video->buffers[i].start == MAP_FAILED)
+			return -error_set_code(1, "%s: %s", video->device,
+					"Could not map buffers");
+		video->buffers[i].length = buf.length;
+	}
+	return 0;
+}
+#endif
+
+static int _open_setup_read(VideoPhonePlugin * video)
+{
+	size_t cnt;
+	char * p;
+
 	/* FIXME also try to obtain a RGB24 format if possible */
 	/* allocate the raw buffer */
 	cnt = video->format.fmt.pix.sizeimage;
@@ -432,18 +565,6 @@ static int _open_setup(VideoPhonePlugin * video)
 				strerror(errno));
 	video->rgb_buffer = (unsigned char *)p;
 	video->rgb_buffer_cnt = cnt;
-	/* setup a IO channel */
-	video->channel = g_io_channel_unix_new(video->fd);
-	if(g_io_channel_set_encoding(video->channel, NULL, &error)
-			!= G_IO_STATUS_NORMAL)
-	{
-		error_set_code(1, "%s", error->message);
-		g_error_free(error);
-		return -1;
-	}
-	g_io_channel_set_buffered(video->channel, FALSE);
-	video->source = g_io_add_watch(video->channel, G_IO_IN,
-			_video_on_can_read, video);
 	return 0;
 }
 
@@ -496,7 +617,8 @@ static gboolean _video_on_refresh(gpointer data)
 			video->area_allocation.width,
 			video->area_allocation.height);
 	video->source = g_io_add_watch(video->channel, G_IO_IN,
-			_video_on_can_read, video);
+			(video->buffers != NULL) ? _video_on_can_mmap
+			: _video_on_can_read, video);
 	return FALSE;
 }
 
