@@ -123,9 +123,17 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_window_set_title(GTK_WINDOW(password->window), "Password");
 	g_signal_connect_swapped(password->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), password);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* entry */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 	hbox = gtk_hbox_new(FALSE, 0);
+#endif
 	widget = gtk_label_new("Name: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -135,7 +143,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_start(GTK_BOX(hbox), password->entry, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* old password */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 	hbox = gtk_hbox_new(FALSE, 0);
+#endif
 	widget = gtk_label_new("Old password: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -145,7 +157,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_start(GTK_BOX(hbox), password->oldpassword, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* new password */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 	hbox = gtk_hbox_new(FALSE, 0);
+#endif
 	widget = gtk_label_new("New password: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -155,7 +171,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_start(GTK_BOX(hbox), password->newpassword, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* new password */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 	hbox = gtk_hbox_new(FALSE, 0);
+#endif
 	widget = gtk_label_new("Confirm: ");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -166,7 +186,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 			0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* buttons */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	hbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);

@@ -140,7 +140,11 @@ static Panel * _panel_init(PhonePluginHelper * helper)
 				_on_plug_delete_event), panel);
 	g_signal_connect_swapped(panel->plug, "embedded", G_CALLBACK(
 				_on_plug_embedded), panel);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	panel->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+#else
 	panel->hbox = gtk_hbox_new(FALSE, 2);
+#endif
 	/* battery */
 	panel->battery_timeout = 0;
 	panel->battery_level = -1;
@@ -502,7 +506,11 @@ static void _panel_settings(Panel * panel)
 	gtk_window_set_title(GTK_WINDOW(panel->window), "Panel preferences");
 	g_signal_connect_swapped(panel->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), panel);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* check button */
 	panel->battery = gtk_check_button_new_with_label(
 			"Monitor battery activity");
@@ -511,7 +519,11 @@ static void _panel_settings(Panel * panel)
 			"Shorten the operator name");
 	gtk_box_pack_start(GTK_BOX(vbox), panel->truncate, FALSE, TRUE, 0);
 	/* button box */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);

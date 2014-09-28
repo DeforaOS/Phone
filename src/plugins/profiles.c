@@ -292,7 +292,11 @@ static void _profiles_settings(Profiles * profiles)
 	gtk_window_set_title(GTK_WINDOW(profiles->pr_window), "Profiles");
 	g_signal_connect_swapped(profiles->pr_window, "delete-event",
 			G_CALLBACK(_on_settings_closex), profiles);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* combo */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	profiles->pr_combo = gtk_combo_box_text_new();
@@ -311,13 +315,21 @@ static void _profiles_settings(Profiles * profiles)
 	gtk_box_pack_start(GTK_BOX(vbox), profiles->pr_combo, FALSE, TRUE, 0);
 	/* frame */
 	frame = gtk_frame_new("Overview");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	widget = gtk_vbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
 	profiles->pr_online = gtk_check_button_new_with_label("Online");
 	gtk_widget_set_sensitive(profiles->pr_online, FALSE);
 	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_online, FALSE, TRUE,
 			0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	bbox = gtk_hbox_new(FALSE, 4);
+#endif
 	profiles->pr_volume = gtk_label_new("Volume: ");
 	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
 	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, FALSE, TRUE, 0);
@@ -332,7 +344,11 @@ static void _profiles_settings(Profiles * profiles)
 	gtk_container_add(GTK_CONTAINER(frame), widget);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
 	/* dialog */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);

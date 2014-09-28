@@ -154,7 +154,11 @@ static void _blacklist_settings(Blacklist * blacklist)
 	gtk_window_set_title(GTK_WINDOW(blacklist->window), "Blacklisting");
 	g_signal_connect_swapped(blacklist->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), blacklist);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);

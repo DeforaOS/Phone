@@ -512,7 +512,11 @@ static void _openmoko_settings(Openmoko * openmoko)
 			"Openmoko preferences");
 	g_signal_connect_swapped(openmoko->window, "delete-event", G_CALLBACK(
 				_settings_on_closex), openmoko);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* check button */
 	openmoko->deepsleep = gtk_check_button_new_with_label(
 			"Prevent deep sleep");
@@ -520,10 +524,19 @@ static void _openmoko_settings(Openmoko * openmoko)
 	/* hardware */
 	frame = gtk_frame_new("Hardware");
 	gtk_container_set_border_width(GTK_CONTAINER(frame), 4);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+	gtk_box_set_homogeneous(GTK_BOX(bbox), TRUE);
+#else
 	bbox = gtk_vbox_new(TRUE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(bbox), 4);
 	/* bluetooth */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new("Bluetooth");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -534,7 +547,11 @@ static void _openmoko_settings(Openmoko * openmoko)
 			0);
 	gtk_box_pack_start(GTK_BOX(bbox), hbox, FALSE, TRUE, 0);
 	/* GPS */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new("GPS");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -546,7 +563,11 @@ static void _openmoko_settings(Openmoko * openmoko)
 	gtk_container_add(GTK_CONTAINER(frame), bbox);
 	gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
 	/* button box */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);

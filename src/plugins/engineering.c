@@ -219,7 +219,11 @@ static Engineering * _engineering_init(PhonePluginHelper * helper)
 			"Engineering mode");
 	g_signal_connect_swapped(engineering->window, "delete-event",
 			G_CALLBACK(_on_engineering_closex), engineering);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	toolbar = gtk_toolbar_new();
 	engineering->tb_play = gtk_toggle_tool_button_new_from_stock(
@@ -236,7 +240,11 @@ static Engineering * _engineering_init(PhonePluginHelper * helper)
 			-1);
 	gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, TRUE, 0);
 	/* serving cell view */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	paned = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+#else
 	paned = gtk_vpaned_new();
+#endif
 	frame = gtk_frame_new("Serving cell");
 	engineering->sc_store = gtk_list_store_new(SC_COL_COUNT,
 			G_TYPE_STRING,		/* SC_COL_FREQUENCY */

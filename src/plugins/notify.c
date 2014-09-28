@@ -17,6 +17,9 @@
 
 #include <System.h>
 #include <Desktop.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+# include <gtk/gtkx.h>
+#endif
 #if 0 /* XXX avoid a dependency on Panel */
 # include <Desktop/Panel.h>
 #else
@@ -131,12 +134,20 @@ static int _event_notification(NotifyPhonePlugin * notify, PhoneEvent * event)
 	}
 	plug = gtk_plug_new(0);
 	gtk_container_set_border_width(GTK_CONTAINER(plug), 4);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	/* icon */
 	widget = gtk_image_new_from_stock(stock, GTK_ICON_SIZE_DIALOG);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	/* title */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new(title);
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 	gtk_widget_modify_font(widget, bold);

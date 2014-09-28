@@ -113,9 +113,17 @@ static void _settings_window(GPS * gps)
 	gtk_window_set_title(GTK_WINDOW(gps->window), "GPS");
 	g_signal_connect(gps->window, "delete-event", G_CALLBACK(
 				gtk_widget_hide), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* controls */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	hbox = gtk_hbutton_box_new();
+#endif
 	widget = gtk_button_new_with_label("Start");
 	g_signal_connect_swapped(widget, "clicked",
 			G_CALLBACK(_gps_on_settings_start), gps);
@@ -126,7 +134,11 @@ static void _settings_window(GPS * gps)
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* button box */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	hbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(hbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(hbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CLOSE);

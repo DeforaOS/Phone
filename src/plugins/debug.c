@@ -185,9 +185,13 @@ static Debug * _debug_init(PhonePluginHelper * helper)
 	g_signal_connect_swapped(debug->window, "delete-event", G_CALLBACK(
 				_debug_on_closex), debug);
 	/* vbox */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
-	/* modem requests */
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	debug->requests = gtk_combo_box_text_new();
@@ -209,7 +213,11 @@ static Debug * _debug_init(PhonePluginHelper * helper)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* modem triggers */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	debug->triggers = gtk_combo_box_text_new();
@@ -271,8 +279,13 @@ static void _debug_on_queue_request(gpointer data)
 	size_t i;
 	ModemRequest request;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	if((text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
+						debug->requests))) == NULL)
+#else
 	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(
 						debug->requests))) == NULL)
+#endif
 		return;
 	for(i = 0; _debug_modem_requests[i].name != NULL; i++)
 		if(strcmp(_debug_modem_requests[i].name, text) == 0)
@@ -290,8 +303,13 @@ static void _debug_on_queue_trigger(gpointer data)
 	gchar * text;
 	size_t i;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	if((text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(
+						debug->triggers))) == NULL)
+#else
 	if((text = gtk_combo_box_get_active_text(GTK_COMBO_BOX(
 						debug->triggers))) == NULL)
+#endif
 		return;
 	for(i = 0; _debug_modem_triggers[i].name != NULL; i++)
 		if(strcmp(_debug_modem_triggers[i].name, text) == 0)

@@ -451,7 +451,11 @@ static void _oss_settings(OSS * oss)
 	gtk_window_set_title(GTK_WINDOW(oss->window), "Sound preferences");
 	g_signal_connect_swapped(oss->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), oss);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* devices */
 	widget = gtk_label_new("Sound device:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
@@ -468,7 +472,11 @@ static void _oss_settings(OSS * oss)
 	oss->mixer = widget;
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* button box */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);

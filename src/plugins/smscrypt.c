@@ -306,7 +306,11 @@ static void _smscrypt_settings(SMSCrypt * smscrypt)
 	gtk_window_set_title(GTK_WINDOW(smscrypt->window), "SMS encryption");
 	g_signal_connect_swapped(smscrypt->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), smscrypt);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);

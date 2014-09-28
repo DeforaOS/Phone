@@ -302,7 +302,11 @@ static void _gprs_settings(GPRS * gprs)
 	gtk_window_set_title(GTK_WINDOW(gprs->window), "Dial-up networking");
 	g_signal_connect_swapped(gprs->window, "delete-event", G_CALLBACK(
 				_settings_on_closex), gprs);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	gprs->notebook = gtk_notebook_new();
 	/* preferences */
 	widget = _settings_preferences(gprs);
@@ -314,7 +318,11 @@ static void _gprs_settings(GPRS * gprs)
 			gtk_label_new("Status"));
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->notebook, TRUE, TRUE, 0);
 	/* button box */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 #ifdef PROGNAME
@@ -347,7 +355,11 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	GtkWidget * vbox2;
 	GtkWidget * widget;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label(
 			"Force GPRS registration");
@@ -357,11 +369,19 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->systray, FALSE, TRUE, 0);
 	/* credentials */
 	frame = gtk_frame_new("Credentials");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox2 = gtk_vbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* access point */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new("Access point:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -370,7 +390,11 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->apn, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* username */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new("Username:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -379,7 +403,11 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->username, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 	/* password */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_label_new("Password:");
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
@@ -390,7 +418,11 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
 #ifndef PROGNAME
 	/* defaults */
+# if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+# else
 	hbox = gtk_hbox_new(FALSE, 4);
+# endif
 	gprs->defaults = gtk_button_new_with_label("Load defaults");
 	gtk_widget_set_sensitive(gprs->defaults, (gprs->_operator != NULL)
 			? TRUE : FALSE);
@@ -411,12 +443,24 @@ static GtkWidget * _settings_status(GPRS * gprs)
 	GtkWidget * widget;
 	GtkWidget * bbox;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* details */
 	widget = gtk_frame_new("Details");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	bbox = gtk_vbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(bbox), 4);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	gprs->st_image = gtk_image_new_from_icon_name(GTK_STOCK_DISCONNECT,
 			GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->st_image, FALSE, TRUE, 0);
@@ -441,7 +485,11 @@ static GtkWidget * _settings_status(GPRS * gprs)
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->connect, FALSE, TRUE, 0);
 	/* counters */
 	widget = gtk_frame_new("Counters");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	hbox = gtk_vbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(hbox), 4);
 	gprs->st_glin = gtk_label_new(NULL);
 	gtk_misc_set_alignment(GTK_MISC(gprs->st_glin), 0.0, 0.5);
