@@ -35,6 +35,12 @@ phonectl.html: manual.css.xml phonectl.css.xml phonectl.xml
 
 clean:
 	$(RM) -- $(gprs.1_OBJS) $(gprs.html_OBJS) $(index.html_OBJS) $(phone.1_OBJS) $(phone.html_OBJS) $(phonectl.1_OBJS) $(phonectl.html_OBJS)
+	./docbook.sh -c -P "$(PREFIX)" -- "gprs.1"
+	./docbook.sh -c -P "$(PREFIX)" -- "gprs.html"
+	./docbook.sh -c -P "$(PREFIX)" -- "index.html"
+	./docbook.sh -c -P "$(PREFIX)" -- "phone.1"
+	./docbook.sh -c -P "$(PREFIX)" -- "phone.html"
+	./docbook.sh -c -P "$(PREFIX)" -- "phonectl.1"
 	./docbook.sh -c -P "$(PREFIX)" -- "phonectl.html"
 
 distclean: clean
