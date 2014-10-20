@@ -40,6 +40,9 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-settings.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-sofia.desktop \
 		$(PACKAGE)-$(VERSION)/data/hash.wav \
+		$(PACKAGE)-$(VERSION)/data/keytone.wav \
+		$(PACKAGE)-$(VERSION)/data/ringback.wav \
+		$(PACKAGE)-$(VERSION)/data/ringtone.wav \
 		$(PACKAGE)-$(VERSION)/data/star.wav \
 		$(PACKAGE)-$(VERSION)/data/project.conf \
 		$(PACKAGE)-$(VERSION)/data/16x16/Makefile \

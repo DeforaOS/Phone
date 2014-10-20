@@ -54,6 +54,12 @@ install:
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 hash.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/hash.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 keytone.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/keytone.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 ringback.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/ringback.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 ringtone.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/ringtone.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 star.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/star.wav
 
 uninstall:
@@ -75,6 +81,9 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-settings.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-sofia.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/hash.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/keytone.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/ringback.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/ringtone.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/star.wav
 
 .PHONY: all subdirs clean distclean install uninstall
