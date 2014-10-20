@@ -222,6 +222,9 @@ static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 			if(direction == MODEM_CALL_DIRECTION_INCOMING
 					&& status == MODEM_CALL_STATUS_RINGING)
 				_profiles_play(profiles, "ringtone", 10);
+			else if(direction == MODEM_CALL_DIRECTION_OUTGOING
+					&& status == MODEM_CALL_STATUS_RINGING)
+				_profiles_play(profiles, "ringback", 0);
 			else if(status == MODEM_CALL_STATUS_NONE
 					|| status == MODEM_CALL_STATUS_ACTIVE)
 				_profiles_play(profiles, NULL, 0);
