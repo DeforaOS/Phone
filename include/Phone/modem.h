@@ -59,7 +59,8 @@ typedef enum _ModemCallStatus
 {
 	MODEM_CALL_STATUS_NONE = 0,
 	MODEM_CALL_STATUS_RINGING,
-	MODEM_CALL_STATUS_ACTIVE
+	MODEM_CALL_STATUS_ACTIVE,
+	MODEM_CALL_STATUS_BUSY
 } ModemCallStatus;
 
 typedef enum _ModemCallType

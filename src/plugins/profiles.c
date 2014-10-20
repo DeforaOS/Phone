@@ -225,6 +225,8 @@ static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 			else if(direction == MODEM_CALL_DIRECTION_OUTGOING
 					&& status == MODEM_CALL_STATUS_RINGING)
 				_profiles_play(profiles, "ringback", 0);
+			else if(status == MODEM_CALL_STATUS_BUSY)
+				_profiles_play(profiles, "busy", 0);
 			else if(status == MODEM_CALL_STATUS_NONE
 					|| status == MODEM_CALL_STATUS_ACTIVE)
 				_profiles_play(profiles, NULL, 0);
