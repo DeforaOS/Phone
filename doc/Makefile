@@ -56,6 +56,8 @@ install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
 	$(INSTALL) -m 0644 gprs.conf $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
+	$(INSTALL) -m 0644 phone.conf $(DESTDIR)$(PREFIX)/share/doc/Phone/phone.conf
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
 	$(INSTALL) -m 0644 pppd-chat_gprs $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-chat_gprs
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
 	$(INSTALL) -m 0644 pppd-peers_gprs $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_gprs
@@ -70,6 +72,7 @@ uninstall:
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.1"
 	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -u -- "phonectl.html"
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/phone.conf
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-chat_gprs
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_gprs
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/doc/Phone/pppd-peers_phone

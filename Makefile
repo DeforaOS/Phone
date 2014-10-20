@@ -81,6 +81,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/doc/index.xml \
 		$(PACKAGE)-$(VERSION)/doc/index.xsl \
 		$(PACKAGE)-$(VERSION)/doc/manual.css.xml \
+		$(PACKAGE)-$(VERSION)/doc/phone.conf \
 		$(PACKAGE)-$(VERSION)/doc/phone.css.xml \
 		$(PACKAGE)-$(VERSION)/doc/phone.xml \
 		$(PACKAGE)-$(VERSION)/doc/phonectl.css.xml \
