@@ -166,6 +166,7 @@ dist:
 		$(PACKAGE)-$(VERSION)/src/plugins/48x48/project.conf \
 		$(PACKAGE)-$(VERSION)/tests/hayes.c \
 		$(PACKAGE)-$(VERSION)/tests/modems.c \
+		$(PACKAGE)-$(VERSION)/tests/oss.c \
 		$(PACKAGE)-$(VERSION)/tests/pdu.c \
 		$(PACKAGE)-$(VERSION)/tests/plugins.c \
 		$(PACKAGE)-$(VERSION)/tests/ussd.c \
