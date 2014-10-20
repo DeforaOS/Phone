@@ -54,13 +54,16 @@ typedef struct _PhonePlugin
 	int fd;
 } OSS;
 
+#pragma pack(1)
 typedef struct _RIFFChunk
 {
 	char ckID[4];
 	uint32_t ckSize;
 	uint8_t ckData[0];
 } RIFFChunk;
+#pragma pack()
 
+#pragma pack(1)
 typedef struct _WaveFormat
 {
 	uint16_t wFormatTag;
@@ -69,6 +72,11 @@ typedef struct _WaveFormat
 	uint32_t dwAvgBytesPerSec;
 	uint16_t wBlockAlign;
 } WaveFormat;
+#pragma pack()
+#define WAVE_FORMAT_PCM		0x0001
+#define IBM_FORMAT_MULAW	0x0101
+#define IBM_FORMAT_ALAW		0x0102
+#define IBM_FORMAT_ADPCM	0x0103
 
 
 /* prototypes */
@@ -126,8 +134,9 @@ static int _event_audio_play(OSS * oss, char const * sample);
 static int _event_audio_play_chunk(OSS * oss, FILE * fp);
 static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc);
-static int _event_audio_play_open(OSS * oss, char const * device,
-		WaveFormat * wf);
+static int _event_audio_play_file(OSS * oss, char const * filename);
+static int _event_audio_play_open(OSS * oss, char const * device, FILE * fp,
+		WaveFormat * wf, RIFFChunk * rc);
 static int _event_audio_play_write(OSS * oss, RIFFChunk * rc, RIFFChunk * rc2,
 		FILE * fp, int fd);
 static int _event_volume_get(OSS * oss, gdouble * level);
@@ -160,13 +169,12 @@ static int _event_audio_play(OSS * oss, char const * sample)
 	const char path[] = DATADIR "/sounds/" PACKAGE;
 	const char ext[] = ".wav";
 	String * s;
-	FILE * fp;
 	char buf[128];
 
 	if((s = string_new_append(path, "/", sample, ext, NULL)) == NULL)
 		return -oss->helper->error(NULL, error_get(), 1);
-	/* open the audio file */
-	if((fp = fopen(s, "rb")) == NULL)
+	/* play the audio file */
+	if(_event_audio_play_file(oss, s) != 0)
 	{
 		snprintf(buf, sizeof(buf), "%s: %s", s, strerror(errno));
 		oss->helper->error(NULL, buf, 1);
@@ -174,13 +182,6 @@ static int _event_audio_play(OSS * oss, char const * sample)
 		return -1;
 	}
 	string_delete(s);
-	/* go through every chunk */
-	while(_event_audio_play_chunk(oss, fp) == 0);
-	if(fclose(fp) != 0)
-	{
-		snprintf(buf, sizeof(buf), "%s: %s", s, strerror(errno));
-		return -oss->helper->error(NULL, buf, 1);
-	}
 	return 0;
 }
 
@@ -205,9 +206,8 @@ static int _event_audio_play_chunk(OSS * oss, FILE * fp)
 		if(_event_audio_play_chunk_riff(oss, fp, &rc) != 0)
 			return -1;
 	}
-	for(; rc.ckSize > 0; rc.ckSize--)
-		if(fgetc(fp) == EOF)
-			return -1;
+	if(fseek(fp, rc.ckSize, SEEK_CUR) != 0)
+		return -1;
 	/* FIXME implement the padding byte */
 	return 0;
 }
@@ -228,9 +228,9 @@ static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc)
 	if(strncmp(riffid, wave, sizeof(wave)) == 0)
 		return _event_audio_play_chunk_wave(oss, fp, rc);
 	/* skip the rest of the chunk */
-	for(; rc->ckSize > 0; rc->ckSize--)
-		if(fgetc(fp) == EOF)
-			return -1;
+	if(fseek(fp, rc->ckSize, SEEK_CUR) != 0)
+		return -1;
+	rc->ckSize = 0;
 	return 0;
 }
 
@@ -276,12 +276,14 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 			rc->ckSize -= sizeof(wf);
 			rc2.ckSize -= sizeof(wf);
 #ifdef DEBUG
-			fprintf(stderr, "DEBUG: 0x%04x format, %u channels\n",
+			fprintf(stderr, "DEBUG: format 0x%04x, %u channels\n",
 					wf.wFormatTag, wf.wChannels);
+			fprintf(stderr, "DEBUG: %u %u\n", rc->ckSize, rc2.ckSize);
 #endif
 			dev = oss->helper->config_get(oss->helper->phone, "oss",
 					"device");
-			if((fd = _event_audio_play_open(oss, dev, &wf)) < 0)
+			if((fd = _event_audio_play_open(oss, dev, fp, &wf,
+							&rc2)) < 0)
 				return -1;
 		}
 		else if(strncmp(rc2.ckID, data, sizeof(data)) == 0)
@@ -295,21 +297,36 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 				break;
 		}
 		/* skip the rest of the chunk */
-		for(; rc2.ckSize > 0; rc2.ckSize--, rc->ckSize--)
-			if(fgetc(fp) == EOF)
-			{
-				if(fd >= 0)
-					close(fd);
-				return -1;
-			}
+		if(fseek(fp, rc2.ckSize, SEEK_CUR) != 0)
+		{
+			if(fd >= 0)
+				close(fd);
+			return -1;
+		}
+		rc->ckSize -= rc2.ckSize;
+		rc2.ckSize = 0;
 	}
 	if(fd >= 0)
 		close(fd);
 	return 0;
 }
 
-static int _event_audio_play_open(OSS * oss, char const * device,
-		WaveFormat * wf)
+static int _event_audio_play_file(OSS * oss, char const * filename)
+{
+	FILE * fp;
+
+	/* open the audio file */
+	if((fp = fopen(filename, "rb")) == NULL)
+		return -1;
+	/* go through every chunk */
+	while(_event_audio_play_chunk(oss, fp) == 0);
+	if(fclose(fp) != 0)
+		return -1;
+	return 0;
+}
+
+static int _event_audio_play_open(OSS * oss, char const * device, FILE * fp,
+		WaveFormat * wf, RIFFChunk * rc)
 {
 #ifdef __NetBSD__
 	const char devdsp[] = "/dev/sound";
@@ -321,12 +338,24 @@ static int _event_audio_play_open(OSS * oss, char const * device,
 	int channels;
 	int samplerate;
 	char buf[128];
+	uint16_t bps;
 
+	device = (device != NULL) ? device : devdsp;
 	switch(wf->wFormatTag)
 	{
-		case 0x01:
-			device = (device != NULL) ? device : devdsp;
-			format = AFMT_U8;
+		case WAVE_FORMAT_PCM:
+			if(rc == NULL || rc->ckSize < sizeof(bps)
+					|| fread(&bps, sizeof(bps), 1, fp) != 1)
+				return -oss->helper->error(NULL,
+						"Invalid WAVE file", 1);
+			rc->ckSize -= sizeof(bps);
+			/* FIXME for big endian */
+#ifdef DEBUG
+			fprintf(stderr, "DEBUG: %s() %u\n", __func__, bps);
+#endif
+			/* FIXME may be wrong */
+			format = (bps == 8) ? AFMT_U8
+				: ((bps == 16) ? AFMT_S16_LE : AFMT_U8);
 			break;
 		default:
 			return -oss->helper->error(NULL,
@@ -361,7 +390,7 @@ static int _event_audio_play_write(OSS * oss, RIFFChunk * rc, RIFFChunk * rc2,
 			rc->ckSize -= s, rc2->ckSize -= s)
 	{
 		if((s = fread(&u8, sizeof(*u8), s, fp)) == 0)
-			break;
+			return -1;
 		if((ss = write(fd, &u8, s)) < 0)
 			return -oss->helper->error(NULL, strerror(errno), 1);
 		else if((size_t)ss != s) /* XXX */
