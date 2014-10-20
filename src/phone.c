@@ -1767,7 +1767,7 @@ static void _show_call_window(Phone * phone)
 	/* show dialer */
 	widget = gtk_button_new_with_label(_("Show dialer"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
-				"phone-dialer", GTK_ICON_SIZE_BUTTON));
+				"phone-gprs", GTK_ICON_SIZE_BUTTON));
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_call_show_dialer), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -1978,7 +1978,7 @@ static void _show_dialer_window(Phone * phone)
 
 	phone->di_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(phone->di_window), "phone-dialer");
+	gtk_window_set_icon_name(GTK_WINDOW(phone->di_window), "call-start");
 #endif
 	gtk_container_set_border_width(GTK_CONTAINER(phone->di_window), 4);
 	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
