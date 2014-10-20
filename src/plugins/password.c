@@ -138,8 +138,14 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(2, 24, 0)
+	password->entry = gtk_combo_box_text_new_with_entry();
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(password->entry),
+			"SIM PIN");
+#else
 	password->entry = gtk_combo_box_entry_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(password->entry), "SIM PIN");
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), password->entry, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* old password */
