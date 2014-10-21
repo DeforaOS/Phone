@@ -39,6 +39,16 @@ install:
 	$(INSTALL) -m 0644 8.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
 	$(INSTALL) -m 0644 9.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 a.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/a.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 b.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/b.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 busy.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/busy.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 c.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/c.wav
+	$(MKDIR) $(DESTDIR)$(PREFIX)/share/sounds/Phone
+	$(INSTALL) -m 0644 d.wav $(DESTDIR)$(PREFIX)/share/sounds/Phone/d.wav
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
 	$(INSTALL) -m 0644 deforaos-phone-contacts.desktop $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-contacts.desktop
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/applications
@@ -74,6 +84,11 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/7.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/8.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/9.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/a.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/b.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/busy.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/c.wav
+	$(RM) -- $(DESTDIR)$(PREFIX)/share/sounds/Phone/d.wav
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-contacts.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-dialer.desktop
 	$(RM) -- $(DESTDIR)$(PREFIX)/share/applications/deforaos-phone-log.desktop

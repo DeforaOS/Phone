@@ -451,6 +451,9 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->co_status[MODEM_CONTACT_STATUS_AWAY]
 		= gtk_icon_theme_load_icon(icontheme, "user-away", 24,
 				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
+	phone->co_status[MODEM_CONTACT_STATUS_BUSY]
+		= gtk_icon_theme_load_icon(icontheme, "user-busy", 24,
+				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
 	phone->co_status[MODEM_CONTACT_STATUS_IDLE]
 		= gtk_icon_theme_load_icon(icontheme, "user-idle", 24,
 				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
@@ -1642,10 +1645,23 @@ void phone_show_call(Phone * phone, gboolean show, ...)
 	else if(status == MODEM_CALL_STATUS_RINGING)
 		call = (me->call.direction == MODEM_CALL_DIRECTION_INCOMING)
 			? PHONE_CALL_INCOMING : PHONE_CALL_OUTGOING;
+	else if(status == MODEM_CALL_STATUS_BUSY)
+		call = PHONE_CALL_BUSY;
 	else
 		call = PHONE_CALL_TERMINATED;
 	switch(call)
 	{
+		case PHONE_CALL_BUSY:
+#if GTK_CHECK_VERSION(2, 6, 0)
+			gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),
+					"user-busy");
+#endif
+			gtk_window_set_title(GTK_WINDOW(phone->ca_window),
+					_("Busy"));
+			gtk_widget_hide(phone->ca_answer);
+			gtk_widget_hide(phone->ca_close);
+			gtk_widget_hide(phone->ca_reject);
+			break;
 		case PHONE_CALL_ESTABLISHED:
 #if GTK_CHECK_VERSION(2, 6, 0)
 			gtk_window_set_icon_name(GTK_WINDOW(phone->ca_window),

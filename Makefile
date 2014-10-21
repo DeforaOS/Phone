@@ -32,6 +32,11 @@ dist:
 		$(PACKAGE)-$(VERSION)/data/7.wav \
 		$(PACKAGE)-$(VERSION)/data/8.wav \
 		$(PACKAGE)-$(VERSION)/data/9.wav \
+		$(PACKAGE)-$(VERSION)/data/a.wav \
+		$(PACKAGE)-$(VERSION)/data/b.wav \
+		$(PACKAGE)-$(VERSION)/data/busy.wav \
+		$(PACKAGE)-$(VERSION)/data/c.wav \
+		$(PACKAGE)-$(VERSION)/data/d.wav \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-contacts.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-dialer.desktop \
 		$(PACKAGE)-$(VERSION)/data/deforaos-phone-gprs.desktop \
