@@ -271,40 +271,40 @@ void on_phone_dialer_hangup(gpointer data)
 
 
 /* logs */
-/* on_phone_logs_activated */
-void on_phone_logs_activated(gpointer data)
+/* on_phone_log_activated */
+void on_phone_log_activated(gpointer data)
 {
 	Phone * phone = data;
 
 	/* XXX may not be the most appropriate action to take */
-	phone_logs_call_selected(phone);
+	phone_log_call_selected(phone);
 }
 
 
-/* on_phone_logs_call */
-void on_phone_logs_call(gpointer data)
+/* on_phone_log_call */
+void on_phone_log_call(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_logs_call_selected(phone);
+	phone_log_call_selected(phone);
 }
 
 
-/* on_phone_logs_clear */
-void on_phone_logs_clear(gpointer data)
+/* on_phone_log_clear */
+void on_phone_log_clear(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_logs_clear(phone);
+	phone_log_clear(phone);
 }
 
 
-/* on_phone_logs_write */
-void on_phone_logs_write(gpointer data)
+/* on_phone_log_write */
+void on_phone_log_write(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_logs_write_selected(phone);
+	phone_log_write_selected(phone);
 }
 
 

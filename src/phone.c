@@ -81,14 +81,14 @@ typedef enum _PhoneContactColumn
 
 typedef enum _PhoneLogsColumn
 {
-	PHONE_LOGS_COLUMN_CALL_TYPE = 0,
-	PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY,
-	PHONE_LOGS_COLUMN_NUMBER,
-	PHONE_LOGS_COLUMN_DATE,
-	PHONE_LOGS_COLUMN_DATE_DISPLAY
+	PHONE_LOG_COLUMN_CALL_TYPE = 0,
+	PHONE_LOG_COLUMN_CALL_TYPE_DISPLAY,
+	PHONE_LOG_COLUMN_NUMBER,
+	PHONE_LOG_COLUMN_DATE,
+	PHONE_LOG_COLUMN_DATE_DISPLAY
 } PhoneLogsColumn;
-#define PHONE_LOGS_COLUMN_LAST		PHONE_LOGS_COLUMN_DATE_DISPLAY
-#define PHONE_LOGS_COLUMN_COUNT		(PHONE_LOGS_COLUMN_LAST + 1)
+#define PHONE_LOG_COLUMN_LAST		PHONE_LOG_COLUMN_DATE_DISPLAY
+#define PHONE_LOG_COLUMN_COUNT		(PHONE_LOG_COLUMN_LAST + 1)
 
 typedef enum _PhoneMessageColumn
 {
@@ -319,6 +319,7 @@ static gboolean _phone_log_filter_incoming(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
 static gboolean _phone_log_filter_outgoing(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
+static GtkWidget * _phone_log_get_view(Phone * phone);
 
 static gboolean _phone_messages_filter_all(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
@@ -466,7 +467,7 @@ Phone * phone_new(char const * plugin, int retry)
 	phone->co_status[MODEM_CONTACT_STATUS_ONLINE]
 		= gtk_icon_theme_load_icon(icontheme, "user-available", 24,
 				GTK_ICON_LOOKUP_GENERIC_FALLBACK, NULL);
-	phone->lo_store = gtk_list_store_new(PHONE_LOGS_COLUMN_COUNT,
+	phone->lo_store = gtk_list_store_new(PHONE_LOG_COLUMN_COUNT,
 			G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT,
 			G_TYPE_STRING);
 	phone->me_store = gtk_list_store_new(PHONE_MESSAGE_COLUMN_COUNT,
@@ -1182,8 +1183,8 @@ int phone_load(Phone * phone, char const * plugin)
 
 
 /* logs */
-/* phone_logs_append */
-void phone_logs_append(Phone * phone, PhoneCallType type, char const * number)
+/* phone_log_append */
+void phone_log_append(Phone * phone, PhoneCallType type, char const * number)
 {
 	GtkTreeIter iter;
 	char const * display = "";
@@ -1208,29 +1209,30 @@ void phone_logs_append(Phone * phone, PhoneCallType type, char const * number)
 	localtime_r(&date, &t);
 	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
 	gtk_list_store_set(phone->lo_store, &iter,
-			PHONE_LOGS_COLUMN_CALL_TYPE, type,
-			PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, display,
-			PHONE_LOGS_COLUMN_NUMBER, number,
-			PHONE_LOGS_COLUMN_DATE_DISPLAY, dd, -1);
+			PHONE_LOG_COLUMN_CALL_TYPE, type,
+			PHONE_LOG_COLUMN_CALL_TYPE_DISPLAY, display,
+			PHONE_LOG_COLUMN_NUMBER, number,
+			PHONE_LOG_COLUMN_DATE_DISPLAY, dd, -1);
 }
 
 
-/* phone_logs_call_selected */
-int phone_logs_call_selected(Phone * phone)
+/* phone_log_call_selected */
+int phone_log_call_selected(Phone * phone)
 	/* XXX code duplication */
 {
 	int ret;
+	GtkWidget * view;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	gchar * number = NULL;
 
-	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						phone->lo_view))) == NULL)
+	view = _phone_log_get_view(phone);
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view))) == NULL)
 		return -1;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return -1;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
-			PHONE_LOGS_COLUMN_NUMBER, &number, -1);
+			PHONE_LOG_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
 		return -1;
 	ret = _phone_call_number(phone, number);
@@ -1239,27 +1241,28 @@ int phone_logs_call_selected(Phone * phone)
 }
 
 
-/* phone_logs_clear */
-void phone_logs_clear(Phone * phone)
+/* phone_log_clear */
+void phone_log_clear(Phone * phone)
 {
 	gtk_list_store_clear(phone->lo_store);
 }
 
 
-/* phone_logs_write_selected */
-void phone_logs_write_selected(Phone * phone)
+/* phone_log_write_selected */
+void phone_log_write_selected(Phone * phone)
 {
+	GtkWidget * view;
 	GtkTreeSelection * treesel;
 	GtkTreeIter iter;
 	gchar * number = NULL;
 
-	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(
-						phone->lo_view))) == NULL)
+	view = _phone_log_get_view(phone);
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view))) == NULL)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
-			PHONE_LOGS_COLUMN_NUMBER, &number, -1);
+			PHONE_LOG_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
 	phone_show_write(phone, TRUE, number, "");
@@ -2122,19 +2125,19 @@ static void _show_logs_window(Phone * phone)
 	toolitem = gtk_tool_button_new(NULL, _("Call"));
 	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem), "call-start");
 	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-				on_phone_logs_call), phone);
+				on_phone_log_call), phone);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	toolitem = gtk_tool_button_new(NULL, _("Message"));
 	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
 			"stock_mail-compose");
 	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-				on_phone_logs_write), phone);
+				on_phone_log_write), phone);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	toolitem = gtk_separator_tool_item_new();
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CLEAR);
 	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-				on_phone_logs_clear), phone);
+				on_phone_log_clear), phone);
 	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* view */
@@ -2159,22 +2162,22 @@ static void _show_logs_window(Phone * phone)
 					phone->lo_store));
 		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(view), TRUE);
 		g_signal_connect_swapped(view, "row-activated", G_CALLBACK(
-					on_phone_logs_activated), phone);
+					on_phone_log_activated), phone);
 		gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), TRUE);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(
 				_("Direction"), renderer, "text",
-				PHONE_LOGS_COLUMN_CALL_TYPE_DISPLAY, NULL);
+				PHONE_LOG_COLUMN_CALL_TYPE_DISPLAY, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(
 				_(_phone_log_filters[i].direction), renderer,
-				"text", PHONE_LOGS_COLUMN_NUMBER, NULL);
+				"text", PHONE_LOG_COLUMN_NUMBER, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes(_("Date"),
 				renderer, "text",
-				PHONE_LOGS_COLUMN_DATE_DISPLAY, NULL);
+				PHONE_LOG_COLUMN_DATE_DISPLAY, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 		gtk_container_add(GTK_CONTAINER(widget), view);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -3597,7 +3600,7 @@ static int _phone_call_number(Phone * phone, char const * number)
 				MODEM_CALL_TYPE_VOICE, number, 0) != 0)
 		return -1;
 	/* add a log entry */
-	phone_logs_append(phone, PHONE_CALL_TYPE_OUTGOING, number);
+	phone_log_append(phone, PHONE_CALL_TYPE_OUTGOING, number);
 	return 0;
 }
 
@@ -3911,8 +3914,24 @@ static gboolean _phone_log_filter_all(GtkTreeModel * model, GtkTreeIter * iter,
 {
 	PhoneCallType type;
 
-	gtk_tree_model_get(model, iter, PHONE_LOGS_COLUMN_CALL_TYPE, &type, -1);
+	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return TRUE;
+}
+
+
+/* phone_log_get_view */
+static GtkWidget * _phone_log_get_view(Phone * phone)
+{
+	GtkWidget * ret;
+	int n;
+
+	n = gtk_notebook_get_current_page(GTK_NOTEBOOK(phone->lo_view));
+	if(n < 0)
+		return NULL;
+	ret = gtk_notebook_get_nth_page(GTK_NOTEBOOK(phone->lo_view), n);
+	if(ret == NULL)
+		return NULL;
+	return gtk_bin_get_child(GTK_BIN(ret));
 }
 
 
@@ -3922,7 +3941,7 @@ static gboolean _phone_log_filter_incoming(GtkTreeModel * model,
 {
 	PhoneCallType type;
 
-	gtk_tree_model_get(model, iter, PHONE_LOGS_COLUMN_CALL_TYPE, &type, -1);
+	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return (type == PHONE_CALL_TYPE_INCOMING) ? TRUE : FALSE;
 }
 
@@ -3933,7 +3952,7 @@ static gboolean _phone_log_filter_outgoing(GtkTreeModel * model,
 {
 	PhoneCallType type;
 
-	gtk_tree_model_get(model, iter, PHONE_LOGS_COLUMN_CALL_TYPE, &type, -1);
+	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return (type == PHONE_CALL_TYPE_OUTGOING) ? TRUE : FALSE;
 }
 
@@ -4420,7 +4439,7 @@ static void _modem_event_call(Phone * phone, ModemEvent * event)
 			/* add a log entry */
 			/* XXX check that calls are not duplicated */
 			/* FIXME really log once accepting/missing the call */
-			phone_logs_append(phone, PHONE_CALL_TYPE_INCOMING,
+			phone_log_append(phone, PHONE_CALL_TYPE_INCOMING,
 					event->call.number);
 			break;
 		case MODEM_CALL_DIRECTION_OUTGOING:

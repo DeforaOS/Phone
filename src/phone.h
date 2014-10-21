@@ -82,7 +82,7 @@ void phone_show_call(Phone * phone, gboolean show, ...);	/* PhoneCall */
 void phone_show_code(Phone * phone, gboolean show, ...);	/* PhoneCode */
 void phone_show_contacts(Phone * phone, gboolean show);
 void phone_show_dialer(Phone * phone, gboolean show);
-void phone_show_logs(Phone * phone, gboolean show);
+void phone_show_log(Phone * phone, gboolean show);
 void phone_show_messages(Phone * phone, gboolean show, ...);
 void phone_show_plugins(Phone * phone, gboolean show);
 void phone_show_read(Phone * phone, gboolean show, ...);
@@ -91,11 +91,11 @@ void phone_show_status(Phone * phone, gboolean show, ...);
 void phone_show_system(Phone * phone, gboolean show);
 void phone_show_write(Phone * phone, gboolean show, ...);
 
-/* logs */
-void phone_logs_append(Phone * phone, PhoneCallType type, char const * number);
-int phone_logs_call_selected(Phone * phone);
-void phone_logs_clear(Phone * phone);
-void phone_logs_write_selected(Phone * phone);
+/* log */
+void phone_log_append(Phone * phone, PhoneCallType type, char const * number);
+int phone_log_call_selected(Phone * phone);
+void phone_log_clear(Phone * phone);
+void phone_log_write_selected(Phone * phone);
 
 /* messages */
 int phone_messages_call_selected(Phone * phone);

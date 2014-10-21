@@ -56,10 +56,10 @@ void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);
 
 /* logs */
-void on_phone_logs_activated(gpointer data);
-void on_phone_logs_call(gpointer data);
-void on_phone_logs_clear(gpointer data);
-void on_phone_logs_write(gpointer data);
+void on_phone_log_activated(gpointer data);
+void on_phone_log_call(gpointer data);
+void on_phone_log_clear(gpointer data);
+void on_phone_log_write(gpointer data);
 
 /* messages */
 void on_phone_messages_activated(gpointer data);
