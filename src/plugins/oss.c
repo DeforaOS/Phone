@@ -134,6 +134,7 @@ static int _event_audio_play(OSS * oss, char const * sample);
 static int _event_audio_play_chunk(OSS * oss, FILE * fp);
 static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
 static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc);
+static int _event_audio_play_close(OSS * oss, int fd, int ret);
 static int _event_audio_play_file(OSS * oss, char const * filename);
 static int _event_audio_play_open(OSS * oss, char const * device, FILE * fp,
 		WaveFormat * wf, RIFFChunk * rc);
@@ -247,9 +248,12 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 	{
 		/* read the current WAVE chunk */
 		if(rc->ckSize < sizeof(rc2))
-			return -1;
+			return -_event_audio_play_close(oss, fd, 1);
 		if(fread(&rc2, sizeof(rc2), 1, fp) != 1)
-			return -oss->helper->error(NULL, strerror(errno), 1);
+		{
+			oss->helper->error(NULL, strerror(errno), 1);
+			return -_event_audio_play_close(oss, fd, 1);
+		}
 #if 0 /* FIXME for big endian */
 		/* FIXME implement */
 #endif
@@ -262,10 +266,7 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 		if(strncmp(rc2.ckID, fmt, sizeof(fmt)) == 0)
 		{
 			if(fd >= 0)
-			{
-				close(fd);
-				return -1;
-			}
+				return -_event_audio_play_close(oss, fd, 1);
 			if(rc->ckSize < sizeof(wf)
 					|| rc2.ckSize < sizeof(wf)
 					|| fread(&wf, sizeof(wf), 1, fp) != 1)
@@ -294,21 +295,15 @@ static int _event_audio_play_chunk_wave(OSS * oss, FILE * fp, RIFFChunk * rc)
 			if(fd < 0)
 				return -1;
 			if(_event_audio_play_write(oss, rc, &rc2, fp, fd) != 0)
-				break;
+				return -_event_audio_play_close(oss, fd, 1);
 		}
 		/* skip the rest of the chunk */
 		if(fseek(fp, rc2.ckSize, SEEK_CUR) != 0)
-		{
-			if(fd >= 0)
-				close(fd);
-			return -1;
-		}
+			return -_event_audio_play_close(oss, fd, 1);
 		rc->ckSize -= rc2.ckSize;
 		rc2.ckSize = 0;
 	}
-	if(fd >= 0)
-		close(fd);
-	return 0;
+	return _event_audio_play_close(oss, fd, 0);
 }
 
 static int _event_audio_play_file(OSS * oss, char const * filename)
@@ -323,6 +318,13 @@ static int _event_audio_play_file(OSS * oss, char const * filename)
 	if(fclose(fp) != 0)
 		return -1;
 	return 0;
+}
+
+static int _event_audio_play_close(OSS * oss, int fd, int ret)
+{
+	if(fd >= 0 && close(fd) != 0)
+		oss->helper->error(NULL, strerror(errno), 1);
+	return ret;
 }
 
 static int _event_audio_play_open(OSS * oss, char const * device, FILE * fp,

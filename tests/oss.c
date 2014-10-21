@@ -67,7 +67,7 @@ static int _oss_error(Phone * phone, char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: oss filename\n", stderr);
+	fputs("Usage: oss sample...\n", stderr);
 	return 1;
 }
 
@@ -77,6 +77,7 @@ static int _usage(void)
 /* main */
 int main(int argc, char * argv[])
 {
+	int ret = 0;
 	int o;
 
 	while((o = getopt(argc, argv, "")) != -1)
@@ -85,7 +86,10 @@ int main(int argc, char * argv[])
 			default:
 				return _usage();
 		}
-	if(optind + 1 != argc)
+	if(optind == argc)
 		return _usage();
-	return (_oss(argv[optind]) == 0) ? 0 : 2;
+	while(optind < argc)
+		if(_oss(argv[optind++]) != 0)
+			ret = 2;
+	return ret;
 }
