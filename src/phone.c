@@ -1726,7 +1726,11 @@ static void _show_call_window(Phone * phone)
 #endif
 	g_signal_connect(phone->ca_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* party */
 	phone->ca_name = gtk_label_new(NULL);
@@ -1735,7 +1739,11 @@ static void _show_call_window(Phone * phone)
 	phone->ca_number = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_number, FALSE, TRUE, 0);
 	/* buttons */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	/* answer */
 	phone->ca_answer = _phone_create_button("call-start", _("_Answer"));
 	g_signal_connect_swapped(phone->ca_answer, "clicked", G_CALLBACK(
@@ -1758,11 +1766,20 @@ static void _show_call_window(Phone * phone)
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_close, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	/* volume bar */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	phone->ca_image = gtk_image_new_from_icon_name(
 			"audio-volume-medium", GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_image, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	phone->ca_volume = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+			0.0, 1.0, 0.02);
+#else
 	phone->ca_volume = gtk_hscale_new_with_range(0.0, 1.0, 0.02);
+#endif
 	g_signal_connect(phone->ca_volume, "value-changed", G_CALLBACK(
 				on_phone_call_volume), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE, 0);
@@ -1848,11 +1865,19 @@ static void _show_code_window(Phone * phone)
 	gtk_container_set_border_width(GTK_CONTAINER(phone->en_window), 4);
 	g_signal_connect(phone->en_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	phone->en_title = gtk_label_new("");
 	gtk_widget_modify_font(phone->en_title, phone->bold);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->en_title, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	phone->en_entry = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(phone->en_entry), FALSE);
 	gtk_widget_modify_font(phone->en_entry, phone->bold);
@@ -1916,7 +1941,11 @@ static void _show_contacts_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->co_window), _("Contacts"));
 	g_signal_connect(phone->co_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new(NULL, _("Call"));
@@ -2003,9 +2032,17 @@ static void _show_dialer_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->di_window), _("Dialer"));
 	g_signal_connect(phone->di_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* entry */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	phone->di_entry = gtk_entry_new();
 	gtk_widget_modify_font(phone->di_entry, phone->bold);
 	g_signal_connect_swapped(phone->di_entry, "activate", G_CALLBACK(
@@ -2075,7 +2112,11 @@ static void _show_logs_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->lo_window), _("Phone logs"));
 	g_signal_connect(phone->lo_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new(NULL, _("Call"));
@@ -2136,7 +2177,11 @@ static void _show_logs_window(Phone * phone)
 				PHONE_LOGS_COLUMN_DATE_DISPLAY, NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 		gtk_container_add(GTK_CONTAINER(widget), view);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 		hbox = gtk_hbox_new(FALSE, 4);
+#endif
 		gtk_notebook_append_page(GTK_NOTEBOOK(phone->lo_view), widget,
 				hbox);
 		gtk_box_pack_start(GTK_BOX(hbox), gtk_image_new_from_icon_name(
@@ -2198,7 +2243,11 @@ static void _show_messages_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->me_window), _("Messages"));
 	g_signal_connect(phone->me_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new(NULL, _("Call"));
@@ -2263,7 +2312,11 @@ static void _show_messages_window(Phone * phone)
 				PHONE_MESSAGE_COLUMN_DATE);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
 		gtk_container_add(GTK_CONTAINER(widget), view);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 		hbox = gtk_hbox_new(FALSE, 4);
+#endif
 		gtk_notebook_append_page(GTK_NOTEBOOK(phone->me_view), widget,
 				hbox);
 		gtk_box_pack_start(GTK_BOX(hbox), gtk_image_new_from_icon_name(
@@ -2318,7 +2371,11 @@ static void _show_plugins_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(widget), _("Plug-ins"));
 	g_signal_connect_swapped(widget, "delete-event", G_CALLBACK(
 				_plugins_on_closex), phone);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	/* view */
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -2351,7 +2408,11 @@ static void _show_plugins_window(Phone * phone)
 	gtk_container_add(GTK_CONTAINER(widget), phone->pl_view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
 	/* dialog */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -2615,7 +2676,11 @@ static void _show_read_window(Phone * phone)
 	gtk_window_set_title(GTK_WINDOW(phone->re_window), _("Read message"));
 	g_signal_connect(phone->re_window, "delete-event", G_CALLBACK(
 				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 	vbox = gtk_vbox_new(FALSE, 0);
+#endif
 	/* toolbar */
 	widget = gtk_toolbar_new();
 	toolitem = gtk_tool_button_new(NULL, _("Call"));
@@ -2815,7 +2880,11 @@ static void _show_status_window(Phone * phone)
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	group2 = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	/* missed calls */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	phone->st_missed_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	phone->st_missed_box = gtk_hbox_new(FALSE, 4);
+#endif
 	phone->st_lmissed_count = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmissed_count), 1.0, 0.5);
 	gtk_widget_modify_font(phone->st_lmissed_count, phone->bold);
@@ -2834,7 +2903,11 @@ static void _show_status_window(Phone * phone)
 			0);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->st_missed_box, FALSE, TRUE, 0);
 	/* new messages */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	phone->st_messages_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 	phone->st_messages_box = gtk_hbox_new(FALSE, 4);
+#endif
 	phone->st_lmessages_count = gtk_label_new("");
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmessages_count), 1.0, 0.5);
 	gtk_widget_modify_font(phone->st_lmessages_count, phone->bold);
@@ -2928,7 +3001,11 @@ void phone_show_system(Phone * phone, gboolean show)
 			_("System preferences"));
 	g_signal_connect_swapped(phone->sy_window, "delete-event", G_CALLBACK(
 				_system_on_closex), phone);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 	vbox = gtk_vbox_new(FALSE, 4);
+#endif
 	config = modem_get_config(phone->modem);
 	vbox2 = vbox;
 	for(i = 0; config != NULL && config[i].type != MCT_NONE; i++)
@@ -2937,7 +3014,11 @@ void phone_show_system(Phone * phone, gboolean show)
 			widget = gtk_frame_new(config[i].title);
 			gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE,
 					0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+#else
 			vbox2 = gtk_vbox_new(FALSE, 4);
+#endif
 			gtk_container_set_border_width(GTK_CONTAINER(vbox2), 4);
 			gtk_container_add(GTK_CONTAINER(widget), vbox2);
 		}
@@ -2945,7 +3026,11 @@ void phone_show_system(Phone * phone, gboolean show)
 				!= NULL)
 			gtk_box_pack_start(GTK_BOX(vbox2), widget, FALSE, TRUE,
 					0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 	bbox = gtk_hbutton_box_new();
+#endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -2977,7 +3062,11 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			ret = widget;
 			break;
 		case MCT_FILENAME:
+#if GTK_CHECK_VERSION(3, 0, 0)
+			ret = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 			ret = gtk_hbox_new(FALSE, 4);
+#endif
 			label = string_new_append(config->title, ": ", NULL);
 			widget = gtk_label_new(label);
 			string_delete(label);
@@ -2990,13 +3079,21 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			gtk_box_pack_start(GTK_BOX(ret), widget, TRUE, TRUE, 0);
 			break;
 		case MCT_SEPARATOR:
+#if GTK_CHECK_VERSION(3, 0, 0)
+			ret = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+#else
 			ret = gtk_hseparator_new();
+#endif
 			break;
 		case MCT_UINT32:
 			/* FIXME really implement */
 		case MCT_PASSWORD:
 		case MCT_STRING:
+#if GTK_CHECK_VERSION(3, 0, 0)
+			ret = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
 			ret = gtk_hbox_new(FALSE, 4);
+#endif
 			label = string_new_append(config->title, ": ", NULL);
 			widget = gtk_label_new(label);
 			string_delete(label);
@@ -3183,7 +3280,11 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 				_("Write message"));
 		g_signal_connect(phone->wr_window, "delete-event", G_CALLBACK(
 					on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
 		vbox = gtk_vbox_new(FALSE, 0);
+#endif
 		/* toolbar */
 		widget = gtk_toolbar_new();
 		toolitem = gtk_tool_button_new(NULL, _("Send"));
@@ -3212,7 +3313,11 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
 		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 		/* entry */
+#if GTK_CHECK_VERSION(3, 0, 0)
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 		hbox = gtk_hbox_new(FALSE, 0);
+#endif
 		phone->wr_entry = gtk_entry_new();
 		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE,
 				2);
@@ -3227,7 +3332,11 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
 		/* character count */
+#if GTK_CHECK_VERSION(3, 0, 0)
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 		hbox = gtk_hbox_new(FALSE, 0);
+#endif
 		phone->wr_count = gtk_label_new(NULL);
 		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_count, TRUE, TRUE,
 				2);
@@ -3621,7 +3730,13 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 	GtkWidget * label;
 	int i;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	table = gtk_grid_new();
+	gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+	gtk_grid_set_row_homogeneous(GTK_GRID(table), TRUE);
+#else
 	table = gtk_table_new(5, 6, TRUE);
+#endif
 	/* call */
 	button = gtk_button_new();
 	image = gtk_image_new_from_icon_name(button1_image,
@@ -3629,16 +3744,24 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 	gtk_button_set_image(GTK_BUTTON(button), image);
 	gtk_button_set_label(GTK_BUTTON(button), button1_label);
 	g_signal_connect_swapped(button, "clicked", button1_callback, phone);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_grid_attach(GTK_GRID(table), button, 0, 0, 3, 1);
+#else
 	gtk_table_attach(GTK_TABLE(table), button, 0, 3, 0, 1,
 			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
+#endif
 	button = gtk_button_new();
 	image = gtk_image_new_from_icon_name(button2_image,
 			GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button), image);
 	gtk_button_set_label(GTK_BUTTON(button), button2_label);
 	g_signal_connect_swapped(button, "clicked", button2_callback, phone);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_grid_attach(GTK_GRID(table), button, 3, 0, 3, 1);
+#else
 	gtk_table_attach(GTK_TABLE(table), button, 3, 6, 0, 1,
 			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
+#endif
 	/* numbers */
 	for(i = 0; i < 12; i++)
 	{
@@ -3652,10 +3775,15 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 				&numbers[i].character);
 		g_signal_connect(button, "clicked", G_CALLBACK(
 					button_callback), phone);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		gtk_grid_attach(GTK_GRID(table), button, (i % 3) * 2,
+				(i / 3) + 1, 2, 1);
+#else
 		gtk_table_attach(GTK_TABLE(table), button, (i % 3) * 2,
 				((i % 3) + 1) * 2, (i / 3) + 1, (i / 3) + 2,
 				GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL,
 				2, 2);
+#endif
 	}
 	return table;
 }
@@ -4001,7 +4129,11 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		vbox = GTK_DIALOG(phone->co_dialog)->vbox;
 #endif
 		gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 		hbox = gtk_hbox_new(FALSE, 4);
+#endif
 		widget = gtk_label_new(_("Name: "));
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 		gtk_size_group_add_widget(group, widget);
@@ -4010,7 +4142,11 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		gtk_box_pack_start(GTK_BOX(hbox), phone->co_name, TRUE, TRUE,
 				0);
 		gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
 		hbox = gtk_hbox_new(FALSE, 4);
+#endif
 		widget = gtk_label_new(_("Number: "));
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
 		gtk_size_group_add_widget(group, widget);
