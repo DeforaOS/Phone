@@ -51,6 +51,7 @@ void phone_call_speaker(Phone * phone, gboolean speaker);
 
 /* code */
 int phone_code_append(Phone * phone, char character);
+void phone_code_backspace(Phone * phone);
 void phone_code_clear(Phone * phone);
 void phone_code_enter(Phone * phone);
 
@@ -66,6 +67,7 @@ void phone_contacts_write_selected(Phone * phone);
 
 /* dialer */
 int phone_dialer_append(Phone * phone, char character);
+void phone_dialer_backspace(Phone * phone);
 int phone_dialer_call(Phone * phone, char const * number);
 void phone_dialer_clear(Phone * phone);
 void phone_dialer_hangup(Phone * phone);

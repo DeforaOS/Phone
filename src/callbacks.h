@@ -35,7 +35,7 @@ void on_phone_call_speaker(GtkWidget * widget, gpointer data);
 void on_phone_call_volume(GtkWidget * widget, gpointer data);
 
 /* code */
-void on_phone_code_clear(gpointer data);
+void on_phone_code_backspace(gpointer data);
 void on_phone_code_clicked(GtkWidget * widget, gpointer data);
 void on_phone_code_enter(gpointer data);
 void on_phone_code_leave(gpointer data);
@@ -49,9 +49,9 @@ void on_phone_contacts_show(gpointer data);
 void on_phone_contacts_write(gpointer data);
 
 /* dialer */
+void on_phone_dialer_backspace(gpointer data);
 void on_phone_dialer_call(gpointer data);
 void on_phone_dialer_changed(GtkWidget * widget, gpointer data);
-void on_phone_dialer_clear(gpointer data);
 void on_phone_dialer_clicked(GtkWidget * widget, gpointer data);
 void on_phone_dialer_hangup(gpointer data);
 

@@ -112,12 +112,12 @@ void on_phone_call_volume(GtkWidget * widget, gpointer data)
 
 
 /* code */
-/* on_phone_code_clear */
-void on_phone_code_clear(gpointer data)
+/* on_phone_code_backspace */
+void on_phone_code_backspace(gpointer data)
 {
 	Phone * phone = data;
 
-	phone_code_clear(phone);
+	phone_code_backspace(phone);
 }
 
 
@@ -209,6 +209,15 @@ void on_phone_contacts_write(gpointer data)
 
 
 /* dialer */
+/* on_phone_dialer_backspace */
+void on_phone_dialer_backspace(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_dialer_backspace(phone);
+}
+
+
 /* on_phone_dialer_call */
 void on_phone_dialer_call(gpointer data)
 {
@@ -237,15 +246,6 @@ void on_phone_dialer_changed(GtkWidget * widget, gpointer data)
 		phone_dialer_clear(phone);
 	}
 	g_free(text);
-}
-
-
-/* on_phone_dialer_clear */
-void on_phone_dialer_clear(gpointer data)
-{
-	Phone * phone = data;
-
-	phone_dialer_clear(phone);
 }
 
 
