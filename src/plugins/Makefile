@@ -1,5 +1,5 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so notify.so openmoko.so oss.so panel.so password.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
+TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so openmoko.so oss.so panel.so password.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -71,13 +71,6 @@ n900_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 n900.so: $(n900_OBJS)
 	$(CCSHARED) -o n900.so $(n900_OBJS) $(n900_LDFLAGS)
-
-notify_OBJS = notify.o
-notify_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-notify_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-notify.so: $(notify_OBJS)
-	$(CCSHARED) -o notify.so $(notify_OBJS) $(notify_LDFLAGS)
 
 openmoko_OBJS = openmoko.o
 openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -I../modems $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
@@ -170,9 +163,6 @@ locker.o: locker.c ../../include/Phone.h
 n900.o: n900.c ../../include/Phone.h
 	$(CC) $(n900_CFLAGS) -c n900.c
 
-notify.o: notify.c ../../include/Phone.h
-	$(CC) $(notify_CFLAGS) -c notify.c
-
 openmoko.o: openmoko.c ../../include/Phone.h
 	$(CC) $(openmoko_CFLAGS) -c openmoko.c
 
@@ -205,11 +195,11 @@ video.o: video.c ../../include/Phone.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) clean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) distclean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(notify_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -228,8 +218,6 @@ install: $(TARGETS)
 	$(INSTALL) -m 0644 locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 notify.so $(DESTDIR)$(LIBDIR)/Phone/plugins/notify.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0644 openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -256,7 +244,6 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/notify.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
