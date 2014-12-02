@@ -390,7 +390,7 @@ static const struct
 	/* FIXME provide every icon ourselves */
 	{ "stock_select-all",	N_("All"),	_phone_messages_filter_all    },
 	{ "phone-inbox",	N_("Inbox"),	_phone_messages_filter_inbox  },
-	{ "phone-sent",		N_("Sent"),	_phone_messages_filter_sent },
+	{ "phone-sent",		N_("Sent"),	_phone_messages_filter_sent   },
 	{ "phone-drafts",	N_("Drafts"),	_phone_messages_filter_drafts },
 	{ "gnome-stock-trash",	N_("Trash"),	_phone_messages_filter_trash  }
 };
