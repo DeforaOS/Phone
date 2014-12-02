@@ -86,6 +86,7 @@ typedef struct _HayesChannel
 	/* events */
 	ModemEvent events[MODEM_EVENT_TYPE_COUNT];
 	char * authentication_name;
+	char * authentication_error;
 	char * call_number;
 	char * contact_name;
 	char * contact_number;
@@ -706,6 +707,7 @@ static void _stop_channel(Hayes * hayes, HayesChannel * channel)
 	}
 	/* remove internal data */
 	_stop_string(&channel->authentication_name);
+	_stop_string(&channel->authentication_error);
 	_stop_string(&channel->call_number);
 	_stop_string(&channel->contact_name);
 	_stop_string(&channel->contact_number);

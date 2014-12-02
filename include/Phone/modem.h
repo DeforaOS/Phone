@@ -193,6 +193,7 @@ typedef union _ModemEvent
 		ModemAuthenticationMethod method;
 		ModemAuthenticationStatus status;
 		int retries;
+		char const * error;
 	} authentication;
 
 	/* MODEM_EVENT_TYPE_BATTERY_LEVEL */

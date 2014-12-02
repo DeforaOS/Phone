@@ -4452,6 +4452,7 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 {
 	ModemAuthenticationMethod method = event->authentication.method;
 	char const * name = event->authentication.name;
+	char const * error = event->authentication.error;
 	char buf[32];
 	GCallback callback = G_CALLBACK(_phone_modem_event_authentication);
 
@@ -4459,7 +4460,10 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 	{
 		case MODEM_AUTHENTICATION_STATUS_ERROR:
 			phone_code_clear(phone);
-			if(name != NULL)
+			if(error != NULL)
+				/* XXX no longer limit the size of the error */
+				snprintf(buf, sizeof(buf), "%s", error);
+			else if(name != NULL)
 				snprintf(buf, sizeof(buf), _("Wrong %s"), name);
 			else
 				snprintf(buf, sizeof(buf), "%s",
