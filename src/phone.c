@@ -737,24 +737,31 @@ void phone_code_enter(Phone * phone)
 /* phone_code_backspace */
 void phone_code_backspace(Phone * phone)
 {
-	int pos;
+	int start;
+	int end;
 #if !GTK_CHECK_VERSION(2, 14, 0)
 	char const * s;
 #endif
 
-	if((pos = gtk_editable_get_position(GTK_EDITABLE(phone->en_entry)))
-			< 1)
+	if(gtk_editable_get_selection_bounds(GTK_EDITABLE(phone->en_entry),
+				&start, &end) == FALSE)
 	{
+		if((end = gtk_editable_get_position(GTK_EDITABLE(
+							phone->en_entry))) < 1)
+		{
 #if GTK_CHECK_VERSION(2, 14, 0)
-		pos = gtk_entry_get_text_length(GTK_ENTRY(phone->en_entry));
+			end = gtk_entry_get_text_length(GTK_ENTRY(
+						phone->en_entry));
 #else
-		s = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
-		pos = strlen(s);
+			s = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
+			end = strlen(s);
 #endif
+		}
+		start = end - 1;
 	}
-	if(pos < 1)
+	if(end < 1)
 		return;
-	gtk_editable_delete_text(GTK_EDITABLE(phone->en_entry), pos - 1, pos);
+	gtk_editable_delete_text(GTK_EDITABLE(phone->en_entry), start, end);
 }
 
 
@@ -945,24 +952,31 @@ int phone_dialer_append(Phone * phone, char character)
 /* phone_dialer_backspace */
 void phone_dialer_backspace(Phone * phone)
 {
-	int pos;
+	int start;
+	int end;
 #if !GTK_CHECK_VERSION(2, 14, 0)
 	char const * s;
 #endif
 
-	if((pos = gtk_editable_get_position(GTK_EDITABLE(phone->di_entry)))
-			< 1)
+	if(gtk_editable_get_selection_bounds(GTK_EDITABLE(phone->di_entry),
+				&start, &end) == FALSE)
 	{
+		if((end = gtk_editable_get_position(GTK_EDITABLE(
+							phone->di_entry))) < 1)
+		{
 #if GTK_CHECK_VERSION(2, 14, 0)
-		pos = gtk_entry_get_text_length(GTK_ENTRY(phone->di_entry));
+			end = gtk_entry_get_text_length(GTK_ENTRY(
+						phone->di_entry));
 #else
-		s = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
-		pos = strlen(s);
+			s = gtk_entry_get_text(GTK_ENTRY(phone->di_entry));
+			end = strlen(s);
 #endif
+		}
+		start = end - 1;
 	}
-	if(pos < 1)
+	if(end < 1)
 		return;
-	gtk_editable_delete_text(GTK_EDITABLE(phone->di_entry), pos - 1, pos);
+	gtk_editable_delete_text(GTK_EDITABLE(phone->di_entry), start, end);
 }
 
 
