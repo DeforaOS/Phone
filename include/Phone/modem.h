@@ -28,6 +28,7 @@ typedef struct _Modem Modem;
 typedef enum _ModemAuthenticationMethod
 {
 	MODEM_AUTHENTICATION_METHOD_NONE = 0,
+	MODEM_AUTHENTICATION_METHOD_PASSWORD,
 	MODEM_AUTHENTICATION_METHOD_PIN
 } ModemAuthenticationMethod;
 

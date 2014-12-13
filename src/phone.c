@@ -189,6 +189,7 @@ struct _Phone
 	GtkWidget * en_window;
 	GtkWidget * en_title;
 	GtkWidget * en_entry;
+	GtkWidget * en_keypad;
 	GtkWidget * en_progress;
 
 	/* contacts */
@@ -693,9 +694,16 @@ int phone_code_append(Phone * phone, char character)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%c)\n", __func__, character);
 #endif
-	if((character < '0' || character > '9') && character != '*'
-			&& character != '+' && character != '#')
-		return 1; /* ignore the error */
+	switch(phone->en_method)
+	{
+		case MODEM_AUTHENTICATION_METHOD_PIN:
+			if((character < '0' || character > '9')
+					&& character != '*' && character != '+'
+					&& character != '#')
+				return 1; /* ignore the error */
+		default:
+			break;
+	}
 	text = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
 	len = strlen(text);
 	if((p = malloc(len + 2)) == NULL)
@@ -720,6 +728,7 @@ void phone_code_enter(Phone * phone)
 	{
 		case MODEM_AUTHENTICATION_METHOD_NONE:
 			break;
+		case MODEM_AUTHENTICATION_METHOD_PASSWORD:
 		case MODEM_AUTHENTICATION_METHOD_PIN:
 			code = gtk_entry_get_text(GTK_ENTRY(phone->en_entry));
 			phone->en_progress = _phone_create_progress(
@@ -1897,7 +1906,10 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 	method = va_arg(ap, ModemAuthenticationMethod);
 	name = va_arg(ap, char const *);
 	va_end(ap);
-	if(phone->en_name == NULL || strcmp(phone->en_name, name) != 0)
+	/* reset the code if relevant */
+	if(phone->en_method != method
+			|| phone->en_name == NULL
+			|| strcmp(phone->en_name, name) != 0)
 		phone_code_clear(phone);
 	phone->en_method = method;
 	free(phone->en_name);
@@ -1905,10 +1917,21 @@ void phone_show_code(Phone * phone, gboolean show, ...)
 		return; /* XXX report error */
 	switch(method)
 	{
-		case MODEM_AUTHENTICATION_METHOD_PIN:
+		case MODEM_AUTHENTICATION_METHOD_PASSWORD:
+			if(name == NULL)
+				name = "password";
 			snprintf(buf, sizeof(buf), _("Enter %s"), name);
 			gtk_window_set_title(GTK_WINDOW(phone->en_window), buf);
 			gtk_label_set_text(GTK_LABEL(phone->en_title), buf);
+			gtk_widget_hide(phone->en_keypad);
+			break;
+		case MODEM_AUTHENTICATION_METHOD_PIN:
+			if(name == NULL)
+				name = "PIN";
+			snprintf(buf, sizeof(buf), _("Enter %s"), name);
+			gtk_window_set_title(GTK_WINDOW(phone->en_window), buf);
+			gtk_label_set_text(GTK_LABEL(phone->en_title), buf);
+			gtk_widget_show(phone->en_keypad);
 			break;
 		default:
 			break;
@@ -1964,12 +1987,13 @@ static void _show_code_window(Phone * phone)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),
+	phone->en_keypad = _phone_create_dialpad(phone,
+			GTK_STOCK_OK, _("Enter"),
 			G_CALLBACK(on_phone_code_enter),
 			GTK_STOCK_CANCEL, _("Skip"),
 			G_CALLBACK(on_phone_code_leave),
 			G_CALLBACK(on_phone_code_clicked));
-	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->en_keypad, TRUE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(phone->en_window), vbox);
 	gtk_widget_show_all(vbox);
 }
