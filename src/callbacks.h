@@ -76,6 +76,7 @@ void on_phone_read_reply(gpointer data);
 
 /* write */
 void on_phone_write_attach(gpointer data);
+void on_phone_write_backspace(gpointer data);
 void on_phone_write_changed(gpointer data);
 void on_phone_write_copy(gpointer data);
 void on_phone_write_cut(gpointer data);

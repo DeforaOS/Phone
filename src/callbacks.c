@@ -401,6 +401,15 @@ void on_phone_write_attach(gpointer data)
 }
 
 
+/* on_phone_write_backspace */
+void on_phone_write_backspace(gpointer data)
+{
+	Phone * phone = data;
+
+	phone_write_backspace(phone);
+}
+
+
 /* on_phone_write_changed */
 void on_phone_write_changed(gpointer data)
 {

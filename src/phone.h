@@ -125,6 +125,7 @@ void phone_settings_open_selected(Phone * phone);
 
 /* write */
 void phone_write_attach_dialog(Phone * phone);
+void phone_write_backspace(Phone * phone);
 void phone_write_copy(Phone * phone);
 void phone_write_count_buffer(Phone * phone);
 void phone_write_cut(Phone * phone);

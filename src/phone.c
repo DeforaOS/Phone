@@ -3318,17 +3318,17 @@ static void _system_on_ok(gpointer data)
 
 
 /* phone_show_write */
+static void _show_write_window(Phone * phone);
+
 void phone_show_write(Phone * phone, gboolean show, ...)
 {
 	va_list ap;
-	GtkWidget * vbox;
-	GtkWidget * hbox;
-	GtkWidget * widget;
-	GtkToolItem * toolitem;
 	GtkTextBuffer * tbuf;
 	char const * number;
 	char const * content;
 
+	if(phone->wr_window == NULL)
+		_show_write_window(phone);
 	if(show == FALSE)
 	{
 		if(phone->wr_window != NULL)
@@ -3339,117 +3339,6 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 	number = va_arg(ap, char const *);
 	content = va_arg(ap, char const *);
 	va_end(ap);
-	if(phone->wr_window == NULL)
-	{
-		phone->wr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		gtk_window_set_default_size(GTK_WINDOW(phone->wr_window), 200,
-				300);
-#if GTK_CHECK_VERSION(2, 6, 0)
-		gtk_window_set_icon_name(GTK_WINDOW(phone->wr_window),
-				"stock_mail-compose");
-#endif
-		gtk_window_set_title(GTK_WINDOW(phone->wr_window),
-				_("Write message"));
-		g_signal_connect(phone->wr_window, "delete-event", G_CALLBACK(
-					on_phone_closex), NULL);
-#if GTK_CHECK_VERSION(3, 0, 0)
-		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
-		vbox = gtk_vbox_new(FALSE, 0);
-#endif
-		/* toolbar */
-		widget = gtk_toolbar_new();
-		toolitem = gtk_tool_button_new(NULL, _("Send"));
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-				"mail-send");
-		g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-					on_phone_write_send), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new(NULL, _("Attach"));
-		gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
-				"stock_attach");
-		g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-					on_phone_write_attach), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CUT);
-		g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-					on_phone_write_cut), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_COPY);
-		g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-					on_phone_write_copy), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PASTE);
-		g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
-					on_phone_write_paste), phone);
-		gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
-		/* entry */
-#if GTK_CHECK_VERSION(3, 0, 0)
-		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-		hbox = gtk_hbox_new(FALSE, 0);
-#endif
-		phone->wr_entry = gtk_entry_new();
-		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE,
-				2);
-		widget = gtk_button_new();
-		gtk_button_set_image(GTK_BUTTON(widget),
-				gtk_image_new_from_icon_name(
-					"stock_addressbook",
-					GTK_ICON_SIZE_BUTTON));
-		gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
-		g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
-					on_phone_contacts_show), phone);
-		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
-		/* character count */
-#if GTK_CHECK_VERSION(3, 0, 0)
-		hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-		hbox = gtk_hbox_new(FALSE, 0);
-#endif
-		phone->wr_count = gtk_label_new(NULL);
-		gtk_box_pack_start(GTK_BOX(hbox), phone->wr_count, TRUE, TRUE,
-				2);
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
-		/* view */
-		widget = gtk_scrolled_window_new(NULL, NULL);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-				GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-		gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
-				GTK_SHADOW_ETCHED_IN);
-		phone->wr_view = gtk_text_view_new();
-		gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->wr_view),
-				GTK_WRAP_WORD_CHAR);
-		tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
-		g_signal_connect_swapped(tbuf, "changed", G_CALLBACK(
-					on_phone_write_changed), phone);
-		gtk_container_add(GTK_CONTAINER(widget), phone->wr_view);
-		gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
-		/* attachments */
-		phone->wr_awindow = gtk_scrolled_window_new(NULL, NULL);
-		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
-				GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
-		phone->wr_astore = gtk_list_store_new(
-				PHONE_ATTACHMENT_COLUMN_COUNT, G_TYPE_STRING,
-				G_TYPE_STRING, GDK_TYPE_PIXBUF);
-		phone->wr_aview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
-					phone->wr_astore));
-		gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(phone->wr_aview),
-				PHONE_ATTACHMENT_COLUMN_ICON);
-		gtk_icon_view_set_text_column(GTK_ICON_VIEW(phone->wr_aview),
-				PHONE_ATTACHMENT_COLUMN_BASENAME);
-		gtk_widget_show_all(phone->wr_aview);
-		gtk_widget_set_no_show_all(phone->wr_awindow, TRUE);
-		gtk_container_add(GTK_CONTAINER(phone->wr_awindow),
-				phone->wr_aview);
-		gtk_box_pack_start(GTK_BOX(vbox), phone->wr_awindow, TRUE, TRUE,
-				0);
-		gtk_container_add(GTK_CONTAINER(phone->wr_window), vbox);
-		gtk_widget_show_all(vbox);
-		phone_write_count_buffer(phone);
-	}
 	if(number != NULL)
 		gtk_entry_set_text(GTK_ENTRY(phone->wr_entry), number);
 	if(content != NULL)
@@ -3460,6 +3349,134 @@ void phone_show_write(Phone * phone, gboolean show, ...)
 	gtk_widget_grab_focus((number == NULL || number[0] == '\0')
 			? phone->wr_entry : phone->wr_view);
 	gtk_window_present(GTK_WINDOW(phone->wr_window));
+}
+
+static void _show_write_window(Phone * phone)
+{
+	GtkWidget * vbox;
+	GtkWidget * hbox;
+	GtkWidget * widget;
+	GtkToolItem * toolitem;
+	GtkTextBuffer * tbuf;
+
+	phone->wr_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_default_size(GTK_WINDOW(phone->wr_window), 200, 300);
+#if GTK_CHECK_VERSION(2, 6, 0)
+	gtk_window_set_icon_name(GTK_WINDOW(phone->wr_window),
+			"stock_mail-compose");
+#endif
+	gtk_window_set_title(GTK_WINDOW(phone->wr_window),
+			_("Write message"));
+	g_signal_connect(phone->wr_window, "delete-event", G_CALLBACK(
+				on_phone_closex), NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#else
+	vbox = gtk_vbox_new(FALSE, 0);
+#endif
+	/* toolbar */
+	widget = gtk_toolbar_new();
+	toolitem = gtk_tool_button_new(NULL, _("Send"));
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem), "mail-send");
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				on_phone_write_send), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	/* FIXME show only if supported */
+	toolitem = gtk_tool_button_new(NULL, _("Attach"));
+	gtk_tool_button_set_icon_name(GTK_TOOL_BUTTON(toolitem),
+			"stock_attach");
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				on_phone_write_attach), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_CUT);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				on_phone_write_cut), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_COPY);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				on_phone_write_copy), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	toolitem = gtk_tool_button_new_from_stock(GTK_STOCK_PASTE);
+	g_signal_connect_swapped(toolitem, "clicked", G_CALLBACK(
+				on_phone_write_paste), phone);
+	gtk_toolbar_insert(GTK_TOOLBAR(widget), toolitem, -1);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
+	/* entry */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+	hbox = gtk_hbox_new(FALSE, 0);
+#endif
+	phone->wr_entry = gtk_entry_new();
+	gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE, 2);
+#if GTK_CHECK_VERSION(2, 16, 0)
+	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->wr_entry),
+			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_GO_BACK); /* XXX */
+	g_signal_connect_swapped(phone->wr_entry, "icon-press", G_CALLBACK(
+				on_phone_write_backspace), phone);
+#else
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
+				GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				on_phone_write_backspace), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#endif
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
+				"stock_addressbook", GTK_ICON_SIZE_BUTTON));
+	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
+	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
+				on_phone_contacts_show), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 2);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
+	/* character count */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+	hbox = gtk_hbox_new(FALSE, 0);
+#endif
+	phone->wr_count = gtk_label_new(NULL);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->wr_count, TRUE, TRUE,
+			2);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 2);
+	/* view */
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
+	phone->wr_view = gtk_text_view_new();
+	gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(phone->wr_view),
+			GTK_WRAP_WORD_CHAR);
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(phone->wr_view));
+	g_signal_connect_swapped(tbuf, "changed", G_CALLBACK(
+				on_phone_write_changed), phone);
+	gtk_container_add(GTK_CONTAINER(widget), phone->wr_view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 2);
+	/* attachments */
+	phone->wr_awindow = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_NEVER);
+	phone->wr_astore = gtk_list_store_new(
+			PHONE_ATTACHMENT_COLUMN_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING, GDK_TYPE_PIXBUF);
+	phone->wr_aview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(
+				phone->wr_astore));
+	gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(phone->wr_aview),
+			PHONE_ATTACHMENT_COLUMN_ICON);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW(phone->wr_aview),
+			PHONE_ATTACHMENT_COLUMN_BASENAME);
+	gtk_widget_show_all(phone->wr_aview);
+	gtk_widget_set_no_show_all(phone->wr_awindow, TRUE);
+	gtk_container_add(GTK_CONTAINER(phone->wr_awindow),
+			phone->wr_aview);
+	gtk_box_pack_start(GTK_BOX(vbox), phone->wr_awindow, TRUE, TRUE,
+			0);
+	gtk_container_add(GTK_CONTAINER(phone->wr_window), vbox);
+	gtk_widget_show_all(vbox);
+	phone_write_count_buffer(phone);
 }
 
 
@@ -3513,6 +3530,37 @@ void phone_write_attach_dialog(Phone * phone)
 			PHONE_ATTACHMENT_COLUMN_ICON, pixbuf, -1);
 	free(filename);
 	gtk_widget_show(phone->wr_awindow);
+}
+
+
+/* phone_write_backspace */
+void phone_write_backspace(Phone * phone)
+{
+	int start;
+	int end;
+#if !GTK_CHECK_VERSION(2, 14, 0)
+	char const * s;
+#endif
+
+	if(gtk_editable_get_selection_bounds(GTK_EDITABLE(phone->wr_entry),
+				&start, &end) == FALSE)
+	{
+		if((end = gtk_editable_get_position(GTK_EDITABLE(
+							phone->wr_entry))) < 1)
+		{
+#if GTK_CHECK_VERSION(2, 14, 0)
+			end = gtk_entry_get_text_length(GTK_ENTRY(
+						phone->wr_entry));
+#else
+			s = gtk_entry_get_text(GTK_ENTRY(phone->wr_entry));
+			end = strlen(s);
+#endif
+		}
+		start = end - 1;
+	}
+	if(end < 1)
+		return;
+	gtk_editable_delete_text(GTK_EDITABLE(phone->wr_entry), start, end);
 }
 
 
