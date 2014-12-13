@@ -1948,6 +1948,7 @@ static void _show_code_window(Phone * phone)
 	gtk_widget_modify_font(phone->en_entry, phone->bold);
 	g_signal_connect_swapped(phone->en_entry, "activate", G_CALLBACK(
 				on_phone_code_enter), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
 #if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->en_entry),
 			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_GO_BACK); /* XXX */
@@ -1962,7 +1963,6 @@ static void _show_code_window(Phone * phone)
 				on_phone_code_backspace), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
-	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	widget = _phone_create_dialpad(phone, GTK_STOCK_OK, _("Enter"),
 			G_CALLBACK(on_phone_code_enter),
@@ -2113,6 +2113,7 @@ static void _show_dialer_window(Phone * phone)
 				on_phone_dialer_call), phone);
 	g_signal_connect(phone->di_entry, "changed", G_CALLBACK(
 				on_phone_dialer_changed), phone);
+	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
 #if GTK_CHECK_VERSION(2, 16, 0)
 	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->di_entry),
 			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_GO_BACK); /* XXX */
@@ -2127,7 +2128,6 @@ static void _show_dialer_window(Phone * phone)
 				on_phone_dialer_backspace), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
-	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
 	widget = gtk_button_new();
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"stock_addressbook", GTK_ICON_SIZE_BUTTON));
