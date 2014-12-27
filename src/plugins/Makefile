@@ -1,5 +1,6 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= blacklist.so debug.so engineering.so gprs.so gps.so locker.so n900.so openmoko.so oss.so panel.so password.so profiles.so smscrypt.so systray.so template.so ussd.so video.so
+TARGETS	= $(OBJDIR)blacklist.so $(OBJDIR)debug.so $(OBJDIR)engineering.so $(OBJDIR)gprs.so $(OBJDIR)gps.so $(OBJDIR)locker.so $(OBJDIR)n900.so $(OBJDIR)openmoko.so $(OBJDIR)oss.so $(OBJDIR)panel.so $(OBJDIR)password.so $(OBJDIR)profiles.so $(OBJDIR)smscrypt.so $(OBJDIR)systray.so $(OBJDIR)template.so $(OBJDIR)ussd.so $(OBJDIR)video.so
+OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -23,175 +24,175 @@ all: subdirs $(TARGETS)
 subdirs:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE)) || exit; done
 
-blacklist_OBJS = blacklist.o
+blacklist_OBJS = $(OBJDIR)blacklist.o
 blacklist_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 blacklist_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-blacklist.so: $(blacklist_OBJS)
-	$(CCSHARED) -o blacklist.so $(blacklist_OBJS) $(blacklist_LDFLAGS)
+$(OBJDIR)blacklist.so: $(blacklist_OBJS)
+	$(CCSHARED) -o $(OBJDIR)blacklist.so $(blacklist_OBJS) $(blacklist_LDFLAGS)
 
-debug_OBJS = debug.o
+debug_OBJS = $(OBJDIR)debug.o
 debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-debug.so: $(debug_OBJS)
-	$(CCSHARED) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
+$(OBJDIR)debug.so: $(debug_OBJS)
+	$(CCSHARED) -o $(OBJDIR)debug.so $(debug_OBJS) $(debug_LDFLAGS)
 
-engineering_OBJS = engineering.o
+engineering_OBJS = $(OBJDIR)engineering.o
 engineering_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 engineering_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-engineering.so: $(engineering_OBJS)
-	$(CCSHARED) -o engineering.so $(engineering_OBJS) $(engineering_LDFLAGS)
+$(OBJDIR)engineering.so: $(engineering_OBJS)
+	$(CCSHARED) -o $(OBJDIR)engineering.so $(engineering_OBJS) $(engineering_LDFLAGS)
 
-gprs_OBJS = gprs.o
+gprs_OBJS = $(OBJDIR)gprs.o
 gprs_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 gprs_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-gprs.so: $(gprs_OBJS)
-	$(CCSHARED) -o gprs.so $(gprs_OBJS) $(gprs_LDFLAGS)
+$(OBJDIR)gprs.so: $(gprs_OBJS)
+	$(CCSHARED) -o $(OBJDIR)gprs.so $(gprs_OBJS) $(gprs_LDFLAGS)
 
-gps_OBJS = gps.o
+gps_OBJS = $(OBJDIR)gps.o
 gps_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -I../modems $(CFLAGSF) $(CFLAGS)
 gps_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-gps.so: $(gps_OBJS)
-	$(CCSHARED) -o gps.so $(gps_OBJS) $(gps_LDFLAGS)
+$(OBJDIR)gps.so: $(gps_OBJS)
+	$(CCSHARED) -o $(OBJDIR)gps.so $(gps_OBJS) $(gps_LDFLAGS)
 
-locker_OBJS = locker.o
+locker_OBJS = $(OBJDIR)locker.o
 locker_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 locker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-locker.so: $(locker_OBJS)
-	$(CCSHARED) -o locker.so $(locker_OBJS) $(locker_LDFLAGS)
+$(OBJDIR)locker.so: $(locker_OBJS)
+	$(CCSHARED) -o $(OBJDIR)locker.so $(locker_OBJS) $(locker_LDFLAGS)
 
-n900_OBJS = n900.o
+n900_OBJS = $(OBJDIR)n900.o
 n900_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 n900_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-n900.so: $(n900_OBJS)
-	$(CCSHARED) -o n900.so $(n900_OBJS) $(n900_LDFLAGS)
+$(OBJDIR)n900.so: $(n900_OBJS)
+	$(CCSHARED) -o $(OBJDIR)n900.so $(n900_OBJS) $(n900_LDFLAGS)
 
-openmoko_OBJS = openmoko.o
+openmoko_OBJS = $(OBJDIR)openmoko.o
 openmoko_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) -I../modems $(CFLAGSF) $(CFLAGS) `pkg-config --cflags alsa`
 openmoko_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs alsa`
 
-openmoko.so: $(openmoko_OBJS)
-	$(CCSHARED) -o openmoko.so $(openmoko_OBJS) $(openmoko_LDFLAGS)
+$(OBJDIR)openmoko.so: $(openmoko_OBJS)
+	$(CCSHARED) -o $(OBJDIR)openmoko.so $(openmoko_OBJS) $(openmoko_LDFLAGS)
 
-oss_OBJS = oss.o
+oss_OBJS = $(OBJDIR)oss.o
 oss_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 oss_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) -lossaudio
 
-oss.so: $(oss_OBJS)
-	$(CCSHARED) -o oss.so $(oss_OBJS) $(oss_LDFLAGS)
+$(OBJDIR)oss.so: $(oss_OBJS)
+	$(CCSHARED) -o $(OBJDIR)oss.so $(oss_OBJS) $(oss_LDFLAGS)
 
-panel_OBJS = panel.o
+panel_OBJS = $(OBJDIR)panel.o
 panel_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libDesktop`
 panel_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libDesktop`
 
-panel.so: $(panel_OBJS)
-	$(CCSHARED) -o panel.so $(panel_OBJS) $(panel_LDFLAGS)
+$(OBJDIR)panel.so: $(panel_OBJS)
+	$(CCSHARED) -o $(OBJDIR)panel.so $(panel_OBJS) $(panel_LDFLAGS)
 
-password_OBJS = password.o
+password_OBJS = $(OBJDIR)password.o
 password_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 password_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-password.so: $(password_OBJS)
-	$(CCSHARED) -o password.so $(password_OBJS) $(password_LDFLAGS)
+$(OBJDIR)password.so: $(password_OBJS)
+	$(CCSHARED) -o $(OBJDIR)password.so $(password_OBJS) $(password_LDFLAGS)
 
-profiles_OBJS = profiles.o
+profiles_OBJS = $(OBJDIR)profiles.o
 profiles_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 profiles_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-profiles.so: $(profiles_OBJS)
-	$(CCSHARED) -o profiles.so $(profiles_OBJS) $(profiles_LDFLAGS)
+$(OBJDIR)profiles.so: $(profiles_OBJS)
+	$(CCSHARED) -o $(OBJDIR)profiles.so $(profiles_OBJS) $(profiles_LDFLAGS)
 
-smscrypt_OBJS = smscrypt.o
+smscrypt_OBJS = $(OBJDIR)smscrypt.o
 smscrypt_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 smscrypt_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-smscrypt.so: $(smscrypt_OBJS)
-	$(CCSHARED) -o smscrypt.so $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
+$(OBJDIR)smscrypt.so: $(smscrypt_OBJS)
+	$(CCSHARED) -o $(OBJDIR)smscrypt.so $(smscrypt_OBJS) $(smscrypt_LDFLAGS)
 
-systray_OBJS = systray.o
+systray_OBJS = $(OBJDIR)systray.o
 systray_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 systray_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-systray.so: $(systray_OBJS)
-	$(CCSHARED) -o systray.so $(systray_OBJS) $(systray_LDFLAGS)
+$(OBJDIR)systray.so: $(systray_OBJS)
+	$(CCSHARED) -o $(OBJDIR)systray.so $(systray_OBJS) $(systray_LDFLAGS)
 
-template_OBJS = template.o
+template_OBJS = $(OBJDIR)template.o
 template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-template.so: $(template_OBJS)
-	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+$(OBJDIR)template.so: $(template_OBJS)
+	$(CCSHARED) -o $(OBJDIR)template.so $(template_OBJS) $(template_LDFLAGS)
 
-ussd_OBJS = ussd.o
+ussd_OBJS = $(OBJDIR)ussd.o
 ussd_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-ussd.so: $(ussd_OBJS)
-	$(CCSHARED) -o ussd.so $(ussd_OBJS) $(ussd_LDFLAGS)
+$(OBJDIR)ussd.so: $(ussd_OBJS)
+	$(CCSHARED) -o $(OBJDIR)ussd.so $(ussd_OBJS) $(ussd_LDFLAGS)
 
-video_OBJS = video.o
+video_OBJS = $(OBJDIR)video.o
 video_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
 video_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
-video.so: $(video_OBJS)
-	$(CCSHARED) -o video.so $(video_OBJS) $(video_LDFLAGS)
+$(OBJDIR)video.so: $(video_OBJS)
+	$(CCSHARED) -o $(OBJDIR)video.so $(video_OBJS) $(video_LDFLAGS)
 
-blacklist.o: blacklist.c ../../include/Phone.h
-	$(CC) $(blacklist_CFLAGS) -c blacklist.c
+$(OBJDIR)blacklist.o: blacklist.c ../../include/Phone.h
+	$(CC) $(blacklist_CFLAGS) -o $(OBJDIR)blacklist.o -c blacklist.c
 
-debug.o: debug.c ../../include/Phone.h
-	$(CC) $(debug_CFLAGS) -c debug.c
+$(OBJDIR)debug.o: debug.c ../../include/Phone.h
+	$(CC) $(debug_CFLAGS) -o $(OBJDIR)debug.o -c debug.c
 
-engineering.o: engineering.c ../../include/Phone.h
-	$(CC) $(engineering_CFLAGS) -c engineering.c
+$(OBJDIR)engineering.o: engineering.c ../../include/Phone.h
+	$(CC) $(engineering_CFLAGS) -o $(OBJDIR)engineering.o -c engineering.c
 
-gprs.o: gprs.c ../../include/Phone.h ../../config.h
-	$(CC) $(gprs_CFLAGS) -c gprs.c
+$(OBJDIR)gprs.o: gprs.c ../../include/Phone.h ../../config.h
+	$(CC) $(gprs_CFLAGS) -o $(OBJDIR)gprs.o -c gprs.c
 
-gps.o: gps.c ../../include/Phone.h
-	$(CC) $(gps_CFLAGS) -c gps.c
+$(OBJDIR)gps.o: gps.c ../../include/Phone.h
+	$(CC) $(gps_CFLAGS) -o $(OBJDIR)gps.o -c gps.c
 
-locker.o: locker.c ../../include/Phone.h
-	$(CC) $(locker_CFLAGS) -c locker.c
+$(OBJDIR)locker.o: locker.c ../../include/Phone.h
+	$(CC) $(locker_CFLAGS) -o $(OBJDIR)locker.o -c locker.c
 
-n900.o: n900.c ../../include/Phone.h
-	$(CC) $(n900_CFLAGS) -c n900.c
+$(OBJDIR)n900.o: n900.c ../../include/Phone.h
+	$(CC) $(n900_CFLAGS) -o $(OBJDIR)n900.o -c n900.c
 
-openmoko.o: openmoko.c ../../include/Phone.h
-	$(CC) $(openmoko_CFLAGS) -c openmoko.c
+$(OBJDIR)openmoko.o: openmoko.c ../../include/Phone.h
+	$(CC) $(openmoko_CFLAGS) -o $(OBJDIR)openmoko.o -c openmoko.c
 
-oss.o: oss.c ../../include/Phone.h ../../config.h
-	$(CC) $(oss_CFLAGS) -c oss.c
+$(OBJDIR)oss.o: oss.c ../../include/Phone.h ../../config.h
+	$(CC) $(oss_CFLAGS) -o $(OBJDIR)oss.o -c oss.c
 
-panel.o: panel.c ../../include/Phone.h
-	$(CC) $(panel_CFLAGS) -c panel.c
+$(OBJDIR)panel.o: panel.c ../../include/Phone.h
+	$(CC) $(panel_CFLAGS) -o $(OBJDIR)panel.o -c panel.c
 
-password.o: password.c ../../include/Phone.h
-	$(CC) $(password_CFLAGS) -c password.c
+$(OBJDIR)password.o: password.c ../../include/Phone.h
+	$(CC) $(password_CFLAGS) -o $(OBJDIR)password.o -c password.c
 
-profiles.o: profiles.c ../../include/Phone.h
-	$(CC) $(profiles_CFLAGS) -c profiles.c
+$(OBJDIR)profiles.o: profiles.c ../../include/Phone.h
+	$(CC) $(profiles_CFLAGS) -o $(OBJDIR)profiles.o -c profiles.c
 
-smscrypt.o: smscrypt.c ../../include/Phone.h
-	$(CC) $(smscrypt_CFLAGS) -c smscrypt.c
+$(OBJDIR)smscrypt.o: smscrypt.c ../../include/Phone.h
+	$(CC) $(smscrypt_CFLAGS) -o $(OBJDIR)smscrypt.o -c smscrypt.c
 
-systray.o: systray.c ../../include/Phone.h ../../config.h
-	$(CC) $(systray_CFLAGS) -c systray.c
+$(OBJDIR)systray.o: systray.c ../../include/Phone.h ../../config.h
+	$(CC) $(systray_CFLAGS) -o $(OBJDIR)systray.o -c systray.c
 
-template.o: template.c ../../include/Phone.h
-	$(CC) $(template_CFLAGS) -c template.c
+$(OBJDIR)template.o: template.c ../../include/Phone.h
+	$(CC) $(template_CFLAGS) -o $(OBJDIR)template.o -c template.c
 
-ussd.o: ussd.c ../../include/Phone.h
-	$(CC) $(ussd_CFLAGS) -c ussd.c
+$(OBJDIR)ussd.o: ussd.c ../../include/Phone.h
+	$(CC) $(ussd_CFLAGS) -o $(OBJDIR)ussd.o -c ussd.c
 
-video.o: video.c ../../include/Phone.h
-	$(CC) $(video_CFLAGS) -c video.c
+$(OBJDIR)video.o: video.c ../../include/Phone.h
+	$(CC) $(video_CFLAGS) -o $(OBJDIR)video.o -c video.c
 
 clean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) clean) || exit; done
@@ -205,35 +206,35 @@ distclean:
 install: $(TARGETS)
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
+	$(INSTALL) -m 0755 $(OBJDIR)blacklist.so $(DESTDIR)$(LIBDIR)/Phone/plugins/blacklist.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 debug.so $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
+	$(INSTALL) -m 0755 $(OBJDIR)debug.so $(DESTDIR)$(LIBDIR)/Phone/plugins/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
+	$(INSTALL) -m 0755 $(OBJDIR)engineering.so $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
+	$(INSTALL) -m 0755 $(OBJDIR)gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 gps.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
+	$(INSTALL) -m 0755 $(OBJDIR)gps.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
+	$(INSTALL) -m 0755 $(OBJDIR)locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
+	$(INSTALL) -m 0755 $(OBJDIR)n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
+	$(INSTALL) -m 0755 $(OBJDIR)openmoko.so $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 oss.so $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
+	$(INSTALL) -m 0755 $(OBJDIR)oss.so $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
+	$(INSTALL) -m 0755 $(OBJDIR)panel.so $(DESTDIR)$(LIBDIR)/Phone/plugins/panel.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 password.so $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
+	$(INSTALL) -m 0755 $(OBJDIR)password.so $(DESTDIR)$(LIBDIR)/Phone/plugins/password.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
+	$(INSTALL) -m 0755 $(OBJDIR)profiles.so $(DESTDIR)$(LIBDIR)/Phone/plugins/profiles.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
+	$(INSTALL) -m 0755 $(OBJDIR)smscrypt.so $(DESTDIR)$(LIBDIR)/Phone/plugins/smscrypt.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 systray.so $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
+	$(INSTALL) -m 0755 $(OBJDIR)systray.so $(DESTDIR)$(LIBDIR)/Phone/plugins/systray.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0644 ussd.so $(DESTDIR)$(LIBDIR)/Phone/plugins/ussd.so
+	$(INSTALL) -m 0755 $(OBJDIR)ussd.so $(DESTDIR)$(LIBDIR)/Phone/plugins/ussd.so
 
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done

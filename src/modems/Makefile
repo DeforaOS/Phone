@@ -1,4 +1,5 @@
-TARGETS	= debug.so hayes.so purple.so sofia.so template.so
+TARGETS	= $(OBJDIR)debug.so $(OBJDIR)hayes.so $(OBJDIR)purple.so $(OBJDIR)sofia.so $(OBJDIR)template.so
+OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
 LIBDIR	= $(PREFIX)/lib
@@ -20,61 +21,61 @@ INCLUDEDIR= $(PREFIX)/include
 
 all: $(TARGETS)
 
-debug_OBJS = debug.o
+debug_OBJS = $(OBJDIR)debug.o
 debug_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags gtk+-2.0 libSystem`
 debug_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs gtk+-2.0 libSystem`
 
-debug.so: $(debug_OBJS)
-	$(CCSHARED) -o debug.so $(debug_OBJS) $(debug_LDFLAGS)
+$(OBJDIR)debug.so: $(debug_OBJS)
+	$(CCSHARED) -o $(OBJDIR)debug.so $(debug_OBJS) $(debug_LDFLAGS)
 
-hayes_OBJS = hayes/command.o hayes/quirks.o hayes.o
+hayes_OBJS = $(OBJDIR)hayes/command.o $(OBJDIR)hayes/quirks.o $(OBJDIR)hayes.o
 hayes_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem`
 hayes_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
-hayes.so: $(hayes_OBJS)
-	$(CCSHARED) -o hayes.so $(hayes_OBJS) $(hayes_LDFLAGS)
+$(OBJDIR)hayes.so: $(hayes_OBJS)
+	$(CCSHARED) -o $(OBJDIR)hayes.so $(hayes_OBJS) $(hayes_LDFLAGS)
 
-purple_OBJS = purple.o
+purple_OBJS = $(OBJDIR)purple.o
 purple_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem purple`
 purple_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem purple`
 
-purple.so: $(purple_OBJS)
-	$(CCSHARED) -o purple.so $(purple_OBJS) $(purple_LDFLAGS)
+$(OBJDIR)purple.so: $(purple_OBJS)
+	$(CCSHARED) -o $(OBJDIR)purple.so $(purple_OBJS) $(purple_LDFLAGS)
 
-sofia_OBJS = sofia.o
+sofia_OBJS = $(OBJDIR)sofia.o
 sofia_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem sofia-sip-ua-glib`
 sofia_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem sofia-sip-ua-glib`
 
-sofia.so: $(sofia_OBJS)
-	$(CCSHARED) -o sofia.so $(sofia_OBJS) $(sofia_LDFLAGS)
+$(OBJDIR)sofia.so: $(sofia_OBJS)
+	$(CCSHARED) -o $(OBJDIR)sofia.so $(sofia_OBJS) $(sofia_LDFLAGS)
 
-template_OBJS = template.o
+template_OBJS = $(OBJDIR)template.o
 template_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS) `pkg-config --cflags libSystem`
 template_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs libSystem`
 
-template.so: $(template_OBJS)
-	$(CCSHARED) -o template.so $(template_OBJS) $(template_LDFLAGS)
+$(OBJDIR)template.so: $(template_OBJS)
+	$(CCSHARED) -o $(OBJDIR)template.so $(template_OBJS) $(template_LDFLAGS)
 
-debug.o: debug.c ../../config.h
-	$(CC) $(debug_CFLAGS) -c debug.c
+$(OBJDIR)debug.o: debug.c ../../config.h
+	$(CC) $(debug_CFLAGS) -o $(OBJDIR)debug.o -c debug.c
 
-hayes/command.o: hayes/command.c hayes/command.h
-	$(CC) $(hayes_CFLAGS) -o hayes/command.o -c hayes/command.c
+$(OBJDIR)hayes/command.o: hayes/command.c hayes/command.h
+	$(CC) $(hayes_CFLAGS) -o $(OBJDIR)hayes/command.o -c hayes/command.c
 
-hayes/quirks.o: hayes/quirks.c hayes/quirks.h
-	$(CC) $(hayes_CFLAGS) -o hayes/quirks.o -c hayes/quirks.c
+$(OBJDIR)hayes/quirks.o: hayes/quirks.c hayes/quirks.h
+	$(CC) $(hayes_CFLAGS) -o $(OBJDIR)hayes/quirks.o -c hayes/quirks.c
 
-hayes.o: hayes.c hayes/command.h hayes/quirks.h hayes.h
-	$(CC) $(hayes_CFLAGS) -c hayes.c
+$(OBJDIR)hayes.o: hayes.c hayes/command.h hayes/quirks.h hayes.h
+	$(CC) $(hayes_CFLAGS) -o $(OBJDIR)hayes.o -c hayes.c
 
-purple.o: purple.c ../../config.h
-	$(CC) $(purple_CFLAGS) -c purple.c
+$(OBJDIR)purple.o: purple.c ../../config.h
+	$(CC) $(purple_CFLAGS) -o $(OBJDIR)purple.o -c purple.c
 
-sofia.o: sofia.c
-	$(CC) $(sofia_CFLAGS) -c sofia.c
+$(OBJDIR)sofia.o: sofia.c
+	$(CC) $(sofia_CFLAGS) -o $(OBJDIR)sofia.o -c sofia.c
 
-template.o: template.c
-	$(CC) $(template_CFLAGS) -c template.c
+$(OBJDIR)template.o: template.c
+	$(CC) $(template_CFLAGS) -o $(OBJDIR)template.o -c template.c
 
 clean:
 	$(RM) -- $(debug_OBJS) $(hayes_OBJS) $(purple_OBJS) $(sofia_OBJS) $(template_OBJS)
@@ -84,13 +85,13 @@ distclean: clean
 
 install: $(TARGETS)
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 debug.so $(DESTDIR)$(LIBDIR)/Phone/modem/debug.so
+	$(INSTALL) -m 0755 $(OBJDIR)debug.so $(DESTDIR)$(LIBDIR)/Phone/modem/debug.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 hayes.so $(DESTDIR)$(LIBDIR)/Phone/modem/hayes.so
+	$(INSTALL) -m 0755 $(OBJDIR)hayes.so $(DESTDIR)$(LIBDIR)/Phone/modem/hayes.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 purple.so $(DESTDIR)$(LIBDIR)/Phone/modem/purple.so
+	$(INSTALL) -m 0755 $(OBJDIR)purple.so $(DESTDIR)$(LIBDIR)/Phone/modem/purple.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/modem
-	$(INSTALL) -m 0644 sofia.so $(DESTDIR)$(LIBDIR)/Phone/modem/sofia.so
+	$(INSTALL) -m 0755 $(OBJDIR)sofia.so $(DESTDIR)$(LIBDIR)/Phone/modem/sofia.so
 	$(MKDIR) $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems
 	$(INSTALL) -m 0644 hayes.h $(DESTDIR)$(INCLUDEDIR)/Desktop/Phone/modems/hayes.h
 

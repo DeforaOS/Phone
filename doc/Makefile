@@ -1,7 +1,8 @@
 MKDIR	= mkdir -m 0755 -p
 INSTALL	= install
 RM	= rm -f
-TARGETS	= gprs.1 gprs.html index.html phone.1 phone.html phonectl.1 phonectl.html
+TARGETS	= $(OBJDIR)gprs.1 $(OBJDIR)gprs.html $(OBJDIR)index.html $(OBJDIR)phone.1 $(OBJDIR)phone.html $(OBJDIR)phonectl.1 $(OBJDIR)phonectl.html
+OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
 RM	= rm -f
@@ -12,26 +13,26 @@ INSTALL	= install
 
 all: $(TARGETS)
 
-gprs.1: gprs.xml
-	./docbook.sh -P "$(PREFIX)" -- "gprs.1"
+$(OBJDIR)gprs.1: gprs.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)gprs.1"
 
-gprs.html: manual.css.xml gprs.css.xml gprs.xml
-	./docbook.sh -P "$(PREFIX)" -- "gprs.html"
+$(OBJDIR)gprs.html: manual.css.xml gprs.css.xml gprs.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)gprs.html"
 
-index.html: gprs.xml index.xml index.xsl phone.xml phonectl.xml
-	./docbook.sh -P "$(PREFIX)" -- "index.html"
+$(OBJDIR)index.html: gprs.xml index.xml index.xsl phone.xml phonectl.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)index.html"
 
-phone.1: phone.xml
-	./docbook.sh -P "$(PREFIX)" -- "phone.1"
+$(OBJDIR)phone.1: phone.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)phone.1"
 
-phone.html: manual.css.xml phone.css.xml phone.xml
-	./docbook.sh -P "$(PREFIX)" -- "phone.html"
+$(OBJDIR)phone.html: manual.css.xml phone.css.xml phone.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)phone.html"
 
-phonectl.1: phonectl.xml
-	./docbook.sh -P "$(PREFIX)" -- "phonectl.1"
+$(OBJDIR)phonectl.1: phonectl.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)phonectl.1"
 
-phonectl.html: manual.css.xml phonectl.css.xml phonectl.xml
-	./docbook.sh -P "$(PREFIX)" -- "phonectl.html"
+$(OBJDIR)phonectl.html: manual.css.xml phonectl.css.xml phonectl.xml
+	./docbook.sh -P "$(PREFIX)" -- "$(OBJDIR)phonectl.html"
 
 clean:
 	$(RM) -- $(gprs.1_OBJS) $(gprs.html_OBJS) $(index.html_OBJS) $(phone.1_OBJS) $(phone.html_OBJS) $(phonectl.1_OBJS) $(phonectl.html_OBJS)
@@ -47,12 +48,12 @@ distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "gprs.1"
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "gprs.html"
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phone.1"
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phone.html"
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phonectl.1"
-	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "phonectl.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)gprs.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)gprs.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)phone.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)phone.html"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)phonectl.1"
+	./docbook.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)phonectl.html"
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone
 	$(INSTALL) -m 0644 gprs.conf $(DESTDIR)$(PREFIX)/share/doc/Phone/gprs.conf
 	$(MKDIR) $(DESTDIR)$(PREFIX)/share/doc/Phone

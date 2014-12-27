@@ -3,7 +3,8 @@ VERSION	= 0.4.1
 SUBDIRS	= data doc include po src tests tools
 RM	= rm -f
 LN	= ln -f
-TAR	= tar -czvf
+TAR	= tar
+MKDIR	= mkdir -m 0755 -p
 
 
 all: subdirs
@@ -18,9 +19,9 @@ distclean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) distclean) || exit; done
 
 dist:
-	$(RM) -r -- $(PACKAGE)-$(VERSION)
-	$(LN) -s -- . $(PACKAGE)-$(VERSION)
-	@$(TAR) $(PACKAGE)-$(VERSION).tar.gz -- \
+	$(RM) -r -- $(OBJDIR)$(PACKAGE)-$(VERSION)
+	$(LN) -s -- "$$PWD" $(OBJDIR)$(PACKAGE)-$(VERSION)
+	@cd $(OBJDIR). && $(TAR) -czvf $(OBJDIR)$(PACKAGE)-$(VERSION).tar.gz -- \
 		$(PACKAGE)-$(VERSION)/data/Makefile \
 		$(PACKAGE)-$(VERSION)/data/0.wav \
 		$(PACKAGE)-$(VERSION)/data/1.wav \
@@ -193,7 +194,18 @@ dist:
 		$(PACKAGE)-$(VERSION)/config.h \
 		$(PACKAGE)-$(VERSION)/config.sh \
 		$(PACKAGE)-$(VERSION)/project.conf
-	$(RM) -- $(PACKAGE)-$(VERSION)
+	$(RM) -- $(OBJDIR)$(PACKAGE)-$(VERSION)
+
+distcheck: dist
+	$(TAR) -xzvf $(OBJDIR)$(PACKAGE)-$(VERSION).tar.gz
+	$(MKDIR) -- $(PACKAGE)-$(VERSION)/objdir
+	$(MKDIR) -- $(PACKAGE)-$(VERSION)/destdir
+	(cd "$(PACKAGE)-$(VERSION)" && $(MAKE) OBJDIR="$$PWD/objdir/")
+	(cd "$(PACKAGE)-$(VERSION)" && $(MAKE) OBJDIR="$$PWD/objdir/" DESTDIR="$$PWD/destdir" install)
+	(cd "$(PACKAGE)-$(VERSION)" && $(MAKE) OBJDIR="$$PWD/objdir/" DESTDIR="$$PWD/destdir" uninstall)
+	(cd "$(PACKAGE)-$(VERSION)" && $(MAKE) OBJDIR="$$PWD/objdir/" distclean)
+	(cd "$(PACKAGE)-$(VERSION)" && $(MAKE) dist)
+	$(RM) -r -- $(PACKAGE)-$(VERSION)
 
 install:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) install) || exit; done
@@ -201,4 +213,4 @@ install:
 uninstall:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) uninstall) || exit; done
 
-.PHONY: all subdirs clean distclean dist install uninstall
+.PHONY: all subdirs clean distclean dist distcheck install uninstall
