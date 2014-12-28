@@ -44,6 +44,7 @@ static char const _license[] =
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
+/* constants */
 #ifndef PROGNAME
 # define PROGNAME	"phone"
 #endif

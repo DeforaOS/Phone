@@ -26,6 +26,9 @@
 #define _(string) gettext(string)
 
 /* constants */
+#ifndef PROGNAME
+# define PROGNAME	"phone"
+#endif
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
 #endif
@@ -48,7 +51,7 @@ static int _usage(void);
 /* error */
 static int _error(char const * message, int ret)
 {
-	fputs("phone: ", stderr);
+	fputs(PROGNAME ": ", stderr);
 	perror(message);
 	return ret;
 }
@@ -57,10 +60,10 @@ static int _error(char const * message, int ret)
 /* usage */
 static int _usage(void)
 {
-	fputs(_("Usage: phone [-m modem][-r retry]\n"
+	fprintf(stderr, _("Usage: %s [-m modem][-r retry]\n"
 "  -m	Name of the modem plug-in to load\n"
 "  -r	Delay between two tries to open and settle with the modem (ms)\n"),
-			stderr);
+			PROGNAME);
 	return 1;
 }
 
