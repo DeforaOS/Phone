@@ -1,4 +1,4 @@
-TARGETS	= $(OBJDIR)Phone.pot $(OBJDIR)fr.mo
+TARGETS	= $(OBJDIR)Phone.pot $(OBJDIR)es.mo $(OBJDIR)fr.mo
 OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
@@ -13,21 +13,27 @@ all: $(TARGETS)
 $(OBJDIR)Phone.pot: POTFILES
 	./gettext.sh -P "$(PREFIX)" -- "$(OBJDIR)Phone.pot"
 
+$(OBJDIR)es.mo: Phone.pot es.po
+	./gettext.sh -P "$(PREFIX)" -- "$(OBJDIR)es.mo"
+
 $(OBJDIR)fr.mo: Phone.pot fr.po
 	./gettext.sh -P "$(PREFIX)" -- "$(OBJDIR)fr.mo"
 
 clean:
-	$(RM) -- $(Phone.pot_OBJS) $(fr.mo_OBJS)
+	$(RM) -- $(Phone.pot_OBJS) $(es.mo_OBJS) $(fr.mo_OBJS)
 	./gettext.sh -c -P "$(PREFIX)" -- "Phone.pot"
+	./gettext.sh -c -P "$(PREFIX)" -- "es.mo"
 	./gettext.sh -c -P "$(PREFIX)" -- "fr.mo"
 
 distclean: clean
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)es.mo"
 	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -i -- "$(OBJDIR)fr.mo"
 
 uninstall:
+	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "es.mo"
 	./gettext.sh -P "$(DESTDIR)$(PREFIX)" -u -- "fr.mo"
 
 .PHONY: all clean distclean install uninstall
