@@ -1,4 +1,5 @@
 # $Id$
+# French translations for Phone package.
 # Copyright (c) 2010-2013 Pierre Pronchery <khorben@defora.org>
 # This file is distributed under the same license as the Phone package.
 # Pierre Pronchery <khorben@defora.org>, 2010.
