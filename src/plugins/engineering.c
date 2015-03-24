@@ -177,7 +177,7 @@ static int _on_engineering_trigger_em(Engineering * engineering,
 PhonePluginDefinition plugin =
 {
 	"Engineering",
-	NULL,
+	"network-wireless",
 	NULL,
 	_engineering_init,
 	_engineering_destroy,
