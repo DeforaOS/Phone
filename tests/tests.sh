@@ -99,10 +99,10 @@ $DATE > "$target"
 FAILED=
 echo "Performing tests:" 1>&2
 _test "hayes"
+_test "modems"
 _test "pdu"
 _test "ussd"
 echo "Expected failures:" 1>&2
-_fail "modems"
 _fail "plugins"
 if [ -n "$FAILED" ]; then
 	echo "Failed tests:$FAILED" 1>&2
