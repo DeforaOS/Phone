@@ -76,7 +76,7 @@ static int _pdu_decode(char const * pdu, char const * number,
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	if(strcmp(buf, datetime) != 0)
 	{
-		fputs("pdu: Did not match the date\n", stderr);
+		fprintf(stderr, "pdu: %s: %s\n", buf, "Did not match the date");
 		ret = 2;
 	}
 	/* check the encoding */
