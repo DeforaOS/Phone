@@ -130,7 +130,7 @@ static void _ussd_on_settings_send(gpointer data);
 PhonePluginDefinition plugin =
 {
 	"USSD",
-	NULL,
+	"user-info",
 	NULL,
 	_ussd_init,
 	_ussd_destroy,
