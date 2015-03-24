@@ -65,11 +65,13 @@ static int _pdu_decode(char const * pdu, char const * number,
 		fputs("pdu: Unable to decode PDU\n", stderr);
 		return -1;
 	}
+	/* check the number */
 	if(strcmp(buf, number) != 0)
 	{
 		fputs("pdu: Did not match the number\n", stderr);
 		ret = 1;
 	}
+	/* check the timestamp */
 	localtime_r(&timestamp, &t);
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	if(strcmp(buf, datetime) != 0)
@@ -77,11 +79,13 @@ static int _pdu_decode(char const * pdu, char const * number,
 		fputs("pdu: Did not match the date\n", stderr);
 		ret = 2;
 	}
+	/* check the encoding */
 	if(e != encoding)
 	{
 		fputs("pdu: Did not match the encoding\n", stderr);
 		ret = 3;
 	}
+	/* check the message */
 	if(strcmp(p, message) != 0)
 	{
 		fputs("pdu: Did not match the message\n", stderr);
