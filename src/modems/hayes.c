@@ -3656,7 +3656,9 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 {
 	char const * p = timestamp;
 	size_t i;
-	struct tm t;
+	struct tm tm;
+	time_t t;
+	timezone_t tz;
 #ifdef DEBUG
 	char buf[32];
 #endif
@@ -3669,21 +3671,25 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	for(i = 0; i < 14; i++)
 		if(p[i] < '0' || p[i] > '9')
 			return 0;
-	memset(&t, 0, sizeof(t));
-	t.tm_year = (p[0] - '0') + ((p[1] - '0') * 10);
-	t.tm_year = (t.tm_year > 70) ? t.tm_year : (100 + t.tm_year);
-	t.tm_mon = (p[2] - '0') + ((p[3] - '0') * 10);
-	if(t.tm_mon > 0)
-		t.tm_mon--;
-	t.tm_mday = (p[4] - '0') + ((p[5] - '0') * 10);
-	t.tm_hour = (p[6] - '0') + ((p[7] - '0') * 10);
-	t.tm_min = (p[8] - '0') + ((p[9] - '0') * 10);
-	t.tm_sec = (p[10] - '0') + ((p[11] - '0') * 10);
+	memset(&tm, 0, sizeof(tm));
+	tm.tm_year = (p[0] - '0') + ((p[1] - '0') * 10);
+	tm.tm_year = (tm.tm_year > 70) ? tm.tm_year : (100 + tm.tm_year);
+	tm.tm_mon = (p[2] - '0') + ((p[3] - '0') * 10);
+	if(tm.tm_mon > 0)
+		tm.tm_mon--;
+	tm.tm_mday = (p[4] - '0') + ((p[5] - '0') * 10);
+	tm.tm_hour = (p[6] - '0') + ((p[7] - '0') * 10);
+	tm.tm_min = (p[8] - '0') + ((p[9] - '0') * 10);
+	tm.tm_sec = (p[10] - '0') + ((p[11] - '0') * 10);
 #ifdef DEBUG
-	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &tm);
 	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, buf);
 #endif
-	return mktime(&t);
+	/* XXX assumes UTC */
+	tz = tzalloc("UTC");
+	t = mktime_z(tz, &tm);
+	tzfree(tz);
+	return t;
 }
 
 
