@@ -41,7 +41,7 @@ static int _pdu(void)
 	return _pdu_decode("07916407058099F9040B916407752743"
 			"F60000990121017580001554747A0E4A"
 			"CF416110945805B5CBF379F85C06",
-			"+46705772346", "12/10/1999 11:57:08",
+			"+46705772346", "12/10/1999 12:57:08",
 			MODEM_MESSAGE_ENCODING_UTF8,
 			"This is a PDU message");
 }
@@ -59,6 +59,7 @@ static int _pdu_decode(char const * pdu, char const * number,
 	char * p;
 	struct tm t;
 	size_t len;
+	timezone_t tz;
 
 	if((p = _cmgr_pdu_parse(pdu, &timestamp, buf, &e, &len)) == NULL)
 	{
@@ -72,7 +73,9 @@ static int _pdu_decode(char const * pdu, char const * number,
 		ret = 1;
 	}
 	/* check the timestamp */
-	localtime_r(&timestamp, &t);
+	tz = tzalloc("Europe/Berlin");
+	localtime_rz(tz, &timestamp, &t);
+	tzfree(tz);
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	if(strcmp(buf, datetime) != 0)
 	{
