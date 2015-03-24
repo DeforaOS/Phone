@@ -46,7 +46,7 @@ static int _locker_action(LockerAction action);
 PhonePluginDefinition plugin =
 {
 	"Locker",
-	NULL,
+	"gnome-lockscreen",
 	NULL,
 	_locker_init,
 	_locker_destroy,

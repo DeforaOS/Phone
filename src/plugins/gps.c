@@ -53,7 +53,7 @@ static void _gps_on_settings_stop(gpointer data);
 PhonePluginDefinition plugin =
 {
 	"GPS",
-	NULL,
+	"network-wireless",
 	NULL,
 	_gps_init,
 	_gps_destroy,

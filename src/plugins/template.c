@@ -41,7 +41,7 @@ static int _template_event(TemplatePhonePlugin * template, PhoneEvent * event);
 PhonePluginDefinition plugin =
 {
 	"Template",
-	NULL,
+	"applications-development",
 	NULL,
 	_template_init,
 	_template_destroy,
