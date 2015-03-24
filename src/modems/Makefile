@@ -60,9 +60,11 @@ $(OBJDIR)debug.o: debug.c ../../config.h
 	$(CC) $(debug_CFLAGS) -o $(OBJDIR)debug.o -c debug.c
 
 $(OBJDIR)hayes/command.o: hayes/command.c hayes/command.h
+	@[ -d "$(OBJDIR)hayes" ] || $(MKDIR) -- "$(OBJDIR)hayes"
 	$(CC) $(hayes_CFLAGS) -o $(OBJDIR)hayes/command.o -c hayes/command.c
 
 $(OBJDIR)hayes/quirks.o: hayes/quirks.c hayes/quirks.h
+	@[ -d "$(OBJDIR)hayes" ] || $(MKDIR) -- "$(OBJDIR)hayes"
 	$(CC) $(hayes_CFLAGS) -o $(OBJDIR)hayes/quirks.o -c hayes/quirks.c
 
 $(OBJDIR)hayes.o: hayes.c hayes/command.h hayes/quirks.h hayes.h

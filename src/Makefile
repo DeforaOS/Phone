@@ -20,7 +20,11 @@ INSTALL	= install
 all: subdirs $(TARGETS)
 
 subdirs:
-	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE)) || exit; done
+	@for i in $(SUBDIRS); do (cd "$$i" && \
+		if [ -n "$(OBJDIR)" ]; then \
+		([ -d "$(OBJDIR)$$i" ] || $(MKDIR) -- "$(OBJDIR)$$i") && \
+		$(MAKE) OBJDIR="$(OBJDIR)$$i/"; \
+		else $(MAKE); fi) || exit; done
 
 phone_OBJS = $(OBJDIR)callbacks.o $(OBJDIR)main.o $(OBJDIR)modem.o $(OBJDIR)phone.o
 phone_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
