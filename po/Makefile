@@ -13,10 +13,10 @@ all: $(TARGETS)
 $(OBJDIR)Phone.pot: POTFILES
 	./gettext.sh -P "$(PREFIX)" -- "$(OBJDIR)Phone.pot"
 
-$(OBJDIR)es.mo: Phone.pot es.po
+$(OBJDIR)es.mo: $(OBJDIR)Phone.pot es.po
 	./gettext.sh -P "$(PREFIX)" -- "$(OBJDIR)es.mo"
 
-$(OBJDIR)fr.mo: Phone.pot fr.po
+$(OBJDIR)fr.mo: $(OBJDIR)Phone.pot fr.po
 	./gettext.sh -P "$(PREFIX)" -- "$(OBJDIR)fr.mo"
 
 clean:
