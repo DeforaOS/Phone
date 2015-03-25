@@ -16,6 +16,7 @@
 
 
 #variables
+[ -n "$OBJDIR" ] || OBJDIR="./"
 #executables
 DATE="date"
 
@@ -29,8 +30,8 @@ _fail()
 	shift
 	echo -n "$test:" 1>&2
 	(echo
-	echo "Testing: ./$test" "$@"
-	"./$test" "$@") >> "$target" 2>&1
+	echo "Testing: $OBJDIR$test" "$@"
+	"$OBJDIR$test" "$@") >> "$target" 2>&1
 	res=$?
 	if [ $res -ne 0 ]; then
 		echo " FAILED (error $res)" 1>&2
@@ -48,8 +49,8 @@ _test()
 	shift
 	echo -n "$test:" 1>&2
 	(echo
-	echo "Testing: ./$test" "$@"
-	"./$test" "$@") >> "$target" 2>&1
+	echo "Testing: $OBJDIR$test" "$@"
+	"$OBJDIR$test" "$@") >> "$target" 2>&1
 	res=$?
 	if [ $res -ne 0 ]; then
 		echo " FAILED" 1>&2
