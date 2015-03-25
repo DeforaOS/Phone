@@ -60,10 +60,10 @@ ussd_LDFLAGS = $(LDFLAGSF) $(LDFLAGS) `pkg-config --libs glib-2.0 libSystem`
 $(OBJDIR)ussd: $(ussd_OBJS)
 	$(CC) -o $(OBJDIR)ussd $(ussd_OBJS) $(ussd_LDFLAGS)
 
-$(OBJDIR)tests.log: hayes modems pdu plugins tests.sh ussd
+$(OBJDIR)tests.log: $(OBJDIR)hayes $(OBJDIR)modems $(OBJDIR)pdu $(OBJDIR)plugins tests.sh $(OBJDIR)ussd
 	./tests.sh -P "$(PREFIX)" -- "$(OBJDIR)tests.log"
 
-$(OBJDIR)hayes.o: hayes.c ../src/modems/hayes.o ../config.h
+$(OBJDIR)hayes.o: hayes.c $(OBJDIR)../src/modems/hayes.o ../config.h
 	$(CC) $(hayes_CFLAGS) -o $(OBJDIR)hayes.o -c hayes.c
 
 $(OBJDIR)modems.o: modems.c
@@ -72,13 +72,13 @@ $(OBJDIR)modems.o: modems.c
 $(OBJDIR)oss.o: oss.c ../src/plugins/oss.c
 	$(CC) $(oss_CFLAGS) -o $(OBJDIR)oss.o -c oss.c
 
-$(OBJDIR)pdu.o: pdu.c ../src/modems/hayes.o
+$(OBJDIR)pdu.o: pdu.c $(OBJDIR)../src/modems/hayes.o
 	$(CC) -I ../src/modems $(pdu_CFLAGS) -o $(OBJDIR)pdu.o -c pdu.c
 
 $(OBJDIR)plugins.o: plugins.c
 	$(CC) $(plugins_CFLAGS) -o $(OBJDIR)plugins.o -c plugins.c
 
-$(OBJDIR)ussd.o: ussd.c ../src/modems/hayes.o
+$(OBJDIR)ussd.o: ussd.c $(OBJDIR)../src/modems/hayes.o
 	$(CC) -I ../src/modems $(ussd_CFLAGS) -o $(OBJDIR)ussd.o -c ussd.c
 
 clean:
