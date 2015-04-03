@@ -21,6 +21,9 @@
 
 
 
+#ifdef __linux__
+# include <sys/file.h>
+#endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -3659,7 +3662,9 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	size_t i;
 	struct tm tm;
 	time_t t;
+#ifndef __linux__
 	timezone_t tz;
+#endif
 #ifdef DEBUG
 	char buf[32];
 #endif
@@ -3686,10 +3691,14 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &tm);
 	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, buf);
 #endif
+#ifdef __linux__
+	t = mktime(&tm);
+#else
 	/* XXX assumes UTC */
 	tz = tzalloc("UTC");
 	t = mktime_z(tz, &tm);
 	tzfree(tz);
+#endif
 	return t;
 }
 
