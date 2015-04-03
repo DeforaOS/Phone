@@ -3415,6 +3415,7 @@ static void _on_code_cmgr(HayesChannel * channel, char const * answer)
 		channel->message_number = strdup(number);
 		event->message.number = channel->message_number;
 		date[sizeof(date) - 1] = '\0';
+		memset(&t, 0, sizeof(t));
 		if(strptime(date, "%y/%m/%d,%H:%M:%S", &t) == NULL)
 			/* XXX also parse the timezone? */
 			localtime_r(NULL, &t);
