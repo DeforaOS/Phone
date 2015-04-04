@@ -1,5 +1,5 @@
 SUBDIRS	= 16x16 24x24 32x32 48x48
-TARGETS	= $(OBJDIR)blacklist.so $(OBJDIR)debug.so $(OBJDIR)engineering.so $(OBJDIR)gprs.so $(OBJDIR)gps.so $(OBJDIR)locker.so $(OBJDIR)n900.so $(OBJDIR)openmoko.so $(OBJDIR)oss.so $(OBJDIR)panel.so $(OBJDIR)password.so $(OBJDIR)profiles.so $(OBJDIR)smscrypt.so $(OBJDIR)systray.so $(OBJDIR)template.so $(OBJDIR)ussd.so $(OBJDIR)video.so
+TARGETS	= $(OBJDIR)blacklist.so $(OBJDIR)debug.so $(OBJDIR)engineering.so $(OBJDIR)gprs.so $(OBJDIR)gps.so $(OBJDIR)n900.so $(OBJDIR)openmoko.so $(OBJDIR)oss.so $(OBJDIR)panel.so $(OBJDIR)password.so $(OBJDIR)profiles.so $(OBJDIR)smscrypt.so $(OBJDIR)systray.so $(OBJDIR)template.so $(OBJDIR)ussd.so $(OBJDIR)video.so
 OBJDIR	=
 PREFIX	= /usr/local
 DESTDIR	=
@@ -62,13 +62,6 @@ gps_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
 
 $(OBJDIR)gps.so: $(gps_OBJS)
 	$(CCSHARED) -o $(OBJDIR)gps.so $(gps_OBJS) $(gps_LDFLAGS)
-
-locker_OBJS = $(OBJDIR)locker.o
-locker_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
-locker_LDFLAGS = $(LDFLAGSF) $(LDFLAGS)
-
-$(OBJDIR)locker.so: $(locker_OBJS)
-	$(CCSHARED) -o $(OBJDIR)locker.so $(locker_OBJS) $(locker_LDFLAGS)
 
 n900_OBJS = $(OBJDIR)n900.o
 n900_CFLAGS = $(CPPFLAGSF) $(CPPFLAGS) $(CFLAGSF) $(CFLAGS)
@@ -162,9 +155,6 @@ $(OBJDIR)gprs.o: gprs.c ../../include/Phone.h ../../config.h
 $(OBJDIR)gps.o: gps.c ../../include/Phone.h
 	$(CC) $(gps_CFLAGS) -o $(OBJDIR)gps.o -c gps.c
 
-$(OBJDIR)locker.o: locker.c ../../include/Phone.h
-	$(CC) $(locker_CFLAGS) -o $(OBJDIR)locker.o -c locker.c
-
 $(OBJDIR)n900.o: n900.c ../../include/Phone.h
 	$(CC) $(n900_CFLAGS) -o $(OBJDIR)n900.o -c n900.c
 
@@ -200,11 +190,11 @@ $(OBJDIR)video.o: video.c ../../include/Phone.h
 
 clean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) clean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 
 distclean:
 	@for i in $(SUBDIRS); do (cd "$$i" && $(MAKE) distclean) || exit; done
-	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(locker_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
+	$(RM) -- $(blacklist_OBJS) $(debug_OBJS) $(engineering_OBJS) $(gprs_OBJS) $(gps_OBJS) $(n900_OBJS) $(openmoko_OBJS) $(oss_OBJS) $(panel_OBJS) $(password_OBJS) $(profiles_OBJS) $(smscrypt_OBJS) $(systray_OBJS) $(template_OBJS) $(ussd_OBJS) $(video_OBJS)
 	$(RM) -- $(TARGETS)
 
 install: $(TARGETS)
@@ -219,8 +209,6 @@ install: $(TARGETS)
 	$(INSTALL) -m 0755 $(OBJDIR)gprs.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0755 $(OBJDIR)gps.so $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
-	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
-	$(INSTALL) -m 0755 $(OBJDIR)locker.so $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
 	$(INSTALL) -m 0755 $(OBJDIR)n900.so $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(MKDIR) $(DESTDIR)$(LIBDIR)/Phone/plugins
@@ -247,7 +235,6 @@ uninstall:
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/engineering.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/gprs.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/gps.so
-	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/locker.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/n900.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/openmoko.so
 	$(RM) -- $(DESTDIR)$(LIBDIR)/Phone/plugins/oss.so
