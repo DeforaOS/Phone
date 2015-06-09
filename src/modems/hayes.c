@@ -836,7 +836,7 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 			channel->rd_ppp_source = 0;
 			if(channel->wr_ppp_source != 0)
 				g_source_remove(channel->wr_ppp_source);
-			channel->rd_ppp_source = 0;
+			channel->wr_ppp_source = 0;
 			/* reset registration media */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(channel->registration_media);
@@ -1282,6 +1282,7 @@ static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel)
 	channel->authenticate_count = 0;
 	if(channel->authenticate_source != 0)
 		g_source_remove(channel->authenticate_source);
+	channel->authenticate_source = 0;
 	if(channel->timeout != 0)
 		g_source_remove(channel->timeout);
 	channel->timeout = 0;
