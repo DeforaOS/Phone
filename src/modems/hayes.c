@@ -2573,6 +2573,8 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		HayesCommandStatus status, void * priv)
 {
+	const char sim_pin[] = "SIM PIN";
+	const char sim_puk[] = "SIM PUK";
 	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
@@ -2591,9 +2593,9 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 			return status;
 	}
 	/* XXX it should be bound to the request instead */
-	if(event->authentication.name != NULL && (strcmp("SIM PIN",
+	if(event->authentication.name != NULL && (strcmp(sim_pin,
 					event->authentication.name) == 0
-				|| strcmp("SIM PUK",
+				|| strcmp(sim_puk,
 					event->authentication.name) == 0))
 	{
 		/* verify that it really worked */
