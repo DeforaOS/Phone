@@ -254,6 +254,7 @@ static int _hayes_request_type(Hayes * hayes, HayesChannel * channel,
 
 /* reset */
 static void _hayes_reset(Hayes * hayes);
+static void _hayes_reset_source(guint * source);
 
 /* callbacks */
 static gboolean _on_authenticate(gpointer data);
@@ -667,9 +668,7 @@ static void _stop_string(char ** string);
 
 static int _hayes_stop(Hayes * hayes)
 {
-	if(hayes->source != 0)
-		g_source_remove(hayes->source);
-	hayes->source = 0;
+	_hayes_reset_source(&hayes->source);
 	_stop_channel(hayes, &hayes->channel);
 	return 0;
 }
@@ -831,12 +830,8 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 		case HAYES_MODE_COMMAND:
 			break; /* nothing to do */
 		case HAYES_MODE_DATA:
-			if(channel->rd_ppp_source != 0)
-				g_source_remove(channel->rd_ppp_source);
-			channel->rd_ppp_source = 0;
-			if(channel->wr_ppp_source != 0)
-				g_source_remove(channel->wr_ppp_source);
-			channel->wr_ppp_source = 0;
+			_hayes_reset_source(&channel->rd_ppp_source);
+			_hayes_reset_source(&channel->wr_ppp_source);
 			/* reset registration media */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(channel->registration_media);
@@ -1264,28 +1259,16 @@ static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel)
 	free(channel->rd_buf);
 	channel->rd_buf = NULL;
 	channel->rd_buf_cnt = 0;
-	if(channel->rd_source != 0)
-		g_source_remove(channel->rd_source);
-	channel->rd_source = 0;
+	_hayes_reset_source(&channel->rd_source);
 	free(channel->wr_buf);
 	channel->wr_buf = NULL;
 	channel->wr_buf_cnt = 0;
-	if(channel->wr_source != 0)
-		g_source_remove(channel->wr_source);
-	channel->wr_source = 0;
-	if(channel->rd_ppp_source != 0)
-		g_source_remove(channel->rd_ppp_source);
-	channel->rd_ppp_source = 0;
-	if(channel->wr_ppp_source != 0)
-		g_source_remove(channel->wr_ppp_source);
-	channel->wr_ppp_source = 0;
+	_hayes_reset_source(&channel->wr_source);
+	_hayes_reset_source(&channel->rd_ppp_source);
+	_hayes_reset_source(&channel->wr_ppp_source);
 	channel->authenticate_count = 0;
-	if(channel->authenticate_source != 0)
-		g_source_remove(channel->authenticate_source);
-	channel->authenticate_source = 0;
-	if(channel->timeout != 0)
-		g_source_remove(channel->timeout);
-	channel->timeout = 0;
+	_hayes_reset_source(&channel->authenticate_source);
+	_hayes_reset_source(&channel->timeout);
 }
 
 
@@ -1297,9 +1280,7 @@ static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(channel->timeout != 0)
-		g_source_remove(channel->timeout);
-	channel->timeout = 0;
+	_hayes_reset_source(&channel->timeout);
 	if(channel->queue == NULL) /* nothing to send */
 		return 0;
 	command = channel->queue->data; /* XXX assumes it's valid */
@@ -1362,9 +1343,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	if(channel->channel != NULL && channel->wr_source == 0)
 		channel->wr_source = g_io_add_watch(channel->channel, G_IO_OUT,
 				_on_watch_can_write, channel);
-	if(channel->timeout != 0)
-		g_source_remove(channel->timeout);
-	channel->timeout = 0;
+	_hayes_reset_source(&channel->timeout);
 	if((timeout = hayes_command_get_timeout(command)) != 0)
 		channel->timeout = g_timeout_add(timeout, _on_timeout, channel);
 	return 0;
@@ -2021,6 +2000,16 @@ static void _hayes_reset(Hayes * hayes)
 {
 	_hayes_stop(hayes);
 	_hayes_start(hayes, hayes->retry);
+}
+
+
+/* hayes_reset_source */
+static void _hayes_reset_source(guint * source)
+{
+	if(*source == 0)
+		return;
+	g_source_remove(*source);
+	*source = 0;
 }
 
 
@@ -4051,9 +4040,7 @@ static void _on_code_cpin(HayesChannel * channel, char const * answer)
 	if(strcmp(answer, "READY") == 0)
 	{
 		event->authentication.status = MODEM_AUTHENTICATION_STATUS_OK;
-		if(channel->authenticate_source != 0)
-			g_source_remove(channel->authenticate_source);
-		channel->authenticate_source = 0;
+		_hayes_reset_source(&channel->authenticate_source);
 		channel->authenticate_count = 0;
 	}
 	else if(strcmp(answer, "SIM PIN") == 0
