@@ -77,6 +77,9 @@ typedef struct _PhonePlugin
 	GtkWidget * pr_vibrator;
 } Profiles;
 
+/* constants */
+#define PROFILE_VIBRATOR_LOOP	500
+
 /* variables */
 static ProfileDefinition _profiles_definitions[PROFILE_TYPE_COUNT] =
 {
@@ -508,8 +511,8 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 		helper->event(helper->phone, &event);
 		if(profiles->source != 0)
 			g_source_remove(profiles->source);
-		profiles->source = g_timeout_add(500, _profiles_on_vibrate,
-				profiles);
+		profiles->source = g_timeout_add(PROFILE_VIBRATOR_LOOP,
+				_profiles_on_vibrate, profiles);
 	}
 }
 
