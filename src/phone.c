@@ -629,7 +629,7 @@ int phone_error(Phone * phone, char const * message, int ret)
 		return _error_text(message, ret);
 	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
 				PHONE_NOTIFICATION_TYPE_ERROR, NULL, message)
-			!= 0)
+			> 0)
 		return ret;
 	return _phone_error(NULL, message, ret);
 }
@@ -1178,7 +1178,7 @@ void phone_info(Phone * phone, char const * message)
 {
 	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
 				PHONE_NOTIFICATION_TYPE_INFO, NULL, message)
-			== 0)
+			<= 0)
 		_phone_info(phone, NULL, message, NULL);
 }
 
