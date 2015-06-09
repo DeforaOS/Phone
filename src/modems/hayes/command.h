@@ -58,10 +58,6 @@ void hayes_command_delete(HayesCommand * command);
 char const * hayes_command_get_answer(HayesCommand * command);
 char const * hayes_command_get_attention(HayesCommand * command);
 void * hayes_command_get_data(HayesCommand * command);
-#if 0 /* XXX no longer being used */
-char * hayes_command_get_line(HayesCommand * command,
-		char const * prefix);
-#endif
 HayesCommandPriority hayes_command_get_priority(HayesCommand * command);
 HayesCommandStatus hayes_command_get_status(HayesCommand * command);
 unsigned int hayes_command_get_timeout(HayesCommand * command);

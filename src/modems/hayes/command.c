@@ -15,9 +15,6 @@
 
 
 
-#if 0
-# include <string.h>
-#endif
 #include <System.h>
 #include "command.h"
 
@@ -114,36 +111,6 @@ void * hayes_command_get_data(HayesCommand * command)
 {
 	return command->data;
 }
-
-
-#if 0 /* XXX no longer being used */
-/* hayes_command_get_line */
-char * hayes_command_get_line(HayesCommand * command,
-		char const * prefix)
-{
-	/* FIXME also return the other lines matching */
-	char * ret;
-	char const * answer = command->answer;
-	size_t len;
-	char * p;
-
-	if(prefix == NULL)
-		return NULL;
-	len = strlen(prefix);
-	while(answer != NULL)
-		if(strncmp(answer, prefix, len) == 0 && strncmp(&answer[len],
-					": ", 2) == 0)
-		{
-			if((ret = string_new(&answer[len + 2])) != NULL
-					&& (p = strchr(ret, '\n')) != NULL)
-				*p = '\0';
-			return ret;
-		}
-		else if((answer = strchr(answer, '\n')) != NULL)
-			answer++;
-	return NULL;
-}
-#endif
 
 
 /* hayes_command_get_priority */
