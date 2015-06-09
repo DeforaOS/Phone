@@ -2695,7 +2695,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	content = va_arg(ap, char const *);
 	va_end(ap);
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %u, %s\n", __func__,
+	fprintf(stderr, "DEBUG: %s() %u, %s, %s, %lu, %s\n", __func__,
 			phone->re_index, name, number, date, content);
 #endif
 	if(phone->re_window == NULL)
