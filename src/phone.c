@@ -1944,7 +1944,9 @@ static void _show_code_window(Phone * phone)
 {
 	GtkWidget * vbox;
 	GtkWidget * hbox; /* XXX create in phone_create_dialpad? */
+#if !GTK_CHECK_VERSION(2, 16, 0)
 	GtkWidget * widget;
+#endif
 
 	phone->en_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #if GTK_CHECK_VERSION(2, 6, 0)
