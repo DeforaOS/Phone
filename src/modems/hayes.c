@@ -3237,6 +3237,8 @@ static void _on_code_clip(HayesChannel * channel, char const * answer)
 
 
 /* on_code_cme_error */
+static void _cme_error_registration(HayesChannel * channel, char const * error);
+
 static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 {
 	Hayes * hayes = channel->hayes;
@@ -3254,6 +3256,10 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 		return;
 	switch(u)
 	{
+		case 10:  /* SIM not inserted */
+			/* FIXME also display an icon in the UI */
+			_cme_error_registration(channel, "SIM not inserted");
+			break;
 		case 11: /* SIM PIN required */
 			_on_code_cpin(channel, "SIM PIN");
 			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
@@ -3317,18 +3323,43 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 				= MODEM_REGISTRATION_STATUS_DENIED;
 			hayes->helper->event(hayes->helper->modem, event);
 			break;
+		case 262: /* SIM blocked */
+			_cme_error_registration(channel, "SIM blocked");
+			break;
 		default:  /* FIXME implement the rest */
 		case 3:   /* Operation not allowed */
 		case 4:   /* Operation not supported */
-		case 10:  /* SIM not inserted */
 		case 16:  /* Incorrect SIM PIN/PUK */
 		case 20:  /* Memory full */
 		case 107: /* GPRS services not allowed */
 		case 148: /* Unspecified GPRS error */
-		case 262: /* SIM blocked */
 		case 263: /* Invalid block */
 			break;
 	}
+}
+
+static void _cme_error_registration(HayesChannel * channel, char const * error)
+{
+	Hayes * hayes = channel->hayes;
+	ModemEvent * event;
+	ModemPluginHelper * helper = hayes->helper;
+
+	/* update the authentication status */
+	event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
+	free(channel->authentication_error);
+	channel->authentication_error = NULL;
+	event->authentication.error = error;
+	/* report the registration error */
+	event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
+	free(channel->registration_media);
+	channel->registration_media = NULL;
+	event->registration.media = NULL;
+	free(channel->registration_operator);
+	channel->registration_operator = NULL;
+	event->registration._operator = NULL;
+	event->registration.signal = 0.0 / 0.0;
+	event->registration.status = MODEM_REGISTRATION_STATUS_DENIED;
+	helper->event(helper->modem, event);
 }
 
 
