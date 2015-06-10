@@ -3294,12 +3294,12 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			event->registration._operator
 				= channel->registration_operator;
 			event->registration.signal = 0.0 / 0.0;
-			hayes->helper->event(hayes->helper->modem, event);
+			helper->event(helper->modem, event);
 			break;
 		case 31:  /* Network timeout */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			event->registration.signal = 0.0 / 0.0;
-			hayes->helper->event(hayes->helper->modem, event);
+			helper->event(helper->modem, event);
 			break;
 		case 32: /* emergency calls only */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
@@ -3321,7 +3321,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			event->registration.status
 				= MODEM_REGISTRATION_STATUS_DENIED;
-			hayes->helper->event(hayes->helper->modem, event);
+			helper->event(helper->modem, event);
 			break;
 		case 262: /* SIM blocked */
 			_cme_error_registration(channel, "SIM blocked");
