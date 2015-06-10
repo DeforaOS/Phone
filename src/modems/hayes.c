@@ -3288,13 +3288,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 						_on_queue_timeout, channel);
 			break;
 		case 30:  /* No network service */
-			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
-			free(channel->registration_operator);
-			channel->registration_operator = NULL;
-			event->registration._operator
-				= channel->registration_operator;
-			event->registration.signal = 0.0 / 0.0;
-			helper->event(helper->modem, event);
+			_cme_error_registration(channel, "No network service");
 			break;
 		case 31:  /* Network timeout */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
