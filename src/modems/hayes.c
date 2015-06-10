@@ -850,8 +850,8 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 			/* report GPRS registration */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(channel->registration_media);
-			channel->registration_media = strdup("GPRS");
-			event->registration.media = channel->registration_media;
+			channel->registration_media = NULL;
+			event->registration.media = "GPRS";
 			hayes->helper->event(hayes->helper->modem, event);
 			break;
 	}
@@ -3120,11 +3120,11 @@ static void _on_code_cgatt(HayesChannel * channel, char const * answer)
 	if(sscanf(answer, "%u", &u) != 1)
 		return;
 	free(channel->registration_media);
+	channel->registration_media = NULL;
 	if(u == 1)
-		channel->registration_media = strdup("GPRS");
+		event->registration.media = "GPRS";
 	else
-		channel->registration_media = NULL;
-	event->registration.media = channel->registration_media;
+		event->registration.media = NULL;
 	/* this is usually worth an event */
 	hayes->helper->event(hayes->helper->modem, event);
 }
@@ -3301,9 +3301,8 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			channel->registration_media = NULL;
 			event->registration.media = NULL;
 			free(channel->registration_operator);
-			channel->registration_operator = strdup("SOS");
-			event->registration._operator
-				= channel->registration_operator;
+			channel->registration_operator = NULL;
+			event->registration._operator = "SOS";
 			event->registration.status
 				= MODEM_REGISTRATION_STATUS_REGISTERED;
 			helper->event(helper->modem, event);
