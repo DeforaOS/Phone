@@ -296,7 +296,8 @@ static int _phone_config_set_type(Phone * phone, char const * type,
 		char const * section, char const * variable,
 		char const * value);
 
-static GtkWidget * _phone_create_button(char const * icon, char const * label);
+static GtkWidget * _phone_create_button(char const * icon, char const * label,
+		gboolean mnemonic);
 static GtkWidget * _phone_create_dialpad(Phone * phone,
 		char const * button1_image, char const * button1_label,
 		GCallback button1_callback,
@@ -305,6 +306,8 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 		GCallback button_callback);
 static GtkWidget * _phone_create_progress(GtkWidget * parent,
 		char const * text);
+static GtkWidget * _phone_create_toggle_button(char const * icon,
+		char const * label, gboolean mnemonic);
 
 static int _phone_confirm(Phone * phone, GtkWidget * window,
 		char const * message);
@@ -1820,17 +1823,20 @@ static void _show_call_window(Phone * phone)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	/* answer */
-	phone->ca_answer = _phone_create_button("call-start", _("_Answer"));
+	phone->ca_answer = _phone_create_button("call-start", _("_Answer"),
+			TRUE);
 	g_signal_connect_swapped(phone->ca_answer, "clicked", G_CALLBACK(
 				on_phone_call_answer), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_answer, TRUE, TRUE, 0);
 	/* hangup */
-	phone->ca_hangup = _phone_create_button("call-stop", _("_Hangup"));
+	phone->ca_hangup = _phone_create_button("call-stop", _("_Hangup"),
+			TRUE);
 	g_signal_connect_swapped(phone->ca_hangup, "clicked", G_CALLBACK(
 				on_phone_call_hangup), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_hangup, TRUE, TRUE, 0);
 	/* reject */
-	phone->ca_reject = _phone_create_button("call-stop", _("_Reject"));
+	phone->ca_reject = _phone_create_button("call-stop", _("_Reject"),
+			TRUE);
 	g_signal_connect_swapped(phone->ca_reject, "clicked", G_CALLBACK(
 				on_phone_call_reject), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_reject, TRUE, TRUE, 0);
@@ -1860,25 +1866,19 @@ static void _show_call_window(Phone * phone)
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* speaker mode */
-	phone->ca_speaker = gtk_toggle_button_new_with_label(_("_Loudspeaker"));
-	gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
-			gtk_image_new_from_icon_name("stock_volume-max",
-				GTK_ICON_SIZE_BUTTON));
+	phone->ca_speaker = _phone_create_toggle_button("stock_volume-max",
+			_("_Loudspeaker"), TRUE);
 	g_signal_connect(phone->ca_speaker, "toggled", G_CALLBACK(
 				on_phone_call_speaker), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_speaker, TRUE, TRUE, 0);
 	/* mute microphone */
-	phone->ca_mute = gtk_toggle_button_new_with_label(_("Mute microphone"));
-	gtk_button_set_image(GTK_BUTTON(phone->ca_mute),
-			gtk_image_new_from_icon_name("audio-input-microphone",
-				GTK_ICON_SIZE_BUTTON));
+	phone->ca_mute = _phone_create_toggle_button("audio-input-microphone",
+			_("_Mute microphone"), TRUE);
 	g_signal_connect(phone->ca_mute, "toggled", G_CALLBACK(
 				on_phone_call_mute), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_mute, TRUE, TRUE, 0);
 	/* show dialer */
-	widget = gtk_button_new_with_label(_("Show dialer"));
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
-				"input-dialpad", GTK_ICON_SIZE_BUTTON));
+	widget = _phone_create_button("input-dialpad", _("Show dialer"), FALSE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_call_show_dialer), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -1981,9 +1981,7 @@ static void _show_code_window(Phone * phone)
 	g_signal_connect_swapped(phone->en_entry, "icon-press", G_CALLBACK(
 				on_phone_code_backspace), phone);
 #else
-	widget = gtk_button_new();
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
-				GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON));
+	widget = _phone_create_button(GTK_STOCK_GO_BACK, NULL, FALSE);
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_code_backspace), phone);
@@ -2147,17 +2145,13 @@ static void _show_dialer_window(Phone * phone)
 	g_signal_connect_swapped(phone->di_entry, "icon-press", G_CALLBACK(
 				on_phone_dialer_backspace), phone);
 #else
-	widget = gtk_button_new();
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
-				GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON));
+	widget = _phone_create_button(GTK_STOCK_GO_BACK, NULL, FALSE);
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_dialer_backspace), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
-	widget = gtk_button_new();
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
-				"stock_addressbook", GTK_ICON_SIZE_BUTTON));
+	widget = _phone_create_button("stock_addressbook", NULL, FALSE);
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_contacts_show), phone);
@@ -2994,7 +2988,7 @@ static void _show_status_window(Phone * phone)
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmissed), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(phone->st_missed_box), phone->st_lmissed,
 			TRUE, TRUE, 0);
-	widget = _phone_create_button("gnome-monitor", _("_View"));
+	widget = _phone_create_button("gnome-monitor", _("_View"), TRUE);
 	gtk_size_group_add_widget(group2, widget);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_status_on_logs_view), phone);
@@ -3017,7 +3011,7 @@ static void _show_status_window(Phone * phone)
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmessages), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(phone->st_messages_box), phone->st_lmessages,
 			TRUE, TRUE, 0);
-	widget = _phone_create_button("phone-inbox", _("_Read"));
+	widget = _phone_create_button("phone-inbox", _("_Read"), TRUE);
 	gtk_size_group_add_widget(group2, widget);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_status_on_messages_read), phone);
@@ -3442,17 +3436,13 @@ static void _show_write_window(Phone * phone)
 	g_signal_connect_swapped(phone->wr_entry, "icon-press", G_CALLBACK(
 				on_phone_write_backspace), phone);
 #else
-	widget = gtk_button_new();
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_stock(
-				GTK_STOCK_GO_BACK, GTK_ICON_SIZE_BUTTON));
+	widget = _phone_create_button(GTK_STOCK_GO_BACK, NULL, FALSE);
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_write_backspace), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #endif
-	widget = gtk_button_new();
-	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
-				"stock_addressbook", GTK_ICON_SIZE_BUTTON));
+	widget = _phone_create_button("stock_addressbook", NULL, FALSE);
 	gtk_button_set_relief(GTK_BUTTON(widget), GTK_RELIEF_NONE);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_contacts_show), phone);
@@ -3834,14 +3824,19 @@ static int _phone_config_set_type(Phone * phone, char const * type,
 
 
 /* phone_create_button */
-static GtkWidget * _phone_create_button(char const * icon, char const * label)
+static GtkWidget * _phone_create_button(char const * icon, char const * label,
+		gboolean mnemonic)
 {
-	GtkWidget * ret;
+	GtkWidget * button;
 
-	ret = gtk_button_new_with_mnemonic(label);
-	gtk_button_set_image(GTK_BUTTON(ret), gtk_image_new_from_icon_name(icon,
-				GTK_ICON_SIZE_BUTTON));
-	return ret;
+	if(label == NULL)
+		button = gtk_button_new();
+	else
+		button = mnemonic ? gtk_button_new_with_mnemonic(label)
+			: gtk_button_new_with_label(label);
+	gtk_button_set_image(GTK_BUTTON(button), gtk_image_new_from_icon_name(
+				icon, GTK_ICON_SIZE_BUTTON));
+	return button;
 }
 
 
@@ -3885,11 +3880,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 	table = gtk_table_new(5, 6, TRUE);
 #endif
 	/* call */
-	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name(button1_image,
-			GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(button), image);
-	gtk_button_set_label(GTK_BUTTON(button), button1_label);
+	button = _phone_create_button(button1_image, button1_label, FALSE);
 	g_signal_connect_swapped(button, "clicked", button1_callback, phone);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_grid_attach(GTK_GRID(table), button, 0, 0, 3, 1);
@@ -3897,11 +3888,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 	gtk_table_attach(GTK_TABLE(table), button, 0, 3, 0, 1,
 			GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 #endif
-	button = gtk_button_new();
-	image = gtk_image_new_from_icon_name(button2_image,
-			GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(button), image);
-	gtk_button_set_label(GTK_BUTTON(button), button2_label);
+	button = _phone_create_button(button2_image, button2_label, FALSE);
 	g_signal_connect_swapped(button, "clicked", button2_callback, phone);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	gtk_grid_attach(GTK_GRID(table), button, 3, 0, 3, 1);
@@ -3970,6 +3957,23 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	gtk_widget_show_all(vbox);
 	gtk_widget_show(dialog);
 	return dialog;
+}
+
+
+/* phone_create_toggle_button */
+static GtkWidget * _phone_create_toggle_button(char const * icon,
+		char const * label, gboolean mnemonic)
+{
+	GtkWidget * button;
+
+	if(label == NULL)
+		button = gtk_button_new();
+	else
+		button = mnemonic ? gtk_toggle_button_new_with_mnemonic(label)
+			: gtk_toggle_button_new_with_label(label);
+	gtk_button_set_image(GTK_BUTTON(button), gtk_image_new_from_icon_name(
+				icon, GTK_ICON_SIZE_BUTTON));
+	return button;
 }
 
 
