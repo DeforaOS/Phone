@@ -1860,7 +1860,7 @@ static void _show_call_window(Phone * phone)
 	gtk_box_pack_start(GTK_BOX(hbox), phone->ca_volume, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* speaker mode */
-	phone->ca_speaker = gtk_toggle_button_new_with_label(_("Loudspeaker"));
+	phone->ca_speaker = gtk_toggle_button_new_with_label(_("_Loudspeaker"));
 	gtk_button_set_image(GTK_BUTTON(phone->ca_speaker),
 			gtk_image_new_from_icon_name("stock_volume-max",
 				GTK_ICON_SIZE_BUTTON));
