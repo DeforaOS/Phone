@@ -1878,7 +1878,7 @@ static void _show_call_window(Phone * phone)
 	/* show dialer */
 	widget = gtk_button_new_with_label(_("Show dialer"));
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
-				"phone-gprs", GTK_ICON_SIZE_BUTTON));
+				"input-dialpad", GTK_ICON_SIZE_BUTTON));
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				on_phone_call_show_dialer), phone);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
