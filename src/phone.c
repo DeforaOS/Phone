@@ -376,9 +376,9 @@ static const struct
 {
 	{ "stock_select-all",	N_("All"),	N_("To/From"),
 		_phone_log_filter_all },
-	{ GTK_STOCK_GO_DOWN,	N_("Incoming"),	N_("From"),
+	{ "network-receive",	N_("Incoming"),	N_("From"),
 		_phone_log_filter_incoming },
-	{ GTK_STOCK_GO_UP,	N_("Outgoing"),	N_("To"),
+	{ "network-transmit",	N_("Outgoing"),	N_("To"),
 		_phone_log_filter_outgoing }
 };
 
