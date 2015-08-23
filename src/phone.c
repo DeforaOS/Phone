@@ -2206,7 +2206,7 @@ static void _show_logs_window(Phone * phone)
 	phone->lo_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_default_size(GTK_WINDOW(phone->lo_window), 200, 300);
 #if GTK_CHECK_VERSION(2, 6, 0)
-	gtk_window_set_icon_name(GTK_WINDOW(phone->lo_window), "logviewer");
+	gtk_window_set_icon_name(GTK_WINDOW(phone->lo_window), "gnome-monitor");
 #endif
 	gtk_window_set_title(GTK_WINDOW(phone->lo_window), _("Phone logs"));
 	g_signal_connect(phone->lo_window, "delete-event", G_CALLBACK(
@@ -2994,7 +2994,7 @@ static void _show_status_window(Phone * phone)
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmissed), 0.0, 0.5);
 	gtk_box_pack_start(GTK_BOX(phone->st_missed_box), phone->st_lmissed,
 			TRUE, TRUE, 0);
-	widget = _phone_create_button("logviewer", _("_View"));
+	widget = _phone_create_button("gnome-monitor", _("_View"));
 	gtk_size_group_add_widget(group2, widget);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_status_on_logs_view), phone);
