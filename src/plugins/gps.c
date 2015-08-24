@@ -98,12 +98,10 @@ static void _gps_settings(GPS * gps)
 
 static void _settings_window(GPS * gps)
 {
-	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * widget;
 
-	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	gps->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(gps->window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(gps->window), 200, 300);
