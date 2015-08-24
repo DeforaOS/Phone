@@ -3,6 +3,6 @@ Name=Phone log
 Comment=Telephony activity log
 TryExec=phonectl
 Exec=phonectl -L
-Icon=logviewer
+Icon=gnome-monitor
 Type=Application
 Categories=Network;Telephony;GTK;
