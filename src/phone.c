@@ -324,6 +324,8 @@ static gboolean _phone_log_filter_incoming(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
 static gboolean _phone_log_filter_outgoing(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data);
+static void _phone_log_get_iter(Phone * phone, GtkWidget * view,
+		GtkTreeIter * iter);
 static GtkWidget * _phone_log_get_view(Phone * phone);
 
 static gboolean _phone_messages_filter_all(GtkTreeModel * model,
@@ -1306,6 +1308,7 @@ int phone_log_call_selected(Phone * phone)
 		return -1;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return -1;
+	_phone_log_get_iter(phone, view, &iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
 			PHONE_LOG_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
@@ -1336,6 +1339,7 @@ void phone_log_write_selected(Phone * phone)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
+	_phone_log_get_iter(phone, view, &iter);
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->lo_store), &iter,
 			PHONE_LOG_COLUMN_NUMBER, &number, -1);
 	if(number == NULL)
@@ -2248,8 +2252,7 @@ static void _show_logs_window(Phone * phone)
 					filter),
 				_phone_log_filters[i].filter, phone, NULL);
 		sort = gtk_tree_model_sort_new_with_model(filter);
-		view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
-					phone->lo_store));
+		view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(sort));
 		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(view), TRUE);
 		g_signal_connect_swapped(view, "row-activated", G_CALLBACK(
 					on_phone_log_activated), phone);
@@ -4063,6 +4066,22 @@ static gboolean _phone_log_filter_all(GtkTreeModel * model, GtkTreeIter * iter,
 
 	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return TRUE;
+}
+
+
+/* phone_log_get_iter */
+static void _phone_log_get_iter(Phone * phone, GtkWidget * view,
+		GtkTreeIter * iter)
+{
+	GtkTreeModel * model;
+	GtkTreeIter p;
+
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
+				model), &p, iter);
+	model = gtk_tree_model_sort_get_model(GTK_TREE_MODEL_SORT(model));
+	gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(
+				model), iter, &p);
 }
 
 
