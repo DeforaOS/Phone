@@ -103,6 +103,7 @@ void phone_log_write_selected(Phone * phone);
 int phone_messages_call_selected(Phone * phone);
 void phone_messages_delete_selected(Phone * phone);
 void phone_messages_read_selected(Phone * phone);
+void phone_messages_reply_selected(Phone * phone);
 void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 		time_t date, ModemMessageFolder folder,
 		ModemMessageStatus status, size_t length, char const * content);

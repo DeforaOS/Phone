@@ -1435,6 +1435,27 @@ void phone_messages_read_selected(Phone * phone)
 }
 
 
+/* phone_messages_reply_selected */
+void phone_messages_reply_selected(Phone * phone)
+{
+	GtkWidget * view;
+	GtkTreeSelection * treesel;
+	GtkTreeIter iter;
+	char * number;
+
+	view = _phone_messages_get_view(phone);
+	if((treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(view))) == NULL)
+		return;
+	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
+		return;
+	_phone_messages_get_iter(phone, view, &iter);
+	gtk_tree_model_get(GTK_TREE_MODEL(phone->me_store), &iter,
+			PHONE_MESSAGE_COLUMN_NUMBER, &number, -1);
+	phone_messages_write(phone, number, "");
+	g_free(number);
+}
+
+
 /* phone_messages_set */
 static char * _messages_set_summary(size_t length, char const * content);
 

@@ -341,7 +341,7 @@ void on_phone_messages_reply(gpointer data)
 {
 	Phone * phone = data;
 
-	/* FIXME implement */
+	phone_messages_reply_selected(phone);
 }
 
 
