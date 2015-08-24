@@ -3868,7 +3868,6 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 	};
 	GtkWidget * table;
 	GtkWidget * button;
-	GtkWidget * image;
 	GtkWidget * label;
 	int i;
 
