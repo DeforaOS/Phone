@@ -397,6 +397,7 @@ static int _open_setup_read(VideoPhonePlugin * video);
 
 static gboolean _video_on_open(gpointer data)
 {
+	const int timeout = 10000;
 	VideoPhonePlugin * video = data;
 	PhonePluginHelper * helper = video->helper;
 
@@ -409,7 +410,7 @@ static gboolean _video_on_open(gpointer data)
 				"Could not open the video capture device",
 				strerror(errno));
 		helper->error(helper->phone, error_get(NULL), 1);
-		video->source = g_timeout_add(10000, _video_on_open, video);
+		video->source = g_timeout_add(timeout, _video_on_open, video);
 		return FALSE;
 	}
 	if(_open_setup(video) != 0)
@@ -417,7 +418,7 @@ static gboolean _video_on_open(gpointer data)
 		helper->error(helper->phone, error_get(NULL), 1);
 		close(video->fd);
 		video->fd = -1;
-		video->source = g_timeout_add(10000, _video_on_open, video);
+		video->source = g_timeout_add(timeout, _video_on_open, video);
 		return FALSE;
 	}
 	video->source = 0;
