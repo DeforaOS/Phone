@@ -3003,13 +3003,21 @@ static void _show_status_window(Phone * phone)
 	phone->st_missed_box = gtk_hbox_new(FALSE, 4);
 #endif
 	phone->st_lmissed_count = gtk_label_new("");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(phone->st_lmissed_count, "halign", GTK_ALIGN_END, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmissed_count), 1.0, 0.5);
+#endif
 	gtk_widget_modify_font(phone->st_lmissed_count, phone->bold);
 	gtk_size_group_add_widget(group, phone->st_lmissed_count);
 	gtk_box_pack_start(GTK_BOX(phone->st_missed_box),
 			phone->st_lmissed_count, FALSE, TRUE, 0);
 	phone->st_lmissed = gtk_label_new("");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(phone->st_lmissed, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmissed), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(phone->st_missed_box), phone->st_lmissed,
 			TRUE, TRUE, 0);
 	widget = _phone_create_button("gnome-monitor", _("_View"), TRUE);
@@ -3026,13 +3034,21 @@ static void _show_status_window(Phone * phone)
 	phone->st_messages_box = gtk_hbox_new(FALSE, 4);
 #endif
 	phone->st_lmessages_count = gtk_label_new("");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(phone->st_lmessages_count, "halign", GTK_ALIGN_END, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmessages_count), 1.0, 0.5);
+#endif
 	gtk_widget_modify_font(phone->st_lmessages_count, phone->bold);
 	gtk_size_group_add_widget(group, phone->st_lmessages_count);
 	gtk_box_pack_start(GTK_BOX(phone->st_messages_box),
 			phone->st_lmessages_count, FALSE, TRUE, 0);
 	phone->st_lmessages = gtk_label_new("");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(phone->st_lmessages, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmessages), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(phone->st_messages_box), phone->st_lmessages,
 			TRUE, TRUE, 0);
 	widget = _phone_create_button("phone-inbox", _("_Read"), TRUE);
@@ -3187,7 +3203,11 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			label = string_new_append(config->title, ": ", NULL);
 			widget = gtk_label_new(label);
 			string_delete(label);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 			gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 			gtk_size_group_add_widget(group, widget);
 			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
 					0);
@@ -3214,7 +3234,11 @@ static GtkWidget * _system_widget(Phone * phone, ModemConfig * config,
 			label = string_new_append(config->title, ": ", NULL);
 			widget = gtk_label_new(label);
 			string_delete(label);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 			gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 			gtk_size_group_add_widget(group, widget);
 			gtk_box_pack_start(GTK_BOX(ret), widget, FALSE, TRUE,
 					0);
@@ -3967,7 +3991,11 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	vbox = GTK_DIALOG(dialog)->vbox;
 #endif
 	widget = gtk_label_new(text);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* progress bar */
 	widget = gtk_progress_bar_new();
@@ -4341,7 +4369,11 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		hbox = gtk_hbox_new(FALSE, 4);
 #endif
 		widget = gtk_label_new(_("Name: "));
+#if GTK_CHECK_VERSION(3, 0, 0)
+		g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		phone->co_name = gtk_entry_new();
@@ -4354,7 +4386,11 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		hbox = gtk_hbox_new(FALSE, 4);
 #endif
 		widget = gtk_label_new(_("Number: "));
+#if GTK_CHECK_VERSION(3, 0, 0)
+		g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 		gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 		gtk_size_group_add_widget(group, widget);
 		gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 		phone->co_number = gtk_entry_new();

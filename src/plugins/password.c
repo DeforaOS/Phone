@@ -135,7 +135,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	hbox = gtk_hbox_new(FALSE, 0);
 #endif
 	widget = gtk_label_new("Name: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(2, 24, 0)
@@ -155,7 +159,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	hbox = gtk_hbox_new(FALSE, 0);
 #endif
 	widget = gtk_label_new("Old password: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	password->oldpassword = gtk_entry_new();
@@ -169,7 +177,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	hbox = gtk_hbox_new(FALSE, 0);
 #endif
 	widget = gtk_label_new("New password: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	password->newpassword = gtk_entry_new();
@@ -183,7 +195,11 @@ static void _password_settings(PasswordPhonePlugin * password)
 	hbox = gtk_hbox_new(FALSE, 0);
 #endif
 	widget = gtk_label_new("Confirm: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	password->newpassword2 = gtk_entry_new();

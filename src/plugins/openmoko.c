@@ -538,7 +538,11 @@ static void _openmoko_settings(Openmoko * openmoko)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Bluetooth");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	openmoko->hw_bluetooth = gtk_toggle_button_new_with_label("OFF");
 	g_signal_connect(openmoko->hw_bluetooth, "toggled", G_CALLBACK(
@@ -553,7 +557,11 @@ static void _openmoko_settings(Openmoko * openmoko)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("GPS");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
 	openmoko->hw_gps = gtk_toggle_button_new_with_label("OFF");
 	g_signal_connect(openmoko->hw_gps, "toggled", G_CALLBACK(

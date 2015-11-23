@@ -489,14 +489,22 @@ static void _oss_settings(OSS * oss)
 #endif
 	/* devices */
 	widget = gtk_label_new("Sound device:");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_file_chooser_button_new("Set the sound device",
 			GTK_FILE_CHOOSER_ACTION_OPEN);
 	oss->sound = widget;
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_label_new("Mixer device:");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	widget = gtk_file_chooser_button_new("Set the mixer device",
 			GTK_FILE_CHOOSER_ACTION_OPEN);

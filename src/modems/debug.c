@@ -124,11 +124,19 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Status:");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	debug->status = gtk_label_new("initialized");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(debug->status, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(debug->status), 0.0, 0.5);
+#endif
 	gtk_box_pack_start(GTK_BOX(hbox), debug->status, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* operator */
@@ -138,7 +146,11 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Operator: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	debug->operator = gtk_entry_new();
@@ -172,7 +184,11 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Number: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	debug->ca_number = gtk_entry_new();
@@ -184,7 +200,11 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Direction: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -230,7 +250,11 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Number: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	debug->me_number = gtk_entry_new();
@@ -242,7 +266,11 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Folder: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -299,7 +327,11 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Notification: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	debug->notification = gtk_entry_new();

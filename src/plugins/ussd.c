@@ -237,7 +237,11 @@ static void _settings_window(USSD * ussd)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Operator:");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -262,7 +266,11 @@ static void _settings_window(USSD * ussd)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new("Code:");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -279,7 +287,11 @@ static void _settings_window(USSD * ussd)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	widget = gtk_label_new(NULL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	widget = gtk_button_new_with_label("Send request");
