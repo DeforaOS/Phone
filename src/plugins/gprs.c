@@ -576,7 +576,7 @@ static void _settings_on_connect(gpointer data)
 	_settings_on_apply(gprs);
 	res = gprs->connected ? _gprs_disconnect(gprs) : _gprs_connect(gprs);
 	if(res != 0)
-		gprs->helper->error(gprs->helper->phone, error_get(), 1);
+		gprs->helper->error(gprs->helper->phone, error_get(NULL), 1);
 }
 
 #ifdef PROGNAME
@@ -742,8 +742,8 @@ static int _gprs_connect(GPRS * gprs)
 	request.call.call_type = MODEM_CALL_TYPE_DATA;
 	request.call.number = "*99***1#"; /* XXX specific to GSM/GPRS */
 	if(gprs->helper->request(gprs->helper->phone, &request) != 0)
-		return -gprs->helper->error(gprs->helper->phone, error_get(),
-				1);
+		return -gprs->helper->error(gprs->helper->phone,
+				error_get(NULL), 1);
 	return 0;
 }
 

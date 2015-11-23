@@ -1233,8 +1233,8 @@ static int _hayes_queue_command_full(Hayes * hayes,
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__, attention);
 #endif
 	if((command = hayes_command_new(attention)) == NULL)
-		return -hayes->helper->error(hayes->helper->modem, error_get(),
-				1);
+		return -hayes->helper->error(hayes->helper->modem,
+				error_get(NULL), 1);
 	hayes_command_set_callback(command, callback, hayes);
 	if(_hayes_queue_command(hayes, command) != 0)
 	{
@@ -2090,7 +2090,7 @@ static gboolean _on_reset(gpointer data)
 			event->status.status = MODEM_STATUS_UNAVAILABLE;
 			hayes->helper->event(hayes->helper->modem, event);
 		}
-		hayes->helper->error(NULL, error_get(), 1);
+		hayes->helper->error(NULL, error_get(NULL), 1);
 		if(hayes->retry > 0)
 			hayes->source = g_timeout_add(hayes->retry, _on_reset,
 					channel);
@@ -2238,7 +2238,7 @@ static unsigned int _reset_configure_baudrate(Hayes * hayes,
 			error_set("%u%s%u%s", baudrate,
 					": Unsupported baudrate (using ",
 					115200, ")");
-			hayes->helper->error(NULL, error_get(), 1);
+			hayes->helper->error(NULL, error_get(NULL), 1);
 			return B115200;
 	}
 }
@@ -2276,7 +2276,7 @@ static gboolean _reset_settle_command(HayesChannel * channel,
 #endif
 	if((command = hayes_command_new(string)) == NULL)
 	{
-		hayes->helper->error(hayes->helper->modem, error_get(), 1);
+		hayes->helper->error(hayes->helper->modem, error_get(NULL), 1);
 		return FALSE;
 	}
 	hayes_command_set_callback(command, _on_reset_settle_callback, channel);
@@ -2284,7 +2284,7 @@ static gboolean _reset_settle_command(HayesChannel * channel,
 	hayes_command_set_timeout(command, 500);
 	if(_hayes_queue_command(hayes, channel, command) != 0)
 	{
-		hayes->helper->error(hayes->helper->modem, error_get(), 1);
+		hayes->helper->error(hayes->helper->modem, error_get(NULL), 1);
 		hayes_command_delete(command);
 	}
 	return FALSE;

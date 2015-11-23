@@ -408,13 +408,13 @@ static gboolean _video_on_open(gpointer data)
 		error_set_code(1, "%s: %s (%s)", video->device,
 				"Could not open the video capture device",
 				strerror(errno));
-		helper->error(helper->phone, error_get(), 1);
+		helper->error(helper->phone, error_get(NULL), 1);
 		video->source = g_timeout_add(10000, _video_on_open, video);
 		return FALSE;
 	}
 	if(_open_setup(video) != 0)
 	{
-		helper->error(helper->phone, error_get(), 1);
+		helper->error(helper->phone, error_get(NULL), 1);
 		close(video->fd);
 		video->fd = -1;
 		video->source = g_timeout_add(10000, _video_on_open, video);

@@ -173,7 +173,7 @@ static int _event_audio_play(OSS * oss, char const * sample)
 	char buf[128];
 
 	if((s = string_new_append(path, "/", sample, ext, NULL)) == NULL)
-		return -oss->helper->error(NULL, error_get(), 1);
+		return -oss->helper->error(NULL, error_get(NULL), 1);
 	/* play the audio file */
 	if(_event_audio_play_file(oss, s) != 0)
 	{

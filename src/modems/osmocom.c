@@ -366,7 +366,7 @@ static unsigned int _reset_baudrate(ModemPlugin * modem, unsigned int baudrate)
 		default:
 			error_set("%u%s", baudrate,
 					"Unsupported baudrate (using 115200)");
-			modem->helper->error(NULL, error_get(), 1);
+			modem->helper->error(NULL, error_get(NULL), 1);
 			return B115200;
 	}
 }

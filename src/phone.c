@@ -493,7 +493,7 @@ Phone * phone_new(char const * plugin, int retry)
 	/* check errors */
 	if(phone->modem == NULL)
 	{
-		phone_error(NULL, error_get(), 1);
+		phone_error(NULL, error_get(NULL), 1);
 		phone_delete(phone);
 		return NULL;
 	}
@@ -1206,17 +1206,17 @@ int phone_load(Phone * phone, char const * plugin)
 	if(_phone_plugin_is_enabled(phone, plugin))
 		return 0;
 	if((p = plugin_new(LIBDIR, PACKAGE, "plugins", plugin)) == NULL)
-		return -phone_error(NULL, error_get(), 1);
+		return -phone_error(NULL, error_get(NULL), 1);
 	if((pd = plugin_lookup(p, "plugin")) == NULL)
 	{
 		plugin_delete(p);
-		return -phone_error(NULL, error_get(), 1);
+		return -phone_error(NULL, error_get(NULL), 1);
 	}
 	if(pd->init == NULL || pd->destroy == NULL
 			|| (pp = pd->init(&phone->helper)) == NULL)
 	{
 		plugin_delete(p);
-		return -phone_error(NULL, error_get(), 1);
+		return -phone_error(NULL, error_get(NULL), 1);
 	}
 	if((q = realloc(phone->plugins, sizeof(*q) * (phone->plugins_cnt + 1)))
 			== NULL)
@@ -3812,7 +3812,7 @@ static int _phone_config_save(Phone * phone)
 	if((filename = _phone_config_filename()) == NULL)
 		return -1; /* XXX warn the user */
 	if(config_save(phone->config, filename) != 0)
-		ret = -phone_error(phone, error_get(), 1);
+		ret = -phone_error(phone, error_get(NULL), 1);
 	free(filename);
 	return ret;
 }
