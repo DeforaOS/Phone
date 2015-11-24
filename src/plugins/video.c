@@ -62,7 +62,7 @@ typedef struct _PhonePlugin
 	struct v4l2_capability cap;
 	struct v4l2_format format;
 
-	/* IO channel */
+	/* I/O channel */
 	GIOChannel * channel;
 
 	/* input data */
@@ -81,10 +81,15 @@ typedef struct _PhonePlugin
 
 	/* widgets */
 	GtkWidget * window;
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	GdkGC * gc;
+#endif
 	GtkWidget * area;
 	GtkAllocation area_allocation;
+	GdkPixbuf * pixbuf;
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	GdkPixmap * pixmap;
+#endif
 } VideoPhonePlugin;
 
 
@@ -106,11 +111,17 @@ static gboolean _video_on_can_mmap(GIOChannel * channel, GIOCondition condition,
 		gpointer data);
 static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 		gpointer data);
-static gboolean _video_on_closex(gpointer data);
+#if GTK_CHECK_VERSION(3, 0, 0)
+static gboolean _video_on_drawing_area_draw(GtkWidget * widget, cairo_t * cr,
+		gpointer data);
+static void _video_on_drawing_area_size_allocate(GtkWidget * widget,
+		GdkRectangle * allocation, gpointer data);
+#else
 static gboolean _video_on_drawing_area_configure(GtkWidget * widget,
 		GdkEventConfigure * event, gpointer data);
 static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
 		GdkEventExpose * event, gpointer data);
+#endif
 static gboolean _video_on_open(gpointer data);
 static gboolean _video_on_refresh(gpointer data);
 
@@ -132,6 +143,8 @@ PhonePluginDefinition plugin =
 /* private */
 /* functions */
 /* video_init */
+static gboolean _init_on_closex(gpointer data);
+
 static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 {
 	VideoPhonePlugin * video;
@@ -166,7 +179,9 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	video->rgb_buffer_cnt = 0;
 	video->yuv_amp = 255;
 	video->window = NULL;
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	video->gc = NULL;
+#endif
 	/* check for errors */
 	if((video->device = string_new(device)) == NULL)
 	{
@@ -180,21 +195,42 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	video->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(video->window), "Phone - Video");
 	gtk_widget_realize(video->window);
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	video->gc = gdk_gc_new(video->window->window); /* XXX */
+#endif
 	g_signal_connect_swapped(video->window, "delete-event", G_CALLBACK(
-				_video_on_closex), video);
+				_init_on_closex), video);
 	video->area = gtk_drawing_area_new();
+	video->pixbuf = NULL;
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	video->pixmap = NULL;
+#endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_signal_connect(video->area, "draw", G_CALLBACK(
+				_video_on_drawing_area_draw), video);
+	g_signal_connect(video->area, "size-allocate", G_CALLBACK(
+				_video_on_drawing_area_size_allocate), video);
+#else
 	g_signal_connect(video->area, "configure-event", G_CALLBACK(
 				_video_on_drawing_area_configure), video);
 	g_signal_connect(video->area, "expose-event", G_CALLBACK(
 				_video_on_drawing_area_expose), video);
+#endif
 	gtk_widget_set_size_request(video->area, video->format.fmt.pix.width,
 			video->format.fmt.pix.height);
 	gtk_container_add(GTK_CONTAINER(video->window), video->area);
 	gtk_widget_show_all(video->window);
 	_video_start(video);
 	return video;
+}
+
+static gboolean _init_on_closex(gpointer data)
+{
+	VideoPhonePlugin * video = data;
+
+	gtk_widget_hide(video->window);
+	_video_stop(video);
+	return TRUE;
 }
 
 
@@ -210,10 +246,12 @@ static void _video_destroy(VideoPhonePlugin * video)
 		g_io_channel_shutdown(video->channel, TRUE, NULL);
 		g_io_channel_unref(video->channel);
 	}
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	if(video->pixmap != NULL)
 		g_object_unref(video->pixmap);
 	if(video->gc != NULL)
 		g_object_unref(video->gc);
+#endif
 	if(video->window != NULL)
 		gtk_widget_destroy(video->window);
 	if(video->fd >= 0)
@@ -337,15 +375,34 @@ static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 }
 
 
-/* video_on_closex */
-static gboolean _video_on_closex(gpointer data)
+#if GTK_CHECK_VERSION(3, 0, 0)
+/* video_on_drawing_area_draw */
+static gboolean _video_on_drawing_area_draw(GtkWidget * widget, cairo_t * cr,
+		gpointer data)
 {
 	VideoPhonePlugin * video = data;
+	(void) widget;
 
-	gtk_widget_hide(video->window);
-	_video_stop(video);
+	if(video->pixbuf != NULL)
+	{
+		gdk_cairo_set_source_pixbuf(cr, video->pixbuf, 0, 0);
+		cairo_paint(cr);
+	}
 	return TRUE;
 }
+
+
+/* video_on_drawing_area_size_allocate */
+static void _video_on_drawing_area_size_allocate(GtkWidget * widget,
+		GdkRectangle * allocation, gpointer data)
+{
+	VideoPhonePlugin * video = data;
+	(void) widget;
+
+	video->area_allocation = *allocation;
+}
+
+#else
 
 
 /* video_on_drawing_area_configure */
@@ -386,6 +443,7 @@ static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
                         event->area.width, event->area.height);
         return FALSE;
 }
+#endif
 
 
 /* video_on_open */
@@ -581,16 +639,18 @@ static void _refresh_vflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf);
 static gboolean _video_on_refresh(gpointer data)
 {
 	VideoPhonePlugin * video = data;
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	GtkAllocation * allocation = &video->area_allocation;
+#endif
 	int width = video->format.fmt.pix.width;
 	int height = video->format.fmt.pix.height;
-	GdkPixbuf * pixbuf;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() 0x%x\n", __func__,
 			video->format.fmt.pix.pixelformat);
 #endif
 	_refresh_convert(video);
+#if !GTK_CHECK_VERSION(3, 0, 0)
 	if(video->hflip == FALSE
 			&& video->vflip == FALSE
 			&& width == allocation->width
@@ -600,23 +660,25 @@ static gboolean _video_on_refresh(gpointer data)
 				width, height, GDK_RGB_DITHER_NORMAL,
 				video->rgb_buffer, width * 3);
 	else
+#endif
 	{
+		if(video->pixbuf != NULL)
+			g_object_unref(video->pixbuf);
 		/* render after scaling */
-		pixbuf = gdk_pixbuf_new_from_data(video->rgb_buffer,
+		video->pixbuf = gdk_pixbuf_new_from_data(video->rgb_buffer,
 				GDK_COLORSPACE_RGB, FALSE, 8, width, height,
 				width * 3, NULL, NULL);
-		_refresh_hflip(video, &pixbuf);
-		_refresh_vflip(video, &pixbuf);
-		_refresh_scale(video, &pixbuf);
-		gdk_pixbuf_render_to_drawable(pixbuf, video->pixmap,
+		_refresh_hflip(video, &video->pixbuf);
+		_refresh_vflip(video, &video->pixbuf);
+		_refresh_scale(video, &video->pixbuf);
+#if !GTK_CHECK_VERSION(3, 0, 0)
+		gdk_pixbuf_render_to_drawable(video->pixbuf, video->pixmap,
 				video->gc, 0, 0, 0, 0, -1, -1,
 				GDK_RGB_DITHER_NORMAL, 0, 0);
-		g_object_unref(pixbuf);
+#endif
 	}
 	/* force a refresh */
-	gtk_widget_queue_draw_area(video->area, 0, 0,
-			video->area_allocation.width,
-			video->area_allocation.height);
+	gtk_widget_queue_draw(video->area);
 	video->source = g_io_add_watch(video->channel, G_IO_IN,
 			(video->buffers != NULL) ? _video_on_can_mmap
 			: _video_on_can_read, video);
