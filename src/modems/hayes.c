@@ -257,12 +257,12 @@ static void _hayes_reset(Hayes * hayes);
 static void _hayes_reset_source(guint * source);
 
 /* callbacks */
-static gboolean _on_authenticate(gpointer data);
+static gboolean _on_channel_authenticate(gpointer data);
+static gboolean _on_channel_reset(gpointer data);
+static gboolean _on_channel_timeout(gpointer data);
 static gboolean _on_queue_timeout(gpointer data);
-static gboolean _on_reset(gpointer data);
 static gboolean _on_reset_settle(gpointer data);
 static gboolean _on_reset_settle2(gpointer data);
-static gboolean _on_timeout(gpointer data);
 static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		gpointer data);
 static gboolean _on_watch_can_read_ppp(GIOChannel * source,
@@ -647,7 +647,7 @@ static int _hayes_start(Hayes * hayes, unsigned int retry)
 		return 0;
 	if(hayes->source != 0)
 		g_source_remove(hayes->source);
-	hayes->source = g_idle_add(_on_reset, &hayes->channel);
+	hayes->source = g_idle_add(_on_channel_reset, &hayes->channel);
 	return 0;
 }
 
@@ -1345,7 +1345,8 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 				_on_watch_can_write, channel);
 	_hayes_reset_source(&channel->timeout);
 	if((timeout = hayes_command_get_timeout(command)) != 0)
-		channel->timeout = g_timeout_add(timeout, _on_timeout, channel);
+		channel->timeout = g_timeout_add(timeout, _on_channel_timeout,
+				channel);
 	return 0;
 }
 
@@ -2014,8 +2015,8 @@ static void _hayes_reset_source(guint * source)
 
 
 /* callbacks */
-/* on_authenticate */
-static gboolean _on_authenticate(gpointer data)
+/* on_channel_authenticate */
+static gboolean _on_channel_authenticate(gpointer data)
 {
 	HayesChannel * channel = data;
 	Hayes * hayes = channel->hayes;
@@ -2024,7 +2025,7 @@ static gboolean _on_authenticate(gpointer data)
 	if(channel->authenticate_count++ < 10)
 	{
 		channel->authenticate_source = g_timeout_add(1000,
-				_on_authenticate, channel);
+				_on_channel_authenticate, channel);
 		/* FIXME this must stop the "checking for SIM PIN" dialog */
 		_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
 	}
@@ -2040,36 +2041,13 @@ static gboolean _on_authenticate(gpointer data)
 }
 
 
-/* on_queue_timeout */
-static gboolean _on_queue_timeout(gpointer data)
-{
-	HayesChannel * channel = data;
-	Hayes * hayes = channel->hayes;
-	HayesCommand * command;
-
-	hayes->source = 0;
-	if(channel->queue_timeout == NULL) /* nothing to send */
-		return FALSE;
-	command = channel->queue_timeout->data;
-	_hayes_queue_command(hayes, channel, command);
-	channel->queue_timeout = g_slist_remove(channel->queue_timeout,
-			command);
-	if(channel->queue_timeout != NULL)
-		hayes->source = g_timeout_add(1000, _on_queue_timeout, channel);
-	else
-		/* XXX check the registration again to be safe */
-		_hayes_request_type(hayes, channel, HAYES_REQUEST_REGISTRATION);
-	return FALSE;
-}
-
-
-/* on_reset */
+/* on_channel_reset */
 static int _reset_open(Hayes * hayes);
 static int _reset_configure(Hayes * hayes, char const * device, int fd);
 static unsigned int _reset_configure_baudrate(Hayes * hayes,
 		unsigned int baudrate);
 
-static gboolean _on_reset(gpointer data)
+static gboolean _on_channel_reset(gpointer data)
 {
 	HayesChannel * channel = data;
 	Hayes * hayes = channel->hayes;
@@ -2092,8 +2070,8 @@ static gboolean _on_reset(gpointer data)
 		}
 		hayes->helper->error(NULL, error_get(NULL), 1);
 		if(hayes->retry > 0)
-			hayes->source = g_timeout_add(hayes->retry, _on_reset,
-					channel);
+			hayes->source = g_timeout_add(hayes->retry,
+					_on_channel_reset, channel);
 		return FALSE;
 	}
 	event->status.status = MODEM_STATUS_UNKNOWN;
@@ -2244,6 +2222,49 @@ static unsigned int _reset_configure_baudrate(Hayes * hayes,
 }
 
 
+/* on_channel_timeout */
+static gboolean _on_channel_timeout(gpointer data)
+{
+	HayesChannel * channel = data;
+	Hayes * hayes = channel->hayes;
+	HayesCommand * command;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	channel->timeout = 0;
+	if(channel->queue == NULL || (command = channel->queue->data) == NULL)
+		return FALSE;
+	hayes_command_set_status(command, HCS_TIMEOUT);
+	_hayes_queue_pop(hayes, channel);
+	_hayes_queue_push(hayes, channel);
+	return FALSE;
+}
+
+
+/* on_queue_timeout */
+static gboolean _on_queue_timeout(gpointer data)
+{
+	HayesChannel * channel = data;
+	Hayes * hayes = channel->hayes;
+	HayesCommand * command;
+
+	hayes->source = 0;
+	if(channel->queue_timeout == NULL) /* nothing to send */
+		return FALSE;
+	command = channel->queue_timeout->data;
+	_hayes_queue_command(hayes, channel, command);
+	channel->queue_timeout = g_slist_remove(channel->queue_timeout,
+			command);
+	if(channel->queue_timeout != NULL)
+		hayes->source = g_timeout_add(1000, _on_queue_timeout, channel);
+	else
+		/* XXX check the registration again to be safe */
+		_hayes_request_type(hayes, channel, HAYES_REQUEST_REGISTRATION);
+	return FALSE;
+}
+
+
 /* on_reset_settle */
 static gboolean _reset_settle_command(HayesChannel * channel,
 		char const * string);
@@ -2333,26 +2354,6 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 			break;
 	}
 	return status;
-}
-
-
-/* on_timeout */
-static gboolean _on_timeout(gpointer data)
-{
-	HayesChannel * channel = data;
-	Hayes * hayes = channel->hayes;
-	HayesCommand * command;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	channel->timeout = 0;
-	if(channel->queue == NULL || (command = channel->queue->data) == NULL)
-		return FALSE;
-	hayes_command_set_status(command, HCS_TIMEOUT);
-	_hayes_queue_pop(hayes, channel);
-	_hayes_queue_push(hayes, channel);
-	return FALSE;
 }
 
 
@@ -2604,7 +2605,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 		if(channel->authenticate_source != 0)
 			g_source_remove(channel->authenticate_source);
 		channel->authenticate_source = g_timeout_add(timeout,
-				_on_authenticate, channel);
+				_on_channel_authenticate, channel);
 	}
 	else
 	{
