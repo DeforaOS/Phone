@@ -15,7 +15,6 @@ static char const _license[] =
 "You should have received a copy of the GNU General Public License\n"
 "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 /* TODO:
- * - in the dialer replace "clear" by "delete last character"
  * - keep track of missed calls
  * - let plug-ins keep track of the signal level */
 
