@@ -1304,7 +1304,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	HayesCommand * command;
 	char const * prefix = "";
 	char const * attention;
-	const char suffix[2] = "\r\n";
+	const char suffix[] = "\r\n";
 	size_t size;
 	char * p;
 	guint timeout;
@@ -1328,7 +1328,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() pushing \"%s\"\n", __func__, attention);
 #endif
-	size = strlen(prefix) + strlen(attention) + sizeof(suffix);
+	size = strlen(prefix) + strlen(attention) + sizeof(suffix) - 1;
 	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + size)) == NULL)
 	{
 		hayes_command_set_status(command, HCS_ERROR);
