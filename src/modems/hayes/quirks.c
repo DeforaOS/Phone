@@ -16,6 +16,9 @@
 
 
 #include <sys/types.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
 #include "quirks.h"
 
