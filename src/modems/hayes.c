@@ -2266,28 +2266,32 @@ static gboolean _on_queue_timeout(gpointer data)
 
 
 /* on_reset_settle */
-static gboolean _reset_settle_command(HayesChannel * channel,
-		char const * string);
+static void _reset_settle_command(HayesChannel * channel, char const * string);
 static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 
 static gboolean _on_reset_settle(gpointer data)
 {
 	HayesChannel * channel = data;
+	Hayes * hayes = channel->hayes;
 
-	return _reset_settle_command(channel, "ATZE0V1");
+	hayes->source = 0;
+	_reset_settle_command(channel, "ATZE0V1");
+	return FALSE;
 }
 
 static gboolean _on_reset_settle2(gpointer data)
 {
 	HayesChannel * channel = data;
+	Hayes * hayes = channel->hayes;
 
+	hayes->source = 0;
 	/* try an alternative initialization string */
-	return _reset_settle_command(channel, "ATE0V1");
+	_reset_settle_command(channel, "ATE0V1");
+	return FALSE;
 }
 
-static gboolean _reset_settle_command(HayesChannel * channel,
-		char const * string)
+static void _reset_settle_command(HayesChannel * channel, char const * string)
 {
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command;
@@ -2298,7 +2302,7 @@ static gboolean _reset_settle_command(HayesChannel * channel,
 	if((command = hayes_command_new(string)) == NULL)
 	{
 		hayes->helper->error(hayes->helper->modem, error_get(NULL), 1);
-		return FALSE;
+		return;
 	}
 	hayes_command_set_callback(command, _on_reset_settle_callback, channel);
 	hayes_command_set_priority(command, HCP_IMMEDIATE);
@@ -2308,7 +2312,6 @@ static gboolean _reset_settle_command(HayesChannel * channel,
 		hayes->helper->error(hayes->helper->modem, error_get(NULL), 1);
 		hayes_command_delete(command);
 	}
-	return FALSE;
 }
 
 static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
