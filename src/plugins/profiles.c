@@ -31,6 +31,7 @@
 typedef enum _ProfileType
 {
 	PROFILE_TYPE_GENERAL = 0,
+	PROFILE_TYPE_BEEP,
 	PROFILE_TYPE_SILENT,
 	PROFILE_TYPE_OFFLINE
 } ProfileType;
@@ -53,6 +54,7 @@ typedef struct _ProfileDefinition
 	gboolean online;
 	ProfileVolume volume;
 	gboolean vibrate;
+	char const * sample;
 } ProfileDefinition;
 
 typedef struct _PhonePlugin
@@ -83,9 +85,10 @@ typedef struct _PhonePlugin
 /* variables */
 static ProfileDefinition _profiles_definitions[PROFILE_TYPE_COUNT] =
 {
-	{ "General",	TRUE,	PROFILE_VOLUME_ASC,	TRUE	},
-	{ "Silent",	TRUE,	PROFILE_VOLUME_SILENT,	TRUE	},
-	{ "Offline",	FALSE,	PROFILE_VOLUME_SILENT,	FALSE	}
+	{ "General",	TRUE,	PROFILE_VOLUME_ASC,	TRUE,	NULL	},
+	{ "Beep",	TRUE,	PROFILE_VOLUME_25,	TRUE,	"beep"	},
+	{ "Silent",	TRUE,	PROFILE_VOLUME_SILENT,	TRUE,	NULL	},
+	{ "Offline",	FALSE,	PROFILE_VOLUME_SILENT,	FALSE,	NULL	}
 };
 
 /* prototypes */
@@ -179,6 +182,9 @@ static int _event_stopping(Profiles * profiles);
 
 static int _profiles_event(Profiles * profiles, PhoneEvent * event)
 {
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
+
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_KEY_TONE:
@@ -190,7 +196,8 @@ static int _profiles_event(Profiles * profiles, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_STOPPING:
 			return _event_stopping(profiles);
 		case PHONE_EVENT_TYPE_MESSAGE_RECEIVED:
-			_profiles_play(profiles, "message", 2);
+			_profiles_play(profiles, (definition->sample != NULL)
+					? definition->sample : "message", 2);
 			break;
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _event_modem_event(profiles,
@@ -212,6 +219,8 @@ static int _event_key_tone(Profiles * profiles)
 
 static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 {
+	ProfileDefinition * definition = &profiles->profiles[
+		profiles->profiles_cur];
 	ModemCallDirection direction;
 	ModemCallStatus status;
 
@@ -224,7 +233,10 @@ static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 			status = event->call.status;
 			if(direction == MODEM_CALL_DIRECTION_INCOMING
 					&& status == MODEM_CALL_STATUS_RINGING)
-				_profiles_play(profiles, "ringtone", 10);
+				_profiles_play(profiles,
+						(definition->sample != NULL)
+						? definition->sample
+						: "ringtone", 10);
 			else if(direction == MODEM_CALL_DIRECTION_OUTGOING
 					&& status == MODEM_CALL_STATUS_RINGING)
 				_profiles_play(profiles, "ringback", 0);
