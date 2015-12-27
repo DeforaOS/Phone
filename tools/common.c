@@ -295,10 +295,12 @@ static int _request_call_hangup(Phone * phone, ModemRequest * request)
 	else
 	{
 		buf[sizeof(buf) - 1] = '\0';
-		if(sscanf(buf, "%u", &pid) != 1)
+		if(sscanf(buf, "%d", &pid) != 1)
 			ret = -error_set_code(1, "%s", strerror(errno));
+		else if(pid <= 0)
+			ret = -error_set_code(1, "%s", strerror(ERANGE));
 		else if(kill(pid, SIGHUP) != 0)
-			ret = -error_set_code(1, "%u: %s", pid,
+			ret = -error_set_code(1, "%d: %s", pid,
 					strerror(errno));
 	}
 	if(fp != NULL)
