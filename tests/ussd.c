@@ -31,7 +31,7 @@ static int _ussd(void)
 {
 	int ret = 0;
 	const char * codes[] = { "*100#", "*109*72348937857623#" };
-	const char * notcodes[] = { "*#06#" };
+	const char * notcodes[] = { "*#06#0" };
 	size_t i;
 
 	for(i = 0; i < sizeof(codes) / sizeof(*codes); i++)

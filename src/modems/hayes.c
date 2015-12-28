@@ -4278,10 +4278,14 @@ static int _is_ussd_code(char const * number)
 	if(number == NULL || number[0] != '*')
 		return 0;
 	for(number++; *number != '\0'; number++)
-		if((*number >= '0' && *number <= '9') || *number == '*')
+		if(*number == '#')
+		{
+			if(*(number + 1) == '\0')
+				return 1;
 			continue;
-		else if(*number == '#' && *(number + 1) == '\0')
-			return 1;
+		}
+		else if((*number >= '0' && *number <= '9') || *number == '*')
+			continue;
 		else
 			return 0;
 	return 0;
