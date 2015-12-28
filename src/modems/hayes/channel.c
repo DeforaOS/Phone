@@ -77,6 +77,24 @@ void hayeschannel_queue_flush(HayesChannel * channel)
 }
 
 
+/* hayeschannel_queue_pop */
+int hayeschannel_queue_pop(HayesChannel * channel)
+{
+	HayesCommand * command;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	_hayeschannel_reset_source(&channel->timeout);
+	if(channel->queue == NULL) /* nothing to send */
+		return 0;
+	command = channel->queue->data; /* XXX assumes it's valid */
+	hayes_command_delete(command);
+	channel->queue = g_slist_remove(channel->queue, command);
+	return 0;
+}
+
+
 /* private */
 /* functions */
 /* hayeschannel_reset_source */

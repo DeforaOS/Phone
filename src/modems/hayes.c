@@ -187,7 +187,6 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 static int _hayes_queue_command_full(Hayes * hayes,
 		char const * attention, HayesCommandCallback callback);
 #endif
-static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel);
 static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel);
 
 /* requests */
@@ -1064,7 +1063,7 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 	/* unqueue if complete */
 	if(hayes_command_is_complete(command))
 	{
-		_hayes_queue_pop(hayes, channel);
+		hayeschannel_queue_pop(channel);
 		_hayes_queue_push(hayes, channel);
 	}
 	return 0;
@@ -1177,24 +1176,6 @@ static int _hayes_queue_command_full(Hayes * hayes,
 #endif
 
 
-/* hayes_queue_pop */
-static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel)
-{
-	HayesCommand * command;
-
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
-	_hayes_reset_source(&channel->timeout);
-	if(channel->queue == NULL) /* nothing to send */
-		return 0;
-	command = channel->queue->data; /* XXX assumes it's valid */
-	hayes_command_delete(command);
-	channel->queue = g_slist_remove(channel->queue, command);
-	return 0;
-}
-
-
 /* hayes_queue_push */
 static int _queue_push_do(Hayes * hayes, HayesChannel * channel);
 
@@ -1226,7 +1207,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	if(hayes_command_set_status(command, HCS_PENDING) != HCS_PENDING)
 	{
 		/* no longer push the command */
-		_hayes_queue_pop(hayes, channel);
+		hayeschannel_queue_pop(channel);
 		return -1;
 	}
 	attention = hayes_command_get_attention(command);
@@ -1237,7 +1218,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + size)) == NULL)
 	{
 		hayes_command_set_status(command, HCS_ERROR);
-		_hayes_queue_pop(hayes, channel);
+		hayeschannel_queue_pop(channel);
 		return -hayes->helper->error(hayes->helper->modem, strerror(
 					errno), 1);
 	}
@@ -2145,7 +2126,7 @@ static gboolean _on_channel_timeout(gpointer data)
 	if(channel->queue == NULL || (command = channel->queue->data) == NULL)
 		return FALSE;
 	hayes_command_set_status(command, HCS_TIMEOUT);
-	_hayes_queue_pop(hayes, channel);
+	hayeschannel_queue_pop(channel);
 	_hayes_queue_push(hayes, channel);
 	return FALSE;
 }

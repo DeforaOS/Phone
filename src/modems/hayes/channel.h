@@ -90,5 +90,6 @@ void hayeschannel_destroy(HayesChannel * channel);
 
 /* queue management */
 void hayeschannel_queue_flush(HayesChannel * channel);
+int hayeschannel_queue_pop(HayesChannel * channel);
 
 #endif /* PHONE_MODEM_HAYES_CHANNEL_H */
