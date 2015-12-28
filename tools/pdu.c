@@ -17,6 +17,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include "../src/modems/hayes/channel.c"
 #include "../src/modems/hayes/command.c"
 #include "../src/modems/hayes/quirks.c"
 #include "../src/modems/hayes.c"

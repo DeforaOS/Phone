@@ -38,6 +38,7 @@
 #include <glib.h>
 #include <System.h>
 #include <Phone/modem.h>
+#include "hayes/channel.h"
 #include "hayes/command.h"
 #include "hayes/quirks.h"
 #include "hayes.h"
@@ -49,62 +50,6 @@
 /* Hayes */
 /* private */
 /* types */
-typedef enum _HayesChannelMode
-{
-	HAYES_MODE_INIT = 0,
-	HAYES_MODE_COMMAND,
-	HAYES_MODE_DATA
-} HayesChannelMode;
-
-typedef struct _HayesChannel
-{
-	ModemPlugin * hayes;
-
-	unsigned int quirks;
-
-	guint timeout;
-	guint authenticate_count;
-	guint authenticate_source;
-
-	GIOChannel * channel;
-	char * rd_buf;
-	size_t rd_buf_cnt;
-	guint rd_source;
-	char * wr_buf;
-	size_t wr_buf_cnt;
-	guint wr_source;
-	GIOChannel * rd_ppp_channel;
-	guint rd_ppp_source;
-	GIOChannel * wr_ppp_channel;
-	guint wr_ppp_source;
-
-	/* logging */
-	FILE * fp;
-
-	/* queue */
-	HayesChannelMode mode;
-	GSList * queue;
-	GSList * queue_timeout;
-
-	/* events */
-	ModemEvent events[MODEM_EVENT_TYPE_COUNT];
-	char * authentication_name;
-	char * authentication_error;
-	char * call_number;
-	char * contact_name;
-	char * contact_number;
-	char * gprs_username;
-	char * gprs_password;
-	char * message_number;
-	char * model_identity;
-	char * model_name;
-	char * model_serial;
-	char * model_vendor;
-	char * model_version;
-	char * registration_media;
-	char * registration_operator;
-} HayesChannel;
-
 typedef struct _ModemPlugin
 {
 	ModemPluginHelper * helper;
@@ -595,8 +540,6 @@ ModemPluginDefinition plugin =
 /* private */
 /* plug-in */
 /* functions */
-static void _init_channel(Hayes * hayes, HayesChannel * channel);
-
 static ModemPlugin * _hayes_init(ModemPluginHelper * helper)
 {
 	Hayes * hayes;
@@ -605,20 +548,8 @@ static ModemPlugin * _hayes_init(ModemPluginHelper * helper)
 		return NULL;
 	memset(hayes, 0, sizeof(*hayes));
 	hayes->helper = helper;
-	_init_channel(hayes, &hayes->channel);
+	hayeschannel_init(&hayes->channel, hayes);
 	return hayes;
-}
-
-static void _init_channel(Hayes * hayes, HayesChannel * channel)
-{
-	size_t i;
-
-	channel->hayes = hayes;
-	channel->mode = HAYES_MODE_INIT;
-	for(i = 0; i < sizeof(channel->events) / sizeof(*channel->events); i++)
-		channel->events[i].type = i;
-	channel->events[MODEM_EVENT_TYPE_REGISTRATION].registration.signal
-		= 0.0 / 0.0;
 }
 
 
@@ -626,6 +557,7 @@ static void _init_channel(Hayes * hayes, HayesChannel * channel)
 static void _hayes_destroy(Hayes * hayes)
 {
 	_hayes_stop(hayes);
+	hayeschannel_destroy(&hayes->channel);
 	object_delete(hayes);
 }
 
