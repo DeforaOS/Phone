@@ -1836,7 +1836,7 @@ static void _show_call_window(Phone * phone)
 	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* party */
 	phone->ca_name = gtk_label_new(NULL);
-	gtk_widget_modify_font(phone->ca_name, phone->bold);
+	gtk_widget_override_font(phone->ca_name, phone->bold);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_name, FALSE, TRUE, 0);
 	phone->ca_number = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->ca_number, FALSE, TRUE, 0);
@@ -1986,7 +1986,7 @@ static void _show_code_window(Phone * phone)
 	vbox = gtk_vbox_new(FALSE, 4);
 #endif
 	phone->en_title = gtk_label_new("");
-	gtk_widget_modify_font(phone->en_title, phone->bold);
+	gtk_widget_override_font(phone->en_title, phone->bold);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->en_title, FALSE, TRUE, 0);
 #if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
@@ -1995,7 +1995,7 @@ static void _show_code_window(Phone * phone)
 #endif
 	phone->en_entry = gtk_entry_new();
 	gtk_entry_set_visibility(GTK_ENTRY(phone->en_entry), FALSE);
-	gtk_widget_modify_font(phone->en_entry, phone->bold);
+	gtk_widget_override_font(phone->en_entry, phone->bold);
 	g_signal_connect_swapped(phone->en_entry, "activate", G_CALLBACK(
 				on_phone_code_enter), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
@@ -2157,7 +2157,7 @@ static void _show_dialer_window(Phone * phone)
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
 	phone->di_entry = gtk_entry_new();
-	gtk_widget_modify_font(phone->di_entry, phone->bold);
+	gtk_widget_override_font(phone->di_entry, phone->bold);
 	g_signal_connect_swapped(phone->di_entry, "activate", G_CALLBACK(
 				on_phone_dialer_call), phone);
 	g_signal_connect(phone->di_entry, "changed", G_CALLBACK(
@@ -2823,7 +2823,7 @@ static void _show_read_window(Phone * phone)
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* name */
 	phone->re_name = gtk_label_new(NULL);
-	gtk_widget_modify_font(phone->re_name, phone->bold);
+	gtk_widget_override_font(phone->re_name, phone->bold);
 	gtk_box_pack_start(GTK_BOX(vbox), phone->re_name, FALSE, TRUE, 0);
 	/* number */
 	phone->re_number = gtk_label_new(NULL);
@@ -3009,7 +3009,7 @@ static void _show_status_window(Phone * phone)
 #else
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmissed_count), 1.0, 0.5);
 #endif
-	gtk_widget_modify_font(phone->st_lmissed_count, phone->bold);
+	gtk_widget_override_font(phone->st_lmissed_count, phone->bold);
 	gtk_size_group_add_widget(group, phone->st_lmissed_count);
 	gtk_box_pack_start(GTK_BOX(phone->st_missed_box),
 			phone->st_lmissed_count, FALSE, TRUE, 0);
@@ -3040,7 +3040,7 @@ static void _show_status_window(Phone * phone)
 #else
 	gtk_misc_set_alignment(GTK_MISC(phone->st_lmessages_count), 1.0, 0.5);
 #endif
-	gtk_widget_modify_font(phone->st_lmessages_count, phone->bold);
+	gtk_widget_override_font(phone->st_lmessages_count, phone->bold);
 	gtk_size_group_add_widget(group, phone->st_lmessages_count);
 	gtk_box_pack_start(GTK_BOX(phone->st_messages_box),
 			phone->st_lmessages_count, FALSE, TRUE, 0);
