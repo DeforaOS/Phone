@@ -2965,13 +2965,15 @@ void phone_show_status(Phone * phone, gboolean show, ...)
 
 static void _show_status_window(Phone * phone)
 {
+	const unsigned int flags = GTK_DIALOG_MODAL
+		| GTK_DIALOG_DESTROY_WITH_PARENT;
 	GtkSizeGroup * group;
 	GtkSizeGroup * group2;
 	GtkWidget * vbox;
 	GtkWidget * widget;
 
-	phone->st_window = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,
-			GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
+	phone->st_window = gtk_message_dialog_new(NULL, flags, GTK_MESSAGE_INFO,
+			GTK_BUTTONS_CLOSE,
 #if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", _("Information"));
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
@@ -3973,7 +3975,7 @@ static GtkWidget * _phone_create_dialpad(Phone * phone,
 static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 {
 	GtkWidget * dialog;
-	const GtkDialogFlags flags = GTK_DIALOG_MODAL
+	const unsigned int flags = GTK_DIALOG_MODAL
 		| GTK_DIALOG_DESTROY_WITH_PARENT;
 	GtkWidget * vbox;
 	GtkWidget * widget;
@@ -4033,7 +4035,7 @@ static int _phone_confirm(Phone * phone, GtkWidget * window,
 {
 	GtkWidget * dialog;
 	GtkWindow * w = (window != NULL) ? GTK_WINDOW(window) : NULL;
-	const GtkDialogFlags flags = (window != NULL)
+	const unsigned int flags = (window != NULL)
 		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 	int res;
 
@@ -4058,7 +4060,7 @@ static int _phone_error(GtkWidget * window, char const * message, int ret)
 {
 	GtkWidget * dialog;
 	GtkWindow * w = (window != NULL) ? GTK_WINDOW(window) : NULL;
-	GtkDialogFlags flags = (window != NULL)
+	const unsigned int flags = (window != NULL)
 		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 
 	dialog = gtk_message_dialog_new(w, flags, GTK_MESSAGE_ERROR,
@@ -4088,8 +4090,8 @@ static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
 		GCallback callback)
 {
 	GtkWidget * dialog;
-	const GtkDialogFlags flags = GTK_DIALOG_MODAL
-		| GTK_DIALOG_DESTROY_WITH_PARENT;
+	const unsigned int flags = (window != NULL)
+		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 
 	if(callback == NULL)
 		callback = G_CALLBACK(gtk_widget_destroy);
@@ -4337,7 +4339,8 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 		int index, char const * name, char const * number)
 {
 	char buf[256];
-	GtkDialogFlags f = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+	const unsigned int flags = GTK_DIALOG_MODAL
+		| GTK_DIALOG_DESTROY_WITH_PARENT;
 	GtkSizeGroup * group;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
@@ -4347,7 +4350,7 @@ static void _phone_show_contacts_dialog(Phone * phone, gboolean show,
 	{
 		group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 		phone->co_dialog = gtk_dialog_new_with_buttons("",
-				GTK_WINDOW(phone->co_window), f,
+				GTK_WINDOW(phone->co_window), flags,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 				GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
 		g_signal_connect(phone->co_dialog, "delete-event", G_CALLBACK(
