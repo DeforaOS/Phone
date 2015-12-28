@@ -88,4 +88,7 @@ typedef struct _HayesChannel
 void hayeschannel_init(HayesChannel * channel, ModemPlugin * modem);
 void hayeschannel_destroy(HayesChannel * channel);
 
+/* queue management */
+void hayeschannel_queue_flush(HayesChannel * channel);
+
 #endif /* PHONE_MODEM_HAYES_CHANNEL_H */

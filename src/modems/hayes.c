@@ -187,7 +187,6 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 static int _hayes_queue_command_full(Hayes * hayes,
 		char const * attention, HayesCommandCallback callback);
 #endif
-static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel);
 static int _hayes_queue_pop(Hayes * hayes, HayesChannel * channel);
 static int _hayes_queue_push(Hayes * hayes, HayesChannel * channel);
 
@@ -614,7 +613,7 @@ static void _stop_channel(Hayes * hayes, HayesChannel * channel)
 	if(channel->fp != NULL)
 		fclose(channel->fp);
 	channel->fp = NULL;
-	_hayes_queue_flush(hayes, channel);
+	hayeschannel_queue_flush(channel);
 	_stop_giochannel(channel->channel);
 	channel->channel = NULL;
 	_stop_giochannel(channel->rd_ppp_channel);
@@ -1176,32 +1175,6 @@ static int _hayes_queue_command_full(Hayes * hayes,
 	return 0;
 }
 #endif
-
-
-/* hayes_queue_flush */
-static void _hayes_queue_flush(Hayes * hayes, HayesChannel * channel)
-{
-	g_slist_foreach(channel->queue_timeout, (GFunc)hayes_command_delete,
-			NULL);
-	g_slist_free(channel->queue_timeout);
-	channel->queue_timeout = NULL;
-	g_slist_foreach(channel->queue, (GFunc)hayes_command_delete, NULL);
-	g_slist_free(channel->queue);
-	channel->queue = NULL;
-	free(channel->rd_buf);
-	channel->rd_buf = NULL;
-	channel->rd_buf_cnt = 0;
-	_hayes_reset_source(&channel->rd_source);
-	free(channel->wr_buf);
-	channel->wr_buf = NULL;
-	channel->wr_buf_cnt = 0;
-	_hayes_reset_source(&channel->wr_source);
-	_hayes_reset_source(&channel->rd_ppp_source);
-	_hayes_reset_source(&channel->wr_ppp_source);
-	channel->authenticate_count = 0;
-	_hayes_reset_source(&channel->authenticate_source);
-	_hayes_reset_source(&channel->timeout);
-}
 
 
 /* hayes_queue_pop */
