@@ -167,9 +167,9 @@ static void _hayes_convert_iso_string_to_gsm(char * str);
 static char * _hayes_convert_number_to_address(char const * number);
 
 /* messages */
-static char * _hayes_message_to_pdu(Hayes * hayes, HayesChannel * channel,
-		char const * number, ModemMessageEncoding encoding,
-		size_t length, char const * content);
+static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
+		ModemMessageEncoding encoding, size_t length,
+		char const * content);
 
 /* logging */
 static void _hayes_log(Hayes * hayes, HayesChannel * channel,
@@ -795,9 +795,9 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 static char * _text_to_data(char const * text, size_t length);
 static char * _text_to_sept(char const * text, size_t length);
 
-static char * _hayes_message_to_pdu(Hayes * hayes, HayesChannel * channel,
-		char const * number, ModemMessageEncoding encoding,
-		size_t length, char const * content)
+static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
+		ModemMessageEncoding encoding, size_t length,
+		char const * content)
 {
 	char * ret;
 	char * addr;
@@ -1752,8 +1752,8 @@ static char * _request_attention_message_send(Hayes * hayes,
 	if(_hayes_request_type(hayes, channel, HAYES_REQUEST_MESSAGE_FORMAT_PDU)
 			!= 0)
 		return NULL;
-	if((pdu = _hayes_message_to_pdu(hayes, channel, number, encoding,
-					length, content)) == NULL)
+	if((pdu = _hayes_message_to_pdu(channel, number, encoding, length,
+					content)) == NULL)
 		return NULL;
 	pdulen = strlen(pdu);
 	len = sizeof(cmd) + 10 + pdulen + 1;
