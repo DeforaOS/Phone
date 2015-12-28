@@ -4215,8 +4215,7 @@ static void _on_code_cusd(HayesChannel * channel, char const * answer)
 	unsigned int u;
 	char buf[32];
 
-	/* FIXME really implement */
-	if(sscanf(answer, "%u\"%31[^\"]\",%u", &u, buf, &u) >= 2)
+	if(sscanf(answer, "%u,\"%31[^\"]\",%u", &u, buf, &u) >= 2)
 	{
 		buf[sizeof(buf) - 1] = '\0';
 		event->notification.content = buf;
