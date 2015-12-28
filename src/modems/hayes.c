@@ -1926,13 +1926,14 @@ static void _hayes_reset_source(guint * source)
 /* on_channel_authenticate */
 static gboolean _on_channel_authenticate(gpointer data)
 {
+	const guint timeout = 1000;
 	HayesChannel * channel = data;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 
 	if(channel->authenticate_count++ < 10)
 	{
-		channel->authenticate_source = g_timeout_add(1000,
+		channel->authenticate_source = g_timeout_add(timeout,
 				_on_channel_authenticate, channel);
 		/* FIXME this must stop the "checking for SIM PIN" dialog */
 		_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
@@ -2153,6 +2154,7 @@ static gboolean _on_channel_timeout(gpointer data)
 /* on_queue_timeout */
 static gboolean _on_queue_timeout(gpointer data)
 {
+	const guint timeout = 1000;
 	HayesChannel * channel = data;
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command;
@@ -2165,7 +2167,8 @@ static gboolean _on_queue_timeout(gpointer data)
 	channel->queue_timeout = g_slist_remove(channel->queue_timeout,
 			command);
 	if(channel->queue_timeout != NULL)
-		hayes->source = g_timeout_add(1000, _on_queue_timeout, channel);
+		hayes->source = g_timeout_add(timeout, _on_queue_timeout,
+				channel);
 	else
 		/* XXX check the registration again to be safe */
 		_hayes_request_type(hayes, channel, HAYES_REQUEST_REGISTRATION);
@@ -3153,6 +3156,7 @@ static void _cme_error_registration(HayesChannel * channel, char const * error);
 
 static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 {
+	const guint timeout = 5000;
 	Hayes * hayes = channel->hayes;
 	ModemPluginHelper * helper = hayes->helper;
 	/* XXX ugly */
@@ -3196,7 +3200,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			channel->queue_timeout = g_slist_append(
 					channel->queue_timeout, p);
 			if(hayes->source == 0)
-				hayes->source = g_timeout_add(5000,
+				hayes->source = g_timeout_add(timeout,
 						_on_queue_timeout, channel);
 			break;
 		case 30:  /* No network service */
@@ -3649,6 +3653,7 @@ static void _on_code_cmgs(HayesChannel * channel, char const * answer)
 /* on_code_cms_error */
 static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 {
+	const guint timeout = 5000;
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command = (channel->queue != NULL)
 		? channel->queue->data : NULL;
@@ -3686,7 +3691,7 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			channel->queue_timeout = g_slist_append(
 					channel->queue_timeout, p);
 			if(hayes->source == 0)
-				hayes->source = g_timeout_add(5000,
+				hayes->source = g_timeout_add(timeout,
 						_on_queue_timeout, channel);
 			break;
 		case 303: /* Operation not supported */
