@@ -2204,6 +2204,7 @@ static gboolean _on_reset_settle2(gpointer data)
 
 static void _reset_settle_command(HayesChannel * channel, char const * string)
 {
+	const unsigned int timeout = 500;
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command;
 
@@ -2217,7 +2218,7 @@ static void _reset_settle_command(HayesChannel * channel, char const * string)
 	}
 	hayes_command_set_callback(command, _on_reset_settle_callback, channel);
 	hayes_command_set_priority(command, HCP_IMMEDIATE);
-	hayes_command_set_timeout(command, 500);
+	hayes_command_set_timeout(command, timeout);
 	if(_hayes_queue_command(hayes, channel, command) != 0)
 	{
 		hayes->helper->error(hayes->helper->modem, error_get(NULL), 1);
