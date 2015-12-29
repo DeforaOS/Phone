@@ -66,6 +66,15 @@ void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks)
 
 /* useful */
 /* queue management */
+/* hayeschannel_queue_data */
+int hayeschannel_queue_data(HayesChannel * channel, char const * buf,
+		size_t size)
+{
+	/* FIXME implement */
+	return -1;
+}
+
+
 /* hayeschannel_queue_flush */
 void hayeschannel_queue_flush(HayesChannel * channel)
 {

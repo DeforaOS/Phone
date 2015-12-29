@@ -31,7 +31,8 @@ typedef enum _HayesChannelMode
 {
 	HAYES_MODE_INIT = 0,
 	HAYES_MODE_COMMAND,
-	HAYES_MODE_DATA
+	HAYES_MODE_DATA,
+	HAYES_MODE_PDU
 } HayesChannelMode;
 
 typedef struct _HayesChannel
@@ -94,6 +95,8 @@ void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks);
 
 /* useful */
 /* queue management */
+int hayeschannel_queue_data(HayesChannel * channel, char const * buf,
+		size_t size);
 void hayeschannel_queue_flush(HayesChannel * channel);
 int hayeschannel_queue_pop(HayesChannel * channel);
 

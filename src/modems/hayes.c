@@ -177,6 +177,7 @@ static void _hayes_log(Hayes * hayes, HayesChannel * channel,
 
 /* parser */
 static int _hayes_parse(Hayes * hayes, HayesChannel * channel);
+static int _hayes_parse_pdu(Hayes * hayes, HayesChannel * channel);
 static int _hayes_parse_trigger(HayesChannel * channel, char const * answer,
 		HayesCommand * command);
 
@@ -244,6 +245,8 @@ static HayesCommandStatus _on_request_message(HayesCommand * command,
 static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
+		HayesCommandStatus status, void * priv);
+static HayesCommandStatus _on_request_message_send(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
 static HayesCommandStatus _on_request_model(HayesCommand * command,
 		HayesCommandStatus status, void * priv);
@@ -473,7 +476,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 	{ MODEM_REQUEST_MESSAGE_LIST,			NULL,
 		_on_request_message_list },
 	{ MODEM_REQUEST_MESSAGE_SEND,			NULL,
-		_on_request_generic },
+		_on_request_message_send },
 	{ MODEM_REQUEST_PASSWORD_SET,			NULL,
 		_on_request_generic },
 	{ MODEM_REQUEST_REGISTRATION,			NULL,
@@ -758,6 +761,7 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 	{
 		case HAYES_MODE_INIT:
 		case HAYES_MODE_COMMAND:
+		case HAYES_MODE_PDU:
 			break; /* nothing to do */
 		case HAYES_MODE_DATA:
 			_hayes_reset_source(&channel->rd_ppp_source);
@@ -775,6 +779,7 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 	{
 		case HAYES_MODE_INIT:
 		case HAYES_MODE_COMMAND:
+		case HAYES_MODE_PDU:
 			break; /* nothing to do */
 		case HAYES_MODE_DATA:
 			/* report GPRS registration */
@@ -1071,6 +1076,14 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 }
 
 
+/* hayes_parse_pdu */
+static int _hayes_parse_pdu(Hayes * hayes, HayesChannel * channel)
+{
+	/* FIXME implement */
+	return -1;
+}
+
+
 /* hayes_parse_trigger */
 static int _hayes_parse_trigger(HayesChannel * channel, char const * answer,
 		HayesCommand * command)
@@ -1138,6 +1151,7 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 				return -1;
 		case HAYES_MODE_COMMAND:
 		case HAYES_MODE_DATA:
+		case HAYES_MODE_PDU:
 			if(hayes_command_set_status(command, HCS_QUEUED)
 					!= HCS_QUEUED)
 				return -1;
@@ -1239,7 +1253,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 
 /* hayes_request_channel */
 static char * _request_attention(Hayes * hayes, HayesChannel * channel,
-		ModemRequest * request);
+		ModemRequest * request, void ** data);
 static char * _request_attention_apn(char const * protocol, char const * apn);
 static char * _request_attention_call(HayesChannel * channel,
 		ModemRequest * request);
@@ -1266,7 +1280,7 @@ static char * _request_attention_message_list(Hayes * hayes,
 static char * _request_attention_message_send(Hayes * hayes,
 		HayesChannel * channel, char const * number,
 		ModemMessageEncoding encoding, size_t length,
-		char const * content);
+		char const * content, void ** data);
 static char * _request_attention_password_set(Hayes * hayes, char const * name,
 		char const * oldpassword, char const * newpassword);
 static char * _request_attention_registration(Hayes * hayes,
@@ -1324,7 +1338,8 @@ static int _request_channel_handler(Hayes * hayes, HayesChannel * channel,
 
 	if((attention = handler->attention) == NULL)
 	{
-		if((p = _request_attention(hayes, channel, request)) == NULL)
+		if((p = _request_attention(hayes, channel, request, &data))
+				== NULL)
 			return 0; /* XXX errors should not be ignored */
 		attention = p;
 	}
@@ -1345,7 +1360,7 @@ static int _request_channel_handler(Hayes * hayes, HayesChannel * channel,
 }
 
 static char * _request_attention(Hayes * hayes, HayesChannel * channel,
-		ModemRequest * request)
+		ModemRequest * request, void ** data)
 {
 	unsigned int type = request->type;
 	char buf[32];
@@ -1413,7 +1428,7 @@ static char * _request_attention(Hayes * hayes, HayesChannel * channel,
 					request->message_send.number,
 					request->message_send.encoding,
 					request->message_send.length,
-					request->message_send.content);
+					request->message_send.content, data);
 		case MODEM_REQUEST_PASSWORD_SET:
 			return _request_attention_password_set(hayes,
 					request->password_set.name,
@@ -1722,7 +1737,7 @@ static char * _request_attention_message_list(Hayes * hayes,
 static char * _request_attention_message_send(Hayes * hayes,
 		HayesChannel * channel, char const * number,
 		ModemMessageEncoding encoding, size_t length,
-		char const * content)
+		char const * content, void ** data)
 {
 	char * ret;
 	char const cmd[] = "AT+CMGS=";
@@ -1736,19 +1751,17 @@ static char * _request_attention_message_send(Hayes * hayes,
 	if((pdu = _hayes_message_to_pdu(channel, number, encoding, length,
 					content)) == NULL)
 		return NULL;
-	pdulen = strlen(pdu);
-	len = sizeof(cmd) + 10 + pdulen + 1;
+	len = sizeof(cmd) + 10;
 	if((ret = malloc(len)) == NULL)
 	{
 		free(pdu);
 		return NULL;
 	}
+	pdulen = strlen(pdu);
 	if(hayeschannel_has_quirks(channel, HAYES_QUIRK_WANT_SMSC_IN_PDU))
 		pdulen -= 2;
-	/* FIXME really issue using two separate commands */
-	snprintf(ret, len, "%s%lu\r\n%s", cmd, ((unsigned long)pdulen - 1) / 2,
-			pdu);
-	free(pdu);
+	snprintf(ret, len, "%s%lu", cmd, ((unsigned long)pdulen - 1) / 2);
+	*data = pdu;
 	return ret;
 }
 
@@ -2299,6 +2312,9 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case HAYES_MODE_COMMAND:
 			_hayes_parse(hayes, channel);
 			break;
+		case HAYES_MODE_PDU:
+			_hayes_parse_pdu(hayes, channel);
+			break;
 		case HAYES_MODE_DATA:
 			if(channel->wr_ppp_channel == NULL
 					|| channel->wr_ppp_source != 0)
@@ -2771,6 +2787,32 @@ static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 			free(data);
 			hayes_command_set_data(command, NULL);
 		}
+	return status;
+}
+
+
+/* on_request_message_send */
+static HayesCommandStatus _on_request_message_send(HayesCommand * command,
+		HayesCommandStatus status, void * priv)
+{
+	HayesChannel * channel = priv;
+	Hayes * hayes = channel->hayes;
+	char * pdu;
+
+	pdu = hayes_command_get_data(command);
+	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS)
+	{
+		_hayes_set_mode(hayes, channel, HAYES_MODE_PDU);
+		if(pdu != NULL)
+			/* FIXME only send data once prompted to */
+			hayeschannel_queue_data(channel, pdu, strlen(pdu));
+	}
+	if(status == HCS_SUCCESS || status == HCS_ERROR
+			|| status == HCS_TIMEOUT)
+	{
+		free(pdu);
+		hayes_command_set_data(command, NULL);
+	}
 	return status;
 }
 
