@@ -1077,10 +1077,80 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 
 
 /* hayes_parse_pdu */
+static int _parse_pdu_resume(Hayes * hayes, HayesChannel * channel);
+static int _parse_pdu_send(Hayes * hayes, HayesChannel * channel);
+
 static int _hayes_parse_pdu(Hayes * hayes, HayesChannel * channel)
 {
-	/* FIXME implement */
-	return -1;
+	size_t i;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__,
+			(unsigned long)channel->rd_buf_cnt);
+	for(i = 0; i < channel->rd_buf_cnt; i++)
+		fprintf(stderr, " %02x", channel->rd_buf[i]);
+	fputc('\n', stderr);
+#endif
+	for(i = 0; i < channel->rd_buf_cnt;)
+	{
+		if(channel->rd_buf[i] == '\r'
+				|| channel->rd_buf[i] == '\n')
+		{
+			/* ignore carriage returns */
+			i++;
+			continue;
+		}
+		/* look for the PDU prompt */
+		if(channel->rd_buf[i] != '>')
+			return _parse_pdu_resume(hayes, channel);
+		if(i + 1 >= channel->rd_buf_cnt)
+			/* we need more data */
+			break;
+		if(channel->rd_buf[++i] != ' ')
+			return _parse_pdu_resume(hayes, channel);
+		_parse_pdu_send(hayes, channel);
+		i++;
+		break;
+	}
+	channel->rd_buf_cnt -= i;
+	memmove(channel->rd_buf, &channel->rd_buf[i], channel->rd_buf_cnt);
+	return 0;
+}
+
+static int _parse_pdu_resume(Hayes * hayes, HayesChannel * channel)
+{
+	char eop = 0x1a;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	/* XXX check for errors and report them */
+	hayeschannel_queue_data(channel, &eop, sizeof(eop));
+	if(channel->channel != NULL && channel->wr_source == 0)
+		channel->wr_source = g_io_add_watch(channel->channel, G_IO_OUT,
+				_on_watch_can_write, channel);
+	_hayes_set_mode(hayes, channel, HAYES_MODE_COMMAND);
+	return 0;
+}
+
+static int _parse_pdu_send(Hayes * hayes, HayesChannel * channel)
+{
+	HayesCommand * command = (channel->queue != NULL)
+		? channel->queue->data : NULL;
+	char * pdu;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(command != NULL && hayes_command_get_status(command) == HCS_ACTIVE
+			&& (pdu = hayes_command_get_data(command)) != NULL)
+	{
+		/* XXX check for errors and report them */
+		hayeschannel_queue_data(channel, pdu, strlen(pdu));
+		free(pdu);
+		hayes_command_set_data(command, NULL);
+	}
+	return _parse_pdu_resume(hayes, channel);
 }
 
 
@@ -2798,21 +2868,24 @@ static HayesCommandStatus _on_request_message_send(HayesCommand * command,
 {
 	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
+	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MESSAGE_SENT];
 	char * pdu;
 
-	pdu = hayes_command_get_data(command);
-	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS)
-	{
+	if((pdu = hayes_command_get_data(command)) != NULL
+			&& (status = _on_request_generic(command, status,
+					priv)) == HCS_ACTIVE)
 		_hayes_set_mode(hayes, channel, HAYES_MODE_PDU);
-		if(pdu != NULL)
-			/* FIXME only send data once prompted to */
-			hayeschannel_queue_data(channel, pdu, strlen(pdu));
-	}
 	if(status == HCS_SUCCESS || status == HCS_ERROR
 			|| status == HCS_TIMEOUT)
 	{
 		free(pdu);
 		hayes_command_set_data(command, NULL);
+	}
+	if(status == HCS_ERROR)
+	{
+		event->message_sent.error = "Could not send message";
+		event->message_sent.id = 0;
+		hayes->helper->event(hayes->helper->modem, event);
 	}
 	return status;
 }
