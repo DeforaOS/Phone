@@ -1857,6 +1857,7 @@ static char * _request_attention_unsupported(Hayes * hayes,
 		ModemRequest * request)
 {
 	HayesRequest * hrequest = request->unsupported.request;
+	(void) hayes;
 
 	if(strcmp(request->unsupported.modem, plugin.name) != 0)
 		return NULL;
@@ -2706,6 +2707,7 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 {
 	char const * answer;
 	char const * p;
+	(void) priv;
 
 	if(status != HCS_ACTIVE)
 		return status;
@@ -2930,6 +2932,7 @@ static void _on_code_call_error(HayesChannel * channel, char const * answer)
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command = (channel->queue != NULL)
 		? channel->queue->data : NULL;
+	(void) answer;
 
 	if(command != NULL)
 		hayes_command_set_status(command, HCS_ERROR);
@@ -3718,6 +3721,7 @@ static void _on_code_connect(HayesChannel * channel, char const * answer)
 	int wfd;
 	int rfd;
 	GError * error = NULL;
+	(void) answer;
 
 	if(command != NULL) /* XXX else report error? */
 		hayes_command_set_status(command, HCS_SUCCESS);
