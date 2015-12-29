@@ -1206,7 +1206,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	char const * attention;
 	const char suffix[] = "\r\n";
 	size_t size;
-	char * p;
+	char * buf;
 	guint timeout;
 
 	if(channel->queue == NULL) /* nothing to send */
@@ -1229,17 +1229,18 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	fprintf(stderr, "DEBUG: %s() pushing \"%s\"\n", __func__, attention);
 #endif
 	size = strlen(prefix) + strlen(attention) + sizeof(suffix);
-	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + size)) == NULL)
+	if((buf = malloc(size)) == NULL
+			|| snprintf(buf, size, "%s%s%s", prefix, attention,
+				suffix) != (int)size - 1
+			|| hayeschannel_queue_data(channel, buf, size - 1) != 0)
 	{
+		free(buf);
 		hayes_command_set_status(command, HCS_ERROR);
 		hayeschannel_queue_pop(channel);
 		return -hayes->helper->error(hayes->helper->modem, strerror(
 					errno), 1);
 	}
-	channel->wr_buf = p;
-	snprintf(&channel->wr_buf[channel->wr_buf_cnt], size, "%s%s%s", prefix,
-			attention, suffix);
-	channel->wr_buf_cnt += size - 1;
+	free(buf);
 	if(channel->channel != NULL && channel->wr_source == 0)
 		channel->wr_source = g_io_add_watch(channel->channel, G_IO_OUT,
 				_on_watch_can_write, channel);

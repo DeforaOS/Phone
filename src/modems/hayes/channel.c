@@ -19,6 +19,7 @@
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <string.h>
 #include "command.h"
 #include "channel.h"
 
@@ -73,8 +74,14 @@ void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks)
 int hayeschannel_queue_data(HayesChannel * channel, char const * buf,
 		size_t size)
 {
-	/* FIXME implement */
-	return -1;
+	char * p;
+
+	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + size)) == NULL)
+		return -1;
+	channel->wr_buf = p;
+	memcpy(&channel->wr_buf[channel->wr_buf_cnt], buf, size);
+	channel->wr_buf_cnt += size;
+	return 0;
 }
 
 
