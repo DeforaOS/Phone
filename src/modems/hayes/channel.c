@@ -16,6 +16,9 @@
 
 
 #include <stdlib.h>
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include "command.h"
 #include "channel.h"
 
