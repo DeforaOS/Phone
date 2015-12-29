@@ -42,6 +42,12 @@ typedef struct _USSDCode
 
 /* constants */
 /* Germany */
+static USSDCode _ussd_codes_de_ccc_32c3[] =
+{
+	{ "*#100#",	"Number request"				},
+	{ NULL,		NULL						}
+};
+
 /* E-Plus, see http://www.prepaid-wiki.de/index.php5/E-Plus */
 static USSDCode _ussd_codes_de_eplus[] =
 {
@@ -98,6 +104,7 @@ static const struct
 } _ussd_operators[] =
 {
 	/* FIXME obtain the corresponding operator names */
+	{ "CCC 32C3",	NULL,	_ussd_codes_de_ccc_32c3			},
 	{ "E-Plus",	NULL,	_ussd_codes_de_eplus			},
 	{ "FYVE",	NULL,	_ussd_codes_de_fyve			},
 	{ "Monacell",	NULL,	_ussd_codes_fr_virgin			},
