@@ -991,7 +991,7 @@ static void _hayes_log(Hayes * hayes, HayesChannel * channel,
 
 	if(channel->fp == NULL)
 		return;
-	if(fprintf(channel->fp, "\n%s: ", prefix) == EOF
+	if(fprintf(channel->fp, "\n%s", (prefix != NULL) ? prefix : "") == EOF
 			|| fwrite(buf, sizeof(*buf), cnt, channel->fp) < cnt)
 	{
 		helper->error(NULL, strerror(errno), 1);
@@ -2274,7 +2274,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	status = g_io_channel_read_chars(source,
 			&channel->rd_buf[channel->rd_buf_cnt], inc, &cnt,
 			&error);
-	_hayes_log(hayes, channel, "MODEM",
+	_hayes_log(hayes, channel, "MODEM: ",
 			&channel->rd_buf[channel->rd_buf_cnt], cnt);
 	channel->rd_buf_cnt += cnt;
 	switch(status)
@@ -2376,7 +2376,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		return FALSE; /* should not happen */
 	status = g_io_channel_write_chars(source, channel->wr_buf,
 			channel->wr_buf_cnt, &cnt, &error);
-	_hayes_log(hayes, channel, "PHONE", channel->wr_buf, cnt);
+	_hayes_log(hayes, channel, "PHONE: ", channel->wr_buf, cnt);
 	if(cnt != 0) /* some data may have been written anyway */
 	{
 		channel->wr_buf_cnt -= cnt;
