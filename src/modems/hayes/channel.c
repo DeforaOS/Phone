@@ -49,6 +49,21 @@ void hayeschannel_destroy(HayesChannel * channel)
 }
 
 
+/* accessors */
+/* hayeschannel_has_quirks */
+int hayeschannel_has_quirks(HayesChannel * channel, unsigned int quirks)
+{
+	return ((channel->quirks & quirks) == quirks) ? 1 : 0;
+}
+
+
+/* hayeschannel_set_quirks */
+void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks)
+{
+	channel->quirks = quirks;
+}
+
+
 /* useful */
 /* queue management */
 /* hayeschannel_queue_flush */

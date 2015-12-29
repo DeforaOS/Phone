@@ -88,6 +88,11 @@ typedef struct _HayesChannel
 void hayeschannel_init(HayesChannel * channel, ModemPlugin * modem);
 void hayeschannel_destroy(HayesChannel * channel);
 
+/* accessors */
+int hayeschannel_has_quirks(HayesChannel * channel, unsigned int quirks);
+void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks);
+
+/* useful */
 /* queue management */
 void hayeschannel_queue_flush(HayesChannel * channel);
 int hayeschannel_queue_pop(HayesChannel * channel);

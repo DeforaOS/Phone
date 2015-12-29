@@ -839,7 +839,8 @@ static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
 	ret = malloc(len);
 	if(addr != NULL && ret != NULL)
 	{
-		if(channel->quirks & HAYES_QUIRK_WANT_SMSC_IN_PDU)
+		if(hayeschannel_has_quirks(channel,
+					HAYES_QUIRK_WANT_SMSC_IN_PDU))
 			smsc = "00";
 		snprintf(ret, len, "%s%s%02lX%s%s%s%s%02lX%s\x1a",
 				smsc, prefix, (unsigned long)strlen(number),
@@ -1295,7 +1296,7 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 #endif
 	if(request == NULL)
 		return -1;
-	if(channel->quirks & HAYES_QUIRK_CONNECTED_LINE_DISABLED
+	if(hayeschannel_has_quirks(channel, HAYES_QUIRK_CONNECTED_LINE_DISABLED)
 			&& type == HAYES_REQUEST_CONNECTED_LINE_ENABLE)
 		request->type = HAYES_REQUEST_CONNECTED_LINE_DISABLE;
 	for(i = 0; i < count; i++)
@@ -1742,7 +1743,7 @@ static char * _request_attention_message_send(Hayes * hayes,
 		free(pdu);
 		return NULL;
 	}
-	if(channel->quirks & HAYES_QUIRK_WANT_SMSC_IN_PDU)
+	if(hayeschannel_has_quirks(channel, HAYES_QUIRK_WANT_SMSC_IN_PDU))
 		pdulen -= 2;
 	/* FIXME really issue using two separate commands */
 	snprintf(ret, len, "%s%lu\r\n%s", cmd, ((unsigned long)pdulen - 1) / 2,
@@ -1825,8 +1826,8 @@ static char * _request_attention_sim_pin(Hayes * hayes, HayesChannel * channel,
 		hayes->helper->error(NULL, strerror(errno), 1);
 		return NULL;
 	}
-	format = (channel->quirks & HAYES_QUIRK_CPIN_NO_QUOTES) ? "%s%s"
-		: "%s\"%s\"";
+	format = hayeschannel_has_quirks(channel, HAYES_QUIRK_CPIN_NO_QUOTES)
+		? "%s%s" : "%s\"%s\"";
 	snprintf(ret, len, format, cmd, password);
 	return ret;
 }
@@ -1847,8 +1848,8 @@ static char * _request_attention_sim_puk(Hayes * hayes, HayesChannel * channel,
 		hayes->helper->error(NULL, strerror(errno), 1);
 		return NULL;
 	}
-	format = (channel->quirks & HAYES_QUIRK_CPIN_NO_QUOTES) ? "%s%s,"
-		: "%s\"%s\",";
+	format = hayeschannel_has_quirks(channel, HAYES_QUIRK_CPIN_NO_QUOTES)
+		? "%s%s," : "%s\"%s\",";
 	snprintf(ret, len, format, cmd, password);
 	return ret;
 }
@@ -2496,7 +2497,8 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 					event->authentication.name) == 0))
 	{
 		/* verify that it really worked */
-		timeout = (channel->quirks & HAYES_QUIRK_CPIN_SLOW) ? 1000 : 0;
+		timeout = hayeschannel_has_quirks(channel,
+				HAYES_QUIRK_CPIN_SLOW) ? 1000 : 0;
 		channel->authenticate_count = 0;
 		if(channel->authenticate_source != 0)
 			g_source_remove(channel->authenticate_source);
@@ -2969,7 +2971,8 @@ static void _on_code_cbc(HayesChannel * channel, char const * answer)
 			event->battery_level.charging = 1;
 		case MODEM_BATTERY_STATUS_CONNECTED:
 			f = v;
-			if(channel->quirks & HAYES_QUIRK_BATTERY_70)
+			if(hayeschannel_has_quirks(channel,
+						HAYES_QUIRK_BATTERY_70))
 				f /= 70.0;
 			else
 				f /= 100.0;
@@ -3056,7 +3059,7 @@ static void _on_code_cgmm(HayesChannel * channel, char const * answer)
 	free(channel->model_name);
 	channel->model_name = p;
 	event->model.name = p;
-	channel->quirks = hayes_quirks(event->model.vendor, p);
+	hayeschannel_set_quirks(channel, hayes_quirks(event->model.vendor, p));
 }
 
 
@@ -3169,7 +3172,8 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case 100: /* unknown error */
-			if((channel->quirks & HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
+			if(hayeschannel_has_quirks(channel,
+						HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
 				break;
 			/* fallback */
 		case 14: /* SIM busy */
@@ -3659,7 +3663,8 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
 		case 500: /* Unknown error */
-			if((channel->quirks & HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
+			if(hayeschannel_has_quirks(channel,
+						HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
 				break;
 			/* fallback */
 		case 314: /* SIM busy */
