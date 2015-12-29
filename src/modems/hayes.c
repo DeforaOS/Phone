@@ -177,8 +177,8 @@ static void _hayes_log(Hayes * hayes, HayesChannel * channel,
 
 /* parser */
 static int _hayes_parse(Hayes * hayes, HayesChannel * channel);
-static int _hayes_parse_trigger(Hayes * hayes, HayesChannel * channel,
-		char const * answer, HayesCommand * command);
+static int _hayes_parse_trigger(HayesChannel * channel, char const * answer,
+		HayesCommand * command);
 
 /* queue */
 static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
@@ -1054,8 +1054,8 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 
 	if(command == NULL || hayes_command_get_status(command) != HCS_ACTIVE)
 		/* this was most likely unsollicited */
-		return _hayes_parse_trigger(hayes, channel, line, NULL);
-	_hayes_parse_trigger(hayes, channel, line, command);
+		return _hayes_parse_trigger(channel, line, NULL);
+	_hayes_parse_trigger(channel, line, command);
 	if(hayes_command_answer_append(command, line) != 0)
 		return -1;
 	if((status = hayes_command_get_status(command)) == HCS_ACTIVE)
@@ -1071,8 +1071,8 @@ static int _parse_do(Hayes * hayes, HayesChannel * channel)
 
 
 /* hayes_parse_trigger */
-static int _hayes_parse_trigger(Hayes * hayes, HayesChannel * channel,
-		char const * answer, HayesCommand * command)
+static int _hayes_parse_trigger(HayesChannel * channel, char const * answer,
+		HayesCommand * command)
 {
 	size_t i;
 	const size_t count = sizeof(_hayes_code_handlers)
@@ -1083,8 +1083,7 @@ static int _hayes_parse_trigger(Hayes * hayes, HayesChannel * channel,
 	int j;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(hayes, \"%s\", command)\n", __func__,
-			answer);
+	fprintf(stderr, "DEBUG: %s(\"%s\", command)\n", __func__, answer);
 #endif
 	/* if the handler is obvious return directly */
 	for(i = 0; i < count; i++)
