@@ -1213,7 +1213,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() pushing \"%s\"\n", __func__, attention);
 #endif
-	size = strlen(prefix) + strlen(attention) + sizeof(suffix) - 1;
+	size = strlen(prefix) + strlen(attention) + sizeof(suffix);
 	if((p = realloc(channel->wr_buf, channel->wr_buf_cnt + size)) == NULL)
 	{
 		hayes_command_set_status(command, HCS_ERROR);
@@ -1224,7 +1224,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	channel->wr_buf = p;
 	snprintf(&channel->wr_buf[channel->wr_buf_cnt], size, "%s%s%s", prefix,
 			attention, suffix);
-	channel->wr_buf_cnt += size;
+	channel->wr_buf_cnt += size - 1;
 	if(channel->channel != NULL && channel->wr_source == 0)
 		channel->wr_source = g_io_add_watch(channel->channel, G_IO_OUT,
 				_on_watch_can_write, channel);
