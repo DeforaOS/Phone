@@ -22,6 +22,8 @@
 #include "Phone/modem.h"
 #include "../src/modems/hayes/channel.c"
 #include "../src/modems/hayes/command.c"
+#include "../src/modems/hayes/common.c"
+#include "../src/modems/hayes/pdu.c"
 #include "../src/modems/hayes/quirks.c"
 #include "../src/modems/hayes.c"
 
@@ -125,8 +127,8 @@ static int _pdu_encode(void)
 	ModemMessageEncoding encoding = MODEM_MESSAGE_ENCODING_ASCII;
 	char const string[] = "This is just a test.";
 
-	if((pdu = _hayes_message_to_pdu(NULL, number, encoding,
-					sizeof(string) - 1, string)) == NULL)
+	if((pdu = hayespdu_encode(number, encoding, sizeof(string) - 1, string,
+					0)) == NULL)
 		return -1;
 	ret = _pdu_decode(pdu, number, NULL, encoding, string);
 	free(pdu);

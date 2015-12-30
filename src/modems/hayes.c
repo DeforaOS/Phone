@@ -40,6 +40,8 @@
 #include <Phone/modem.h>
 #include "hayes/channel.h"
 #include "hayes/command.h"
+#include "hayes/common.h"
+#include "hayes/pdu.h"
 #include "hayes/quirks.h"
 #include "hayes.h"
 
@@ -164,7 +166,6 @@ static unsigned char _hayes_convert_gsm_to_iso(unsigned char c);
 static void _hayes_convert_gsm_string_to_iso(char * str);
 static unsigned char _hayes_convert_iso_to_gsm(unsigned char c);
 static void _hayes_convert_iso_string_to_gsm(char * str);
-static char * _hayes_convert_number_to_address(char const * number);
 
 /* messages */
 static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
@@ -290,8 +291,6 @@ static void _on_code_cusd(HayesChannel * channel, char const * answer);
 static void _on_code_ext_error(HayesChannel * channel, char const * answer);
 
 /* helpers */
-static int _is_figure(int c);
-static int _is_number(char const * number);
 static int _is_ussd_code(char const * number);
 
 
@@ -794,126 +793,6 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 }
 
 
-/* messages */
-/* hayes_message_to_pdu */
-static char * _text_to_data(char const * text, size_t length);
-static char * _text_to_sept(char const * text, size_t length);
-
-static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
-		ModemMessageEncoding encoding, size_t length,
-		char const * content)
-{
-	char * ret = NULL;
-	char * addr;
-	char * data;
-	char * p = NULL;
-	size_t len;
-	char const * smsc = "";
-	char const prefix[] = "1100";
-	char const pid[] = "00";
-	char dcs[] = "0X";
-	char const vp[] = "AA";
-
-	if(!_is_number(number))
-		return NULL;
-	switch(encoding)
-	{
-		case MODEM_MESSAGE_ENCODING_UTF8:
-			/* FIXME really support UTF-8 when necessary */
-			p = g_convert(content, length, "ISO-8859-1", "UTF-8",
-					NULL, NULL, NULL);
-			if(p == NULL)
-				return NULL;
-			content = p;
-			length = strlen(content);
-		case MODEM_MESSAGE_ENCODING_ASCII:
-			dcs[1] = '0';
-			data = _text_to_sept(content, length);
-			break;
-		case MODEM_MESSAGE_ENCODING_DATA:
-			dcs[1] = '4';
-			data = _text_to_data(content, length);
-			break;
-		default:
-			return NULL;
-	}
-	addr = _hayes_convert_number_to_address(number);
-	len = 2 + sizeof(prefix) + 2 + strlen((addr != NULL) ? addr : "")
-		+ sizeof(pid) + sizeof(dcs) + sizeof(vp) + 2
-		+ strlen((data != NULL) ? data : "");
-	if(addr != NULL && (ret = malloc(len)) != NULL)
-	{
-		/* XXX no longer require the channel here */
-		if(channel != NULL && hayeschannel_has_quirks(channel,
-					HAYES_QUIRK_WANT_SMSC_IN_PDU))
-			smsc = "00";
-		if(snprintf(ret, len, "%s%s%02lX%s%s%s%s%02lX%s", smsc, prefix,
-					(unsigned long)strlen(number), addr,
-					pid, dcs, vp, (unsigned long)length,
-					data) >= (int)len)
-		{
-			free(ret);
-			ret = NULL;
-		}
-	}
-	free(data);
-	free(addr);
-	free(p);
-	return ret;
-}
-
-static char * _text_to_data(char const * text, size_t length)
-{
-	char const tab[16] = "0123456789ABCDEF";
-	char * buf;
-	size_t i;
-
-	if((buf = malloc((length * 2) + 1)) == NULL)
-		return NULL;
-	for(i = 0; i < length; i++)
-	{
-		buf[(i * 2) + 1] = tab[text[i] & 0x0f];
-		buf[i * 2] = tab[((text[i] & 0xf0) >> 4) & 0x0f];
-	}
-	buf[i * 2] = '\0';
-	return buf;
-}
-
-/* this function is heavily inspired from gsmd, (c) 2007 OpenMoko, Inc. */
-static char * _text_to_sept(char const * text, size_t length)
-{
-	char const tab[16] = "0123456789ABCDEF";
-	unsigned char const * t = (unsigned char const *)text;
-	char * buf;
-	char * p;
-	size_t i;
-	unsigned char ch1;
-	unsigned char ch2;
-	int shift = 0;
-
-	if((buf = malloc((length * 2) + 1)) == NULL)
-		return NULL;
-	p = buf;
-	for(i = 0; i < length; i++)
-	{
-		ch1 = t[i] & 0x7f;
-		ch1 = (ch1 >> shift);
-		ch2 = t[i + 1] & 0x7f;
-		ch2 = ch2 << (7 - shift);
-		ch1 = ch1 | ch2;
-		*(p++) = tab[(ch1 & 0xf0) >> 4];
-		*(p++) = tab[ch1 & 0x0f];
-		if(++shift == 7)
-		{
-			shift = 0;
-			i++;
-		}
-	}
-	*p = '\0';
-	return buf;
-}
-
-
 /* conversions */
 /* hayes_convert_gsm_to_iso */
 static unsigned char _hayes_convert_gsm_to_iso(unsigned char c)
@@ -961,37 +840,6 @@ static void _hayes_convert_iso_string_to_gsm(char * str)
 }
 
 
-/* hayes_convert_number_to_address */
-static char * _hayes_convert_number_to_address(char const * number)
-{
-	char * ret;
-	size_t len;
-	size_t i;
-
-	len = 2 + strlen(number) + 2;
-	if((ret = malloc(len)) == NULL)
-		return NULL;
-	snprintf(ret, len, "%02X", (number[0] == '+') ? 145 : 129);
-	if(number[0] == '+')
-		number++;
-	for(i = 2; i < len; i+=2)
-	{
-		if(number[i - 2] == '\0')
-			break;
-		ret[i] = number[i - 1];
-		ret[i + 1] = number[i - 2];
-		if(number[i - 1] == '\0')
-		{
-			ret[i] = 'F';
-			i+=2;
-			break;
-		}
-	}
-	ret[i] = '\0';
-	return ret;
-}
-
-
 /* logging */
 /* hayes_log */
 static void _hayes_log(Hayes * hayes, HayesChannel * channel,
@@ -1008,6 +856,20 @@ static void _hayes_log(Hayes * hayes, HayesChannel * channel,
 		fclose(channel->fp);
 		channel->fp = NULL;
 	}
+}
+
+
+/* messages */
+/* hayes_message_to_pdu */
+static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
+		ModemMessageEncoding encoding, size_t length,
+		char const * content)
+{
+	unsigned int flags = 0;
+
+	flags |= hayeschannel_has_quirks(channel, HAYES_QUIRK_WANT_SMSC_IN_PDU)
+		? HAYESPDU_FLAG_WANT_SMSC : 0;
+	return hayespdu_encode(number, encoding, length, content, flags);
 }
 
 
@@ -1551,7 +1413,7 @@ static char * _request_attention_call(HayesChannel * channel,
 		request->call.number = "";
 	if(request->call.number[0] == '\0')
 		number = "L";
-	else if(!_is_number(request->call.number))
+	else if(!hayescommon_number_is_valid(request->call.number))
 		return NULL;
 	event = &channel->events[MODEM_EVENT_TYPE_CALL];
 	/* XXX should really be set at the time of the call */
@@ -1646,7 +1508,8 @@ static char * _request_attention_contact_edit(unsigned int id,
 	char buf[128];
 	char * p;
 
-	if(!_is_number(number) || name == NULL || strlen(name) == 0)
+	if(!hayescommon_number_is_valid(number)
+			|| name == NULL || strlen(name) == 0)
 		/* XXX report error */
 		return NULL;
 	if((p = g_convert(name, -1, "ISO-8859-1", "UTF-8", NULL, NULL, NULL))
@@ -1687,7 +1550,8 @@ static char * _request_attention_contact_new(char const * name,
 	char buf[128];
 	char * p;
 
-	if(!_is_number(number) || name == NULL || strlen(name) == 0)
+	if(!hayescommon_number_is_valid(number)
+			|| name == NULL || strlen(name) == 0)
 		/* XXX report error */
 		return NULL;
 	if((p = g_convert(name, -1, "ISO-8859-1", "UTF-8", NULL, NULL, NULL))
@@ -4270,31 +4134,6 @@ static void _on_code_ext_error(HayesChannel * channel, char const * answer)
 
 
 /* helpers */
-/* is_figure */
-static int _is_figure(int c)
-{
-	if(c >= '0' && c <= '9')
-		return 1;
-	if(c == '*' || c == '+' || c == '#')
-		return 1;
-	if(c >= 'A' && c <= 'D')
-		return 1;
-	return 0;
-}
-
-
-/* is_number */
-static int _is_number(char const * number)
-{
-	if(number == NULL || number[0] == '\0')
-		return 0;
-	while(*number != '\0')
-		if(!_is_figure(*(number++)))
-			return 0;
-	return 1;
-}
-
-
 /* is_ussd_code */
 static int _is_ussd_code(char const * number)
 {
