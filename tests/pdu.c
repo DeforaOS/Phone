@@ -37,18 +37,23 @@ static int _pdu(void);
 static int _pdu_decode(char const * pdu, char const * number,
 		char const * datetime, ModemMessageEncoding encoding,
 		char const * message);
+static int _pdu_encode(void);
 
 
 /* functions */
 /* pdu */
 static int _pdu(void)
 {
-	return _pdu_decode("07916407058099F9040B916407752743"
-			"F60000990121017580001554747A0E4A"
-			"CF416110945805B5CBF379F85C06",
-			"+46705772346", "12/10/1999 12:57:08",
-			MODEM_MESSAGE_ENCODING_UTF8,
-			"This is a PDU message");
+	int ret = 0;
+
+	ret |= (_pdu_decode("07916407058099F9040B916407752743"
+				"F60000990121017580001554747A0E4A"
+				"CF416110945805B5CBF379F85C06",
+				"+46705772346", "12/10/1999 12:57:08",
+				MODEM_MESSAGE_ENCODING_UTF8,
+				"This is a PDU message") != 0) ? 1 : 0;
+	ret |= (_pdu_encode() != 0) ? 2 : 0;
+	return ret;
 }
 
 
@@ -111,8 +116,26 @@ static int _pdu_decode(char const * pdu, char const * number,
 }
 
 
+/* pdu_encode */
+static int _pdu_encode(void)
+{
+	int ret;
+	char * pdu;
+	char const number[] = "1234";
+	ModemMessageEncoding encoding = MODEM_MESSAGE_ENCODING_ASCII;
+	char const string[] = "This is just a test.";
+
+	if((pdu = _hayes_message_to_pdu(NULL, number, encoding,
+					sizeof(string) - 1, string)) == NULL)
+		return -1;
+	ret = _pdu_decode(pdu, number, NULL, encoding, string);
+	free(pdu);
+	return ret;
+}
+
+
 /* main */
 int main(void)
 {
-	return (_pdu() == 0) ? 0 : 2;
+	return (_pdu() << 1);
 }

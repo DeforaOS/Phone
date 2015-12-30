@@ -843,7 +843,8 @@ static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
 		+ strlen((data != NULL) ? data : "");
 	if(addr != NULL && (ret = malloc(len)) != NULL)
 	{
-		if(hayeschannel_has_quirks(channel,
+		/* XXX no longer require the channel here */
+		if(channel != NULL && hayeschannel_has_quirks(channel,
 					HAYES_QUIRK_WANT_SMSC_IN_PDU))
 			smsc = "00";
 		if(snprintf(ret, len, "%s%s%02lX%s%s%s%s%02lX%s", smsc, prefix,
