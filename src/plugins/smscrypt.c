@@ -420,6 +420,7 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 		return;
 	/* FIXME check that there are no duplicates */
 	secret = helper->config_get(helper->phone, "smscrypt", number);
+	/* XXX report errors */
 	if(helper->config_set(helper->phone, "smscrypt", arg2, secret) == 0
 			&& helper->config_set(helper->phone, "smscrypt", number,
 				NULL) == 0)
@@ -441,6 +442,7 @@ static void _on_settings_secret_edited(GtkCellRenderer * renderer, gchar * arg1,
 		gtk_tree_model_get(model, &iter, SMSCC_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
+	/* XXX report errors */
 	if(helper->config_set(helper->phone, "smscrypt", number, arg2) == 0)
 		gtk_list_store_set(smscrypt->store, &iter, SMSCC_SECRET, arg2,
 				-1);
