@@ -25,6 +25,10 @@
 #include "../src/modems/hayes/quirks.c"
 #include "../src/modems/hayes.c"
 
+#ifndef PROGNAME
+# define PROGNAME "pdu"
+#endif
+
 
 /* pdu */
 /* prototypes */
@@ -66,13 +70,13 @@ static int _pdu_decode(char const * pdu, char const * number,
 
 	if((p = _cmgr_pdu_parse(pdu, &timestamp, buf, &e, &len)) == NULL)
 	{
-		fputs("pdu: Unable to decode PDU\n", stderr);
+		fputs(PROGNAME ": Unable to decode PDU\n", stderr);
 		return -1;
 	}
 	/* check the number */
 	if(strcmp(buf, number) != 0)
 	{
-		fputs("pdu: Did not match the number\n", stderr);
+		fputs(PROGNAME ": Did not match the number\n", stderr);
 		ret = 1;
 	}
 	/* check the timestamp */
@@ -86,19 +90,20 @@ static int _pdu_decode(char const * pdu, char const * number,
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	if(strcmp(buf, datetime) != 0)
 	{
-		fprintf(stderr, "pdu: %s: %s\n", buf, "Did not match the date");
+		fprintf(stderr, "%s: %s: %s\n", PROGNAME, buf,
+				"Did not match the date");
 		ret = 2;
 	}
 	/* check the encoding */
 	if(e != encoding)
 	{
-		fputs("pdu: Did not match the encoding\n", stderr);
+		fputs(PROGNAME ": Did not match the encoding\n", stderr);
 		ret = 3;
 	}
 	/* check the message */
 	if(strcmp(p, message) != 0)
 	{
-		fputs("pdu: Did not match the message\n", stderr);
+		fputs(PROGNAME ": Did not match the message\n", stderr);
 		ret = 4;
 	}
 	free(p);

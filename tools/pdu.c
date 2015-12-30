@@ -22,6 +22,10 @@
 #include "../src/modems/hayes/quirks.c"
 #include "../src/modems/hayes.c"
 
+#ifndef PROGNAME
+# define PROGNAME "pdu"
+#endif
+
 
 /* pdu */
 /* prototypes */
@@ -46,7 +50,7 @@ static int _pdu_decode(char const * string)
 	if((p = _cmgr_pdu_parse(string, &timestamp, number, &encoding, &len))
 			== NULL)
 	{
-		fputs("pdu: Unable to decode PDU\n", stderr);
+		fputs(PROGNAME ": Unable to decode PDU\n", stderr);
 		return -1;
 	}
 	printf("Number: %s\n", number);
@@ -71,7 +75,7 @@ static int _pdu_encode(char const * number, char const * string)
 				strlen(string), &cmd, &pdu) != 0)
 #endif
 	{
-		fputs("pdu: Unable to encode PDU\n", stderr);
+		fputs(PROGNAME ": Unable to encode PDU\n", stderr);
 		return -1;
 	}
 #if 0
@@ -105,8 +109,8 @@ static void _hexdump(char const * buf, size_t len)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: pdu -d pdu\n"
-"       pdu -e -n number text\n", stderr);
+	fputs("Usage: " PROGNAME " -d pdu\n"
+"       " PROGNAME " -e -n number text\n", stderr);
 	return 1;
 }
 
