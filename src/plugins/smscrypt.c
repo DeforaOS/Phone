@@ -28,6 +28,14 @@
 /* SMSCrypt */
 /* private */
 /* types */
+typedef enum _SMSCryptColumn
+{
+	SMSCC_NUMBER = 0,
+	SMSCC_SECRET
+} SMSCryptColumn;
+#define SMSCC_LAST SMSCC_SECRET
+#define SMSCC_COUNT (SMSCC_LAST + 1)
+
 typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
@@ -113,7 +121,8 @@ static SMSCrypt * _smscrypt_init(PhonePluginHelper * helper)
 	smscrypt->helper = helper;
 	smscrypt->len = sizeof(smscrypt->buf);
 	smscrypt->window = NULL;
-	smscrypt->store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+	smscrypt->store = gtk_list_store_new(SMSCC_COUNT, G_TYPE_STRING,
+			G_TYPE_STRING);
 	helper->config_foreach(helper->phone, "smscrypt", _init_foreach,
 			smscrypt);
 	return smscrypt;
@@ -126,7 +135,8 @@ static void _init_foreach(char const * variable, char const * value,
 	GtkTreeIter iter;
 
 	gtk_list_store_append(smscrypt->store, &iter);
-	gtk_list_store_set(smscrypt->store, &iter, 0, variable, 1, value, -1);
+	gtk_list_store_set(smscrypt->store, &iter, SMSCC_NUMBER, variable,
+			SMSCC_SECRET, value, -1);
 }
 
 
@@ -333,15 +343,15 @@ static void _smscrypt_settings(SMSCrypt * smscrypt)
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
 	g_signal_connect(renderer, "edited", G_CALLBACK(
 				_on_settings_number_edited), smscrypt);
-	column = gtk_tree_view_column_new_with_attributes("Number",
-			renderer, "text", 0, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Number", renderer,
+			"text", SMSCC_NUMBER, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(smscrypt->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
 	g_signal_connect(renderer, "edited", G_CALLBACK(
 				_on_settings_secret_edited), smscrypt);
-	column = gtk_tree_view_column_new_with_attributes("Secret",
-			renderer, "text", 1, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Secret", renderer,
+			"text", SMSCC_SECRET, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(smscrypt->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), smscrypt->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -370,8 +380,8 @@ static void _on_settings_delete(gpointer data)
 		return;
 	if(gtk_tree_selection_get_selected(treesel, NULL, &iter) != TRUE)
 		return;
-	gtk_tree_model_get(GTK_TREE_MODEL(smscrypt->store), &iter, 0, &number,
-			-1);
+	gtk_tree_model_get(GTK_TREE_MODEL(smscrypt->store), &iter,
+			SMSCC_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
 	helper->config_set(helper->phone, "smscrypt", number, NULL);
@@ -385,7 +395,8 @@ static void _on_settings_new(gpointer data)
 	GtkTreeIter iter;
 
 	gtk_list_store_append(smscrypt->store, &iter);
-	gtk_list_store_set(smscrypt->store, &iter, 0, "number", -1);
+	gtk_list_store_set(smscrypt->store, &iter, SMSCC_NUMBER, "number",
+			-1);
 }
 
 static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
@@ -399,7 +410,7 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 	char const * secret;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
-		gtk_tree_model_get(model, &iter, 0, &number, -1);
+		gtk_tree_model_get(model, &iter, SMSCC_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
 	/* FIXME check that there are no duplicates */
@@ -407,7 +418,8 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 	if(helper->config_set(helper->phone, "smscrypt", arg2, secret) == 0
 			&& helper->config_set(helper->phone, "smscrypt", number,
 				NULL) == 0)
-		gtk_list_store_set(smscrypt->store, &iter, 0, arg2, -1);
+		gtk_list_store_set(smscrypt->store, &iter,
+				SMSCC_NUMBER, arg2, -1);
 	g_free(number);
 }
 
@@ -421,10 +433,11 @@ static void _on_settings_secret_edited(GtkCellRenderer * renderer, gchar * arg1,
 	char * number = NULL;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
-		gtk_tree_model_get(model, &iter, 0, &number, -1);
+		gtk_tree_model_get(model, &iter, SMSCC_NUMBER, &number, -1);
 	if(number == NULL)
 		return;
 	if(helper->config_set(helper->phone, "smscrypt", number, arg2) == 0)
-		gtk_list_store_set(smscrypt->store, &iter, 1, arg2, -1);
+		gtk_list_store_set(smscrypt->store, &iter, SMSCC_SECRET, arg2,
+				-1);
 	g_free(number);
 }
