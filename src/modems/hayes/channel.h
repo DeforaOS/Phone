@@ -100,4 +100,6 @@ int hayeschannel_queue_data(HayesChannel * channel, char const * buf,
 void hayeschannel_queue_flush(HayesChannel * channel);
 int hayeschannel_queue_pop(HayesChannel * channel);
 
+void hayeschannel_stop(HayesChannel * channel);
+
 #endif /* PHONE_MODEM_HAYES_CHANNEL_H */

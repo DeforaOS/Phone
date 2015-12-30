@@ -592,33 +592,13 @@ static int _start_is_started(Hayes * hayes)
 
 
 /* hayes_stop */
-static void _stop_channel(Hayes * hayes, HayesChannel * channel);
-static void _stop_giochannel(GIOChannel * channel);
-static void _stop_string(char ** string);
-
 static int _hayes_stop(Hayes * hayes)
 {
-	hayescommon_source_reset(&hayes->source);
-	_stop_channel(hayes, &hayes->channel);
-	return 0;
-}
-
-static void _stop_channel(Hayes * hayes, HayesChannel * channel)
-{
+	HayesChannel * channel = &hayes->channel;
 	ModemEvent * event;
-	size_t i;
 
-	/* close everything opened */
-	if(channel->fp != NULL)
-		fclose(channel->fp);
-	channel->fp = NULL;
-	hayeschannel_queue_flush(channel);
-	_stop_giochannel(channel->channel);
-	channel->channel = NULL;
-	_stop_giochannel(channel->rd_ppp_channel);
-	channel->rd_ppp_channel = NULL;
-	_stop_giochannel(channel->wr_ppp_channel);
-	channel->wr_ppp_channel = NULL;
+	hayescommon_source_reset(&hayes->source);
+	hayeschannel_stop(channel);
 	/* report disconnection if already connected */
 	event = &channel->events[MODEM_EVENT_TYPE_CONNECTION];
 	if(event->connection.connected)
@@ -637,47 +617,7 @@ static void _stop_channel(Hayes * hayes, HayesChannel * channel)
 		event->battery_level.charging = 0;
 		hayes->helper->event(hayes->helper->modem, event);
 	}
-	/* remove internal data */
-	_stop_string(&channel->authentication_name);
-	_stop_string(&channel->authentication_error);
-	_stop_string(&channel->call_number);
-	_stop_string(&channel->contact_name);
-	_stop_string(&channel->contact_number);
-	_stop_string(&channel->gprs_username);
-	_stop_string(&channel->gprs_password);
-	_stop_string(&channel->message_number);
-	_stop_string(&channel->model_identity);
-	_stop_string(&channel->model_name);
-	_stop_string(&channel->model_serial);
-	_stop_string(&channel->model_vendor);
-	_stop_string(&channel->model_version);
-	_stop_string(&channel->registration_media);
-	_stop_string(&channel->registration_operator);
-	/* reset events */
-	memset(&channel->events, 0, sizeof(channel->events));
-	for(i = 0; i < sizeof(channel->events) / sizeof(*channel->events); i++)
-		channel->events[i].type = i;
-	/* reset mode */
-	channel->mode = HAYESCHANNEL_MODE_INIT;
-}
-
-static void _stop_giochannel(GIOChannel * channel)
-{
-	GError * error = NULL;
-
-	if(channel == NULL)
-		return;
-	/* XXX should the file descriptor also be closed? */
-	if(g_io_channel_shutdown(channel, TRUE, &error) == G_IO_STATUS_ERROR)
-		/* XXX report error */
-		g_error_free(error);
-	g_io_channel_unref(channel);
-}
-
-static void _stop_string(char ** string)
-{
-	free(*string);
-	*string = NULL;
+	return 0;
 }
 
 
