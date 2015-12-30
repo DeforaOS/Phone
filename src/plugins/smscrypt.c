@@ -31,9 +31,11 @@
 typedef enum _SMSCryptColumn
 {
 	SMSCC_NUMBER = 0,
-	SMSCC_SECRET
+	SMSCC_SECRET,
+	SMSCC_NUMBER_PLACEHOLDER,
+	SMSCC_SECRET_PLACEHOLDER
 } SMSCryptColumn;
-#define SMSCC_LAST SMSCC_SECRET
+#define SMSCC_LAST SMSCC_SECRET_PLACEHOLDER
 #define SMSCC_COUNT (SMSCC_LAST + 1)
 
 typedef struct _PhonePlugin
@@ -122,7 +124,7 @@ static SMSCrypt * _smscrypt_init(PhonePluginHelper * helper)
 	smscrypt->len = sizeof(smscrypt->buf);
 	smscrypt->window = NULL;
 	smscrypt->store = gtk_list_store_new(SMSCC_COUNT, G_TYPE_STRING,
-			G_TYPE_STRING);
+			G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	helper->config_foreach(helper->phone, "smscrypt", _init_foreach,
 			smscrypt);
 	return smscrypt;
@@ -344,14 +346,16 @@ static void _smscrypt_settings(SMSCrypt * smscrypt)
 	g_signal_connect(renderer, "edited", G_CALLBACK(
 				_on_settings_number_edited), smscrypt);
 	column = gtk_tree_view_column_new_with_attributes("Number", renderer,
-			"text", SMSCC_NUMBER, NULL);
+			"text", SMSCC_NUMBER,
+			"placeholder-text", SMSCC_NUMBER_PLACEHOLDER, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(smscrypt->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	g_object_set(G_OBJECT(renderer), "editable", TRUE, NULL);
 	g_signal_connect(renderer, "edited", G_CALLBACK(
 				_on_settings_secret_edited), smscrypt);
 	column = gtk_tree_view_column_new_with_attributes("Secret", renderer,
-			"text", SMSCC_SECRET, NULL);
+			"text", SMSCC_SECRET,
+			"placeholder-text", SMSCC_SECRET_PLACEHOLDER, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(smscrypt->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), smscrypt->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -395,8 +399,9 @@ static void _on_settings_new(gpointer data)
 	GtkTreeIter iter;
 
 	gtk_list_store_append(smscrypt->store, &iter);
-	gtk_list_store_set(smscrypt->store, &iter, SMSCC_NUMBER, "number",
-			-1);
+	gtk_list_store_set(smscrypt->store, &iter,
+			SMSCC_NUMBER_PLACEHOLDER, "Number",
+			SMSCC_SECRET_PLACEHOLDER, "Secret", -1);
 }
 
 static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
