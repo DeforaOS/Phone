@@ -401,7 +401,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_message_list },
 	{ HAYES_REQUEST_MESSAGE_UNSOLLICITED_DISABLE,	"AT+CNMI=0",
 		_on_request_generic },
-	{ HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE,	"AT+CNMI=1",
+	{ HAYES_REQUEST_MESSAGE_UNSOLLICITED_ENABLE,	"AT+CNMI=1,1",
 		_on_request_generic }, /* XXX report error? */
 	{ HAYES_REQUEST_MODEL,				"AT+CGMM",
 		_on_request_model },
