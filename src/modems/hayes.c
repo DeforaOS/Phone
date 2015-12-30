@@ -585,7 +585,7 @@ static int _start_is_started(Hayes * hayes)
 {
 	if(hayes->source != 0)
 		return 1;
-	if(hayes->channel.channel != NULL)
+	if(hayeschannel_is_started(&hayes->channel))
 		return 1;
 	return 0;
 }

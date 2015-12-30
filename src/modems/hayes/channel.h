@@ -91,6 +91,9 @@ void hayeschannel_destroy(HayesChannel * channel);
 
 /* accessors */
 int hayeschannel_has_quirks(HayesChannel * channel, unsigned int quirks);
+
+int hayeschannel_is_started(HayesChannel * channel);
+
 void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks);
 
 /* useful */

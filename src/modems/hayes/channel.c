@@ -57,6 +57,13 @@ int hayeschannel_has_quirks(HayesChannel * channel, unsigned int quirks)
 }
 
 
+/* hayeschannel_is_started */
+int hayeschannel_is_started(HayesChannel * channel)
+{
+	return (channel->channel != NULL) ? 1 : 0;
+}
+
+
 /* hayeschannel_set_quirks */
 void hayeschannel_set_quirks(HayesChannel * channel, unsigned int quirks)
 {
