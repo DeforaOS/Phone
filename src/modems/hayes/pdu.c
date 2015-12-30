@@ -61,6 +61,7 @@ char * hayespdu_encode(char const * number, ModemMessageEncoding encoding,
 				return NULL;
 			content = p;
 			length = strlen(content);
+			/* fallback */
 		case MODEM_MESSAGE_ENCODING_ASCII:
 			dcs[1] = '0';
 			data = _encode_text_to_sept(content, length);
