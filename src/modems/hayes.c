@@ -199,7 +199,6 @@ static int _hayes_request_type(Hayes * hayes, HayesChannel * channel,
 
 /* reset */
 static void _hayes_reset(Hayes * hayes);
-static void _hayes_reset_source(guint * source);
 
 /* callbacks */
 static gboolean _on_channel_authenticate(gpointer data);
@@ -600,7 +599,7 @@ static void _stop_string(char ** string);
 
 static int _hayes_stop(Hayes * hayes)
 {
-	_hayes_reset_source(&hayes->source);
+	hayescommon_source_reset(&hayes->source);
 	_stop_channel(hayes, &hayes->channel);
 	return 0;
 }
@@ -763,8 +762,8 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 		case HAYESCHANNEL_MODE_PDU:
 			break; /* nothing to do */
 		case HAYESCHANNEL_MODE_DATA:
-			_hayes_reset_source(&channel->rd_ppp_source);
-			_hayes_reset_source(&channel->wr_ppp_source);
+			hayescommon_source_reset(&channel->rd_ppp_source);
+			hayescommon_source_reset(&channel->wr_ppp_source);
 			/* reset registration media */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(channel->registration_media);
@@ -1180,7 +1179,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	if(channel->channel != NULL && channel->wr_source == 0)
 		channel->wr_source = g_io_add_watch(channel->channel, G_IO_OUT,
 				_on_watch_can_write, channel);
-	_hayes_reset_source(&channel->timeout);
+	hayescommon_source_reset(&channel->timeout);
 	if((timeout = hayes_command_get_timeout(command)) != 0)
 		channel->timeout = g_timeout_add(timeout, _on_channel_timeout,
 				channel);
@@ -1843,16 +1842,6 @@ static void _hayes_reset(Hayes * hayes)
 {
 	_hayes_stop(hayes);
 	_hayes_start(hayes, hayes->retry);
-}
-
-
-/* hayes_reset_source */
-static void _hayes_reset_source(guint * source)
-{
-	if(*source == 0)
-		return;
-	g_source_remove(*source);
-	*source = 0;
 }
 
 
@@ -3958,7 +3947,7 @@ static void _on_code_cpin(HayesChannel * channel, char const * answer)
 	if(strcmp(answer, "READY") == 0)
 	{
 		event->authentication.status = MODEM_AUTHENTICATION_STATUS_OK;
-		_hayes_reset_source(&channel->authenticate_source);
+		hayescommon_source_reset(&channel->authenticate_source);
 		channel->authenticate_count = 0;
 	}
 	else if(strcmp(answer, "SIM PIN") == 0

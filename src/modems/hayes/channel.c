@@ -21,15 +21,11 @@
 #endif
 #include <string.h>
 #include "command.h"
+#include "common.h"
 #include "channel.h"
 
 
 /* HayesChannel */
-/* private */
-/* prototypes */
-static void _hayeschannel_reset_source(guint * source);
-
-
 /* public */
 /* functions */
 /* hayeschannel_init */
@@ -98,16 +94,16 @@ void hayeschannel_queue_flush(HayesChannel * channel)
 	free(channel->rd_buf);
 	channel->rd_buf = NULL;
 	channel->rd_buf_cnt = 0;
-	_hayeschannel_reset_source(&channel->rd_source);
+	hayescommon_source_reset(&channel->rd_source);
 	free(channel->wr_buf);
 	channel->wr_buf = NULL;
 	channel->wr_buf_cnt = 0;
-	_hayeschannel_reset_source(&channel->wr_source);
-	_hayeschannel_reset_source(&channel->rd_ppp_source);
-	_hayeschannel_reset_source(&channel->wr_ppp_source);
+	hayescommon_source_reset(&channel->wr_source);
+	hayescommon_source_reset(&channel->rd_ppp_source);
+	hayescommon_source_reset(&channel->wr_ppp_source);
 	channel->authenticate_count = 0;
-	_hayeschannel_reset_source(&channel->authenticate_source);
-	_hayeschannel_reset_source(&channel->timeout);
+	hayescommon_source_reset(&channel->authenticate_source);
+	hayescommon_source_reset(&channel->timeout);
 }
 
 
@@ -119,24 +115,11 @@ int hayeschannel_queue_pop(HayesChannel * channel)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	_hayeschannel_reset_source(&channel->timeout);
+	hayescommon_source_reset(&channel->timeout);
 	if(channel->queue == NULL) /* nothing to send */
 		return 0;
 	command = channel->queue->data; /* XXX assumes it's valid */
 	hayes_command_delete(command);
 	channel->queue = g_slist_remove(channel->queue, command);
 	return 0;
-}
-
-
-/* private */
-/* functions */
-/* hayeschannel_reset_source */
-static void _hayeschannel_reset_source(guint * source)
-{
-	/* XXX duplicated from _hayes_reset_source() */
-	if(*source == 0)
-		return;
-	g_source_remove(*source);
-	*source = 0;
 }
