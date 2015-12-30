@@ -661,7 +661,7 @@ static void _stop_channel(Hayes * hayes, HayesChannel * channel)
 	for(i = 0; i < sizeof(channel->events) / sizeof(*channel->events); i++)
 		channel->events[i].type = i;
 	/* reset mode */
-	channel->mode = HAYES_MODE_INIT;
+	channel->mode = HAYESCHANNEL_MODE_INIT;
 }
 
 static void _stop_giochannel(GIOChannel * channel)
@@ -759,11 +759,11 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 		return;
 	switch(channel->mode)
 	{
-		case HAYES_MODE_INIT:
-		case HAYES_MODE_COMMAND:
-		case HAYES_MODE_PDU:
+		case HAYESCHANNEL_MODE_INIT:
+		case HAYESCHANNEL_MODE_COMMAND:
+		case HAYESCHANNEL_MODE_PDU:
 			break; /* nothing to do */
-		case HAYES_MODE_DATA:
+		case HAYESCHANNEL_MODE_DATA:
 			_hayes_reset_source(&channel->rd_ppp_source);
 			_hayes_reset_source(&channel->wr_ppp_source);
 			/* reset registration media */
@@ -777,11 +777,11 @@ static void _hayes_set_mode(Hayes * hayes, HayesChannel * channel,
 	}
 	switch(mode)
 	{
-		case HAYES_MODE_INIT:
-		case HAYES_MODE_COMMAND:
-		case HAYES_MODE_PDU:
+		case HAYESCHANNEL_MODE_INIT:
+		case HAYESCHANNEL_MODE_COMMAND:
+		case HAYESCHANNEL_MODE_PDU:
 			break; /* nothing to do */
-		case HAYES_MODE_DATA:
+		case HAYESCHANNEL_MODE_DATA:
 			/* report GPRS registration */
 			event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 			free(channel->registration_media);
@@ -1133,7 +1133,7 @@ static int _parse_pdu_resume(Hayes * hayes, HayesChannel * channel)
 	if(channel->channel != NULL && channel->wr_source == 0)
 		channel->wr_source = g_io_add_watch(channel->channel, G_IO_OUT,
 				_on_watch_can_write, channel);
-	_hayes_set_mode(hayes, channel, HAYES_MODE_COMMAND);
+	_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_COMMAND);
 	return 0;
 }
 
@@ -1218,14 +1218,14 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 
 	switch(channel->mode)
 	{
-		case HAYES_MODE_INIT:
+		case HAYESCHANNEL_MODE_INIT:
 			/* ignore commands besides initialization */
 			if(hayes_command_get_priority(command)
 					!= HCP_IMMEDIATE)
 				return -1;
-		case HAYES_MODE_COMMAND:
-		case HAYES_MODE_DATA:
-		case HAYES_MODE_PDU:
+		case HAYESCHANNEL_MODE_COMMAND:
+		case HAYESCHANNEL_MODE_DATA:
+		case HAYESCHANNEL_MODE_PDU:
 			if(hayes_command_set_status(command, HCS_QUEUED)
 					!= HCS_QUEUED)
 				return -1;
@@ -1286,7 +1286,7 @@ static int _queue_push_do(Hayes * hayes, HayesChannel * channel)
 	if(channel->queue == NULL) /* nothing to send */
 		return 0;
 	command = channel->queue->data;
-	if(channel->mode == HAYES_MODE_DATA)
+	if(channel->mode == HAYESCHANNEL_MODE_DATA)
 #if 0 /* FIXME does not seem to work (see ATS2, ATS12) */
 		prefix = "+++\r\n";
 #else
@@ -1599,13 +1599,13 @@ static char * _request_attention_call_hangup(Hayes * hayes,
 	 *   . still ringing => simply inject "\r\n"?
 	 *   . in the queue => simply remove?
 	 * - while ringing (incoming) */
-	if(channel->mode == HAYES_MODE_DATA)
+	if(channel->mode == HAYESCHANNEL_MODE_DATA)
 	{
 		event->connection.connected = 0;
 		event->connection.in = 0;
 		event->connection.out = 0;
 		hayes->helper->event(hayes->helper->modem, event);
-		_hayes_set_mode(hayes, channel, HAYES_MODE_INIT);
+		_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_INIT);
 		return NULL;
 	}
 	/* return "ATH" if currently ringing */
@@ -2316,7 +2316,8 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 		case HCS_ACTIVE: /* give it another chance */
 			break;
 		case HCS_SUCCESS: /* we can initialize */
-			_hayes_set_mode(hayes, channel, HAYES_MODE_COMMAND);
+			_hayes_set_mode(hayes, channel,
+					HAYESCHANNEL_MODE_COMMAND);
 			_hayes_request_type(hayes, channel,
 					HAYES_REQUEST_LOCAL_ECHO_DISABLE);
 			_hayes_request_type(hayes, channel,
@@ -2383,14 +2384,14 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 	}
 	switch(channel->mode)
 	{
-		case HAYES_MODE_INIT:
-		case HAYES_MODE_COMMAND:
+		case HAYESCHANNEL_MODE_INIT:
+		case HAYESCHANNEL_MODE_COMMAND:
 			_hayes_parse(hayes, channel);
 			break;
-		case HAYES_MODE_PDU:
+		case HAYESCHANNEL_MODE_PDU:
 			_hayes_parse_pdu(hayes, channel);
 			break;
-		case HAYES_MODE_DATA:
+		case HAYESCHANNEL_MODE_DATA:
 			if(channel->wr_ppp_channel == NULL
 					|| channel->wr_ppp_source != 0)
 				break;
@@ -2440,7 +2441,7 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 			channel->rd_ppp_source = 0;
 			event->connection.connected = 0;
 			helper->event(helper->modem, event);
-			_hayes_set_mode(hayes, channel, HAYES_MODE_INIT);
+			_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_INIT);
 			return FALSE;
 	}
 	if(channel->channel != NULL && channel->wr_source == 0)
@@ -2548,7 +2549,7 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 			channel->wr_ppp_source = 0;
 			event->connection.connected = 0;
 			helper->event(helper->modem, event);
-			_hayes_set_mode(hayes, channel, HAYES_MODE_INIT);
+			_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_INIT);
 			return FALSE;
 	}
 	if(channel->rd_buf_cnt > 0) /* there is more data to write */
@@ -2878,7 +2879,7 @@ static HayesCommandStatus _on_request_message_send(HayesCommand * command,
 	if((pdu = hayes_command_get_data(command)) != NULL
 			&& (status = _on_request_generic(command, status,
 					priv)) == HCS_ACTIVE)
-		_hayes_set_mode(hayes, channel, HAYES_MODE_PDU);
+		_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_PDU);
 	if(status == HCS_SUCCESS || status == HCS_ERROR
 			|| status == HCS_TIMEOUT)
 	{
@@ -3850,7 +3851,7 @@ static void _on_code_connect(HayesChannel * channel, char const * answer)
 
 	if(command != NULL) /* XXX else report error? */
 		hayes_command_set_status(command, HCS_SUCCESS);
-	_hayes_set_mode(hayes, channel, HAYES_MODE_DATA);
+	_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_DATA);
 	/* pppd */
 	if((p = helper->config_get(helper->modem, "pppd")) != NULL)
 	{

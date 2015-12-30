@@ -38,7 +38,7 @@ void hayeschannel_init(HayesChannel * channel, ModemPlugin * modem)
 	size_t i;
 
 	channel->hayes = modem;
-	channel->mode = HAYES_MODE_INIT;
+	channel->mode = HAYESCHANNEL_MODE_INIT;
 	for(i = 0; i < sizeof(channel->events) / sizeof(*channel->events); i++)
 		channel->events[i].type = i;
 	channel->events[MODEM_EVENT_TYPE_REGISTRATION].registration.signal

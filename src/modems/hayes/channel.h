@@ -29,10 +29,10 @@
 /* types */
 typedef enum _HayesChannelMode
 {
-	HAYES_MODE_INIT = 0,
-	HAYES_MODE_COMMAND,
-	HAYES_MODE_DATA,
-	HAYES_MODE_PDU
+	HAYESCHANNEL_MODE_INIT = 0,
+	HAYESCHANNEL_MODE_COMMAND,
+	HAYESCHANNEL_MODE_DATA,
+	HAYESCHANNEL_MODE_PDU
 } HayesChannelMode;
 
 typedef struct _HayesChannel
