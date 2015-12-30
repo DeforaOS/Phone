@@ -15,7 +15,6 @@
 /* FIXME:
  * - implement priorities again
  * - parse messages from within +CMGL already
- * - test with a SIM card without a PIN code
  * - add MCT callbacks/buttons to change the SIM code (via a helper in phone.c)
  * - implement new contacts */
 
