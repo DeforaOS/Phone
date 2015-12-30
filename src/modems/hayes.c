@@ -840,14 +840,14 @@ static char * _hayes_message_to_pdu(HayesChannel * channel, char const * number,
 	addr = _hayes_convert_number_to_address(number);
 	len = 2 + sizeof(prefix) + 2 + strlen((addr != NULL) ? addr : "")
 		+ sizeof(pid) + sizeof(dcs) + sizeof(vp) + 2
-		+ strlen((data != NULL) ? data : "") + 1;
+		+ strlen((data != NULL) ? data : "");
 	ret = malloc(len);
 	if(addr != NULL && ret != NULL)
 	{
 		if(hayeschannel_has_quirks(channel,
 					HAYES_QUIRK_WANT_SMSC_IN_PDU))
 			smsc = "00";
-		snprintf(ret, len, "%s%s%02lX%s%s%s%s%02lX%s\x1a",
+		snprintf(ret, len, "%s%s%02lX%s%s%s%s%02lX%s",
 				smsc, prefix, (unsigned long)strlen(number),
 				addr, pid, dcs, vp, (unsigned long)length,
 				data);
@@ -1831,7 +1831,7 @@ static char * _request_attention_message_send(Hayes * hayes,
 	pdulen = strlen(pdu);
 	if(hayeschannel_has_quirks(channel, HAYES_QUIRK_WANT_SMSC_IN_PDU))
 		pdulen -= 2;
-	snprintf(ret, len, "%s%lu", cmd, ((unsigned long)pdulen - 1) / 2);
+	snprintf(ret, len, "%s%lu", cmd, (unsigned long)pdulen / 2);
 	*data = pdu;
 	return ret;
 }
