@@ -215,49 +215,52 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		GIOCondition condition, gpointer data);
 
 static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_battery_level(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_call(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_call_incoming(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_call_status(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_functional(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_functional_enable(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_functional_enable_reset(
-		HayesCommand * command, HayesCommandStatus status, void * priv);
+		HayesCommand * command, HayesCommandStatus status,
+		HayesChannel * channel);
 static HayesCommandStatus _on_request_generic(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_message(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_message_send(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_model(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_registration(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_registration_automatic(
-		HayesCommand * command, HayesCommandStatus status, void * priv);
+		HayesCommand * command, HayesCommandStatus status,
+		HayesChannel * channel);
 static HayesCommandStatus _on_request_registration_disabled(
-		HayesCommand * command, HayesCommandStatus status, void * priv);
+		HayesCommand * command, HayesCommandStatus status,
+		HayesChannel * channel);
 static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 static HayesCommandStatus _on_request_unsupported(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 
 static void _on_code_call_error(HayesChannel * channel, char const * answer);
 static void _on_code_cbc(HayesChannel * channel, char const * answer);
@@ -2040,7 +2043,7 @@ static gboolean _on_queue_timeout(gpointer data)
 /* on_reset_settle */
 static void _reset_settle_command(HayesChannel * channel, char const * string);
 static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 
 static gboolean _on_reset_settle(gpointer data)
 {
@@ -2086,9 +2089,8 @@ static void _reset_settle_command(HayesChannel * channel, char const * string)
 }
 
 static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 
 #ifdef DEBUG
@@ -2350,16 +2352,15 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 
 /* on_request_authenticate */
 static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
 	const char sim_pin[] = "SIM PIN";
 	const char sim_puk[] = "SIM PUK";
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 	guint timeout;
 
-	switch((status = _on_request_generic(command, status, priv)))
+	switch((status = _on_request_generic(command, status, channel)))
 	{
 		case HCS_SUCCESS:
 			break;
@@ -2397,13 +2398,13 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 
 /* on_request_battery_level */
 static HayesCommandStatus _on_request_battery_level(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_BATTERY_LEVEL];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	hayes->helper->event(hayes->helper->modem, event);
 	return status;
@@ -2412,13 +2413,13 @@ static HayesCommandStatus _on_request_battery_level(HayesCommand * command,
 
 /* on_request_call */
 static HayesCommandStatus _on_request_call(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CALL];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	hayes->helper->event(hayes->helper->modem, event);
 	return status;
@@ -2427,14 +2428,13 @@ static HayesCommandStatus _on_request_call(HayesCommand * command,
 
 /* on_request_call_incoming */
 static HayesCommandStatus _on_request_call_incoming(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CALL];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS
-			&& status != HCS_ERROR)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS && status != HCS_ERROR)
 		return status;
 	event->call.direction = MODEM_CALL_DIRECTION_INCOMING;
 	event->call.status = (status == HCS_SUCCESS)
@@ -2446,14 +2446,13 @@ static HayesCommandStatus _on_request_call_incoming(HayesCommand * command,
 
 /* on_request_call_outgoing */
 static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CALL];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS
-			&& status != HCS_ERROR)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS && status != HCS_ERROR)
 		return status;
 	event->call.direction = MODEM_CALL_DIRECTION_OUTGOING;
 	event->call.status = (status == HCS_SUCCESS)
@@ -2465,13 +2464,12 @@ static HayesCommandStatus _on_request_call_outgoing(HayesCommand * command,
 
 /* on_request_call_status */
 static HayesCommandStatus _on_request_call_status(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS
-			&& status != HCS_ERROR)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS && status != HCS_ERROR)
 		return status;
 	_hayes_request_type(hayes, channel, HAYES_REQUEST_PHONE_ACTIVE);
 	return status;
@@ -2480,13 +2478,13 @@ static HayesCommandStatus _on_request_call_status(HayesCommand * command,
 
 /* on_request_contact_delete */
 static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CONTACT_DELETED];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	hayes->helper->event(hayes->helper->modem, event);
 	return status;
@@ -2495,11 +2493,10 @@ static HayesCommandStatus _on_request_contact_delete(HayesCommand * command,
 
 /* on_request_contact_list */
 static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
-
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	/* XXX could probably be more efficient */
 	_hayes_request_type(channel->hayes, channel,
@@ -2510,12 +2507,11 @@ static HayesCommandStatus _on_request_contact_list(HayesCommand * command,
 
 /* on_request_functional */
 static HayesCommandStatus _on_request_functional(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 
-	switch((status = _on_request_generic(command, status, priv)))
+	switch((status = _on_request_generic(command, status, channel)))
 	{
 		case HCS_ERROR:
 			/* try to enable */
@@ -2531,12 +2527,11 @@ static HayesCommandStatus _on_request_functional(HayesCommand * command,
 
 /* on_request_functional_enable */
 static HayesCommandStatus _on_request_functional_enable(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 
-	switch((status = _on_request_generic(command, status, priv)))
+	switch((status = _on_request_generic(command, status, channel)))
 	{
 		case HCS_ERROR:
 #if 0 /* XXX ignore for now (may simply be missing the PIN code) */
@@ -2562,12 +2557,12 @@ static HayesCommandStatus _on_request_functional_enable(HayesCommand * command,
 
 /* on_request_functional_enable_reset */
 static HayesCommandStatus _on_request_functional_enable_reset(
-		HayesCommand * command, HayesCommandStatus status, void * priv)
+		HayesCommand * command, HayesCommandStatus status,
+		HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 
-	switch((status = _on_request_generic(command, status, priv)))
+	switch((status = _on_request_generic(command, status, channel)))
 	{
 		case HCS_SUCCESS:
 			_on_code_cfun(channel, "1"); /* XXX ugly workaround */
@@ -2586,11 +2581,11 @@ static HayesCommandStatus _on_request_functional_enable_reset(
 
 /* on_request_generic */
 static HayesCommandStatus _on_request_generic(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
 	char const * answer;
 	char const * p;
-	(void) priv;
+	(void) channel;
 
 	if(status != HCS_ACTIVE)
 		return status;
@@ -2609,11 +2604,12 @@ static HayesCommandStatus _on_request_generic(HayesCommand * command,
 
 /* on_request_message */
 static HayesCommandStatus _on_request_message(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
 	HayesRequestMessageData * data;
 
-	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
+	if((status = _on_request_generic(command, status, channel))
+			== HCS_SUCCESS
 			|| status == HCS_ERROR || status == HCS_TIMEOUT)
 		if((data = hayes_command_get_data(command)) != NULL)
 		{
@@ -2626,13 +2622,13 @@ static HayesCommandStatus _on_request_message(HayesCommand * command,
 
 /* on_request_message_delete */
 static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MESSAGE_DELETED];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	hayes->helper->event(hayes->helper->modem, event);
 	return status;
@@ -2641,11 +2637,12 @@ static HayesCommandStatus _on_request_message_delete(HayesCommand * command,
 
 /* on_request_message_list */
 static HayesCommandStatus _on_request_message_list(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
 	HayesRequestMessageData * data;
 
-	if((status = _on_request_generic(command, status, priv)) == HCS_SUCCESS
+	if((status = _on_request_generic(command, status, channel))
+			== HCS_SUCCESS
 			|| status == HCS_ERROR || status == HCS_TIMEOUT)
 		if((data = hayes_command_get_data(command)) != NULL)
 		{
@@ -2658,16 +2655,15 @@ static HayesCommandStatus _on_request_message_list(HayesCommand * command,
 
 /* on_request_message_send */
 static HayesCommandStatus _on_request_message_send(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MESSAGE_SENT];
 	char * pdu;
 
 	if((pdu = hayes_command_get_data(command)) != NULL
 			&& (status = _on_request_generic(command, status,
-					priv)) == HCS_ACTIVE)
+					channel)) == HCS_ACTIVE)
 		_hayes_set_mode(hayes, channel, HAYESCHANNEL_MODE_PDU);
 	if(status == HCS_SUCCESS || status == HCS_ERROR
 			|| status == HCS_TIMEOUT)
@@ -2687,13 +2683,13 @@ static HayesCommandStatus _on_request_message_send(HayesCommand * command,
 
 /* on_request_model */
 static HayesCommandStatus _on_request_model(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_MODEL];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	hayes->helper->event(hayes->helper->modem, event);
 	return status;
@@ -2702,12 +2698,12 @@ static HayesCommandStatus _on_request_model(HayesCommand * command,
 
 /* on_request_registration */
 static HayesCommandStatus _on_request_registration(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	/* force a registration status */
 	_hayes_request_type(hayes, channel, HAYES_REQUEST_REGISTRATION);
@@ -2717,13 +2713,12 @@ static HayesCommandStatus _on_request_registration(HayesCommand * command,
 
 /* on_request_registration_automatic */
 static HayesCommandStatus _on_request_registration_automatic(
-		HayesCommand * command, HayesCommandStatus status, void * priv)
+		HayesCommand * command, HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 
-	status = _on_request_generic(command, status, priv);
+	status = _on_request_generic(command, status, channel);
 	switch(status)
 	{
 		case HCS_UNKNOWN:
@@ -2757,13 +2752,13 @@ static HayesCommandStatus _on_request_registration_automatic(
 
 /* on_request_registration_disabled */
 static HayesCommandStatus _on_request_registration_disabled(
-		HayesCommand * command, HayesCommandStatus status, void * priv)
+		HayesCommand * command, HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_REGISTRATION];
 
-	if((status = _on_request_generic(command, status, priv)) != HCS_SUCCESS)
+	if((status = _on_request_generic(command, status, channel))
+			!= HCS_SUCCESS)
 		return status;
 	event->registration.mode = MODEM_REGISTRATION_MODE_DISABLED;
 	/* force a registration status */
@@ -2774,9 +2769,8 @@ static HayesCommandStatus _on_request_registration_disabled(
 
 /* on_request_sim_pin_valid */
 static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
-	HayesChannel * channel = priv;
 	Hayes * hayes = channel->hayes;
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_AUTHENTICATION];
 	ModemRequest request;
@@ -2784,7 +2778,7 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, status);
 #endif
-	if((status = _on_request_generic(command, status, priv)) == HCS_ERROR
+	if((status = _on_request_generic(command, status, channel)) == HCS_ERROR
 			|| status == HCS_TIMEOUT)
 	{
 		event->authentication.status
@@ -2831,10 +2825,10 @@ static HayesCommandStatus _on_request_sim_pin_valid(HayesCommand * command,
 
 /* on_request_unsupported */
 static HayesCommandStatus _on_request_unsupported(HayesCommand * command,
-		HayesCommandStatus status, void * priv)
+		HayesCommandStatus status, HayesChannel * channel)
 {
 	/* FIXME report an unsupported event with the result of the command */
-	return _on_request_generic(command, status, priv);
+	return _on_request_generic(command, status, channel);
 }
 
 

@@ -18,6 +18,8 @@
 #ifndef PHONE_MODEM_HAYES_COMMAND_H
 # define PHONE_MODEM_HAYES_COMMAND_H
 
+# include "channel.h"
+
 
 /* HayesCommand */
 /* public */
@@ -46,7 +48,7 @@ typedef enum _HayesCommandStatus
 typedef struct _HayesCommand HayesCommand;
 
 typedef HayesCommandStatus (*HayesCommandCallback)(HayesCommand * command,
-		HayesCommandStatus status, void * priv);
+		HayesCommandStatus status, HayesChannel * channel);
 
 
 /* prototypes */
@@ -63,7 +65,7 @@ HayesCommandStatus hayes_command_get_status(HayesCommand * command);
 unsigned int hayes_command_get_timeout(HayesCommand * command);
 int hayes_command_is_complete(HayesCommand * command);
 void hayes_command_set_callback(HayesCommand * command,
-		HayesCommandCallback callback, void * priv);
+		HayesCommandCallback callback, HayesChannel * channel);
 void hayes_command_set_data(HayesCommand * command, void * data);
 void hayes_command_set_priority(HayesCommand * command,
 		HayesCommandPriority priority);

@@ -31,7 +31,7 @@ struct _HayesCommand
 	String * attention;
 	unsigned int timeout;
 	HayesCommandCallback callback;
-	void * priv;
+	HayesChannel * channel;
 
 	/* answer */
 	String * answer;
@@ -55,7 +55,7 @@ HayesCommand * hayes_command_new(char const * attention)
 	command->attention = string_new(attention);
 	command->timeout = 30000;
 	command->callback = NULL;
-	command->priv = NULL;
+	command->channel = NULL;
 	command->answer = NULL;
 	command->data = NULL;
 	if(command->attention == NULL)
@@ -77,7 +77,7 @@ HayesCommand * hayes_command_new_copy(HayesCommand const * command)
 	ret->priority = command->priority;
 	ret->timeout = command->timeout;
 	ret->callback = command->callback;
-	ret->priv = command->priv;
+	ret->channel = command->channel;
 	return ret;
 }
 
@@ -145,10 +145,10 @@ int hayes_command_is_complete(HayesCommand * command)
 
 /* hayes_command_set_callback */
 void hayes_command_set_callback(HayesCommand * command,
-		HayesCommandCallback callback, void * priv)
+		HayesCommandCallback callback, HayesChannel * channel)
 {
 	command->callback = callback;
-	command->priv = priv;
+	command->channel = channel;
 }
 
 
@@ -210,6 +210,6 @@ HayesCommandStatus hayes_command_callback(HayesCommand * command)
 {
 	if(command->callback != NULL)
 		command->status = command->callback(command, command->status,
-				command->priv);
+				command->channel);
 	return command->status;
 }
