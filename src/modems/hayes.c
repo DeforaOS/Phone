@@ -2095,7 +2095,7 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 	fprintf(stderr, "DEBUG: %s(%s (%u))\n", __func__,
 			_hayes_command_status[status], status);
 #endif
-	status = _on_request_generic(command, status, hayes);
+	status = _on_request_generic(command, status, channel);
 	switch(status)
 	{
 		case HCS_UNKNOWN: /* ignore */
