@@ -41,6 +41,7 @@ typedef struct _HayesChannel
 
 	unsigned int quirks;
 
+	guint source;
 	guint timeout;
 	guint authenticate_count;
 	guint authenticate_source;

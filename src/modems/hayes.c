@@ -58,7 +58,6 @@ typedef struct _ModemPlugin
 	unsigned int retry;
 
 	/* modem */
-	guint source;
 	HayesChannel channel;
 } Hayes;
 
@@ -575,15 +574,15 @@ static int _hayes_start(Hayes * hayes, unsigned int retry)
 	hayes->retry = retry;
 	if(_start_is_started(hayes))
 		return 0;
-	if(hayes->source != 0)
-		g_source_remove(hayes->source);
-	hayes->source = g_idle_add(_on_channel_reset, &hayes->channel);
+	if(hayes->channel.source != 0)
+		g_source_remove(hayes->channel.source);
+	hayes->channel.source = g_idle_add(_on_channel_reset, &hayes->channel);
 	return 0;
 }
 
 static int _start_is_started(Hayes * hayes)
 {
-	if(hayes->source != 0)
+	if(hayes->channel.source != 0)
 		return 1;
 	if(hayeschannel_is_started(&hayes->channel))
 		return 1;
@@ -597,7 +596,7 @@ static int _hayes_stop(Hayes * hayes)
 	HayesChannel * channel = &hayes->channel;
 	ModemEvent * event;
 
-	hayescommon_source_reset(&hayes->source);
+	hayescommon_source_reset(&channel->source);
 	hayeschannel_stop(channel);
 	/* report disconnection if already connected */
 	event = &channel->events[MODEM_EVENT_TYPE_CONNECTION];
@@ -1841,7 +1840,7 @@ static gboolean _on_channel_reset(gpointer data)
 		}
 		hayes->helper->error(NULL, error_get(NULL), 1);
 		if(hayes->retry > 0)
-			hayes->source = g_timeout_add(hayes->retry,
+			channel->source = g_timeout_add(hayes->retry,
 					_on_channel_reset, channel);
 		return FALSE;
 	}
@@ -1865,7 +1864,7 @@ static gboolean _on_channel_reset(gpointer data)
 	g_io_channel_set_buffered(channel->channel, FALSE);
 	channel->rd_source = g_io_add_watch(channel->channel, G_IO_IN,
 			_on_watch_can_read, channel);
-	hayes->source = g_idle_add(_on_reset_settle, channel);
+	channel->source = g_idle_add(_on_reset_settle, channel);
 	return FALSE;
 }
 
@@ -2021,7 +2020,7 @@ static gboolean _on_queue_timeout(gpointer data)
 	Hayes * hayes = channel->hayes;
 	HayesCommand * command;
 
-	hayes->source = 0;
+	channel->source = 0;
 	if(channel->queue_timeout == NULL) /* nothing to send */
 		return FALSE;
 	command = channel->queue_timeout->data;
@@ -2029,7 +2028,7 @@ static gboolean _on_queue_timeout(gpointer data)
 	channel->queue_timeout = g_slist_remove(channel->queue_timeout,
 			command);
 	if(channel->queue_timeout != NULL)
-		hayes->source = g_timeout_add(timeout, _on_queue_timeout,
+		channel->source = g_timeout_add(timeout, _on_queue_timeout,
 				channel);
 	else
 		/* XXX check the registration again to be safe */
@@ -2046,9 +2045,8 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 static gboolean _on_reset_settle(gpointer data)
 {
 	HayesChannel * channel = data;
-	Hayes * hayes = channel->hayes;
 
-	hayes->source = 0;
+	channel->source = 0;
 	_reset_settle_command(channel, "ATZE0V1");
 	return FALSE;
 }
@@ -2056,9 +2054,8 @@ static gboolean _on_reset_settle(gpointer data)
 static gboolean _on_reset_settle2(gpointer data)
 {
 	HayesChannel * channel = data;
-	Hayes * hayes = channel->hayes;
 
-	hayes->source = 0;
+	channel->source = 0;
 	/* try an alternative initialization string */
 	_reset_settle_command(channel, "ATE0V1");
 	return FALSE;
@@ -2125,9 +2122,9 @@ static HayesCommandStatus _on_reset_settle_callback(HayesCommand * command,
 			break;
 		case HCS_TIMEOUT: /* try again */
 		case HCS_ERROR:
-			if(hayes->source != 0)
-				g_source_remove(hayes->source);
-			hayes->source = g_timeout_add(hayes->retry,
+			if(channel->source != 0)
+				g_source_remove(channel->source);
+			channel->source = g_timeout_add(hayes->retry,
 					_on_reset_settle2, channel);
 			break;
 	}
@@ -3100,8 +3097,8 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			hayes_command_set_data(command, NULL);
 			channel->queue_timeout = g_slist_append(
 					channel->queue_timeout, p);
-			if(hayes->source == 0)
-				hayes->source = g_timeout_add(timeout,
+			if(channel->source == 0)
+				channel->source = g_timeout_add(timeout,
 						_on_queue_timeout, channel);
 			break;
 		case 30:  /* No network service */
@@ -3592,8 +3589,8 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			hayes_command_set_data(command, NULL);
 			channel->queue_timeout = g_slist_append(
 					channel->queue_timeout, p);
-			if(hayes->source == 0)
-				hayes->source = g_timeout_add(timeout,
+			if(channel->source == 0)
+				channel->source = g_timeout_add(timeout,
 						_on_queue_timeout, channel);
 			break;
 		case 303: /* Operation not supported */
