@@ -43,7 +43,7 @@ typedef struct _ModemPlugin
 	GtkWidget * me_number;
 	GtkWidget * me_folder;
 	GtkWidget * me_message;
-	GtkWidget * notification;
+	GtkWidget * no_title;
 
 	/* events */
 	ModemEvent event_call;
@@ -334,10 +334,10 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 #endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-	debug->notification = gtk_entry_new();
-	g_signal_connect_swapped(debug->notification, "activate", G_CALLBACK(
+	debug->no_title = gtk_entry_new();
+	g_signal_connect_swapped(debug->no_title, "activate", G_CALLBACK(
 				_debug_on_notification), debug);
-	gtk_box_pack_start(GTK_BOX(hbox), debug->notification, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->no_title, TRUE, TRUE, 0);
 	widget = gtk_button_new_with_label("Send");
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"mail-send", GTK_ICON_SIZE_BUTTON));
@@ -602,7 +602,7 @@ static void _debug_on_notification(gpointer data)
 	char const * p;
 
 	memset(&event, 0, sizeof(event));
-	p = gtk_entry_get_text(GTK_ENTRY(debug->notification));
+	p = gtk_entry_get_text(GTK_ENTRY(debug->no_title));
 	event.type = MODEM_EVENT_TYPE_NOTIFICATION;
 	event.notification.content = p;
 	debug->helper->event(debug->helper->modem, &event);
