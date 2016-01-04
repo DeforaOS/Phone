@@ -36,6 +36,15 @@ typedef struct _PhonePlugin
 	GtkWidget * view;
 } Debug;
 
+typedef enum _DebugColumn
+{
+	DC_DATE = 0,
+	DC_DATE_DISPLAY,
+	DC_EVENT
+} DebugColumn;
+#define DC_LAST DC_EVENT
+#define DC_COUNT (DC_LAST + 1)
+
 typedef struct _DebugModemEvent
 {
 	ModemEventType event;
@@ -239,7 +248,7 @@ static Debug * _debug_init(PhonePluginHelper * helper)
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* events */
-	debug->events = gtk_list_store_new(3, G_TYPE_UINT, G_TYPE_STRING,
+	debug->events = gtk_list_store_new(DC_COUNT, G_TYPE_UINT, G_TYPE_STRING,
 			G_TYPE_STRING);
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
@@ -249,12 +258,12 @@ static Debug * _debug_init(PhonePluginHelper * helper)
 	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(debug->view), TRUE);
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("Time", renderer,
-			"text", 1, NULL);
-	gtk_tree_view_column_set_sort_column_id(column, 0);
+			"text", DC_DATE_DISPLAY, NULL);
+	gtk_tree_view_column_set_sort_column_id(column, DC_DATE);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug->view), column);
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("Event", renderer,
-			"text", 2, NULL);
+			"text", DC_EVENT, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(debug->view), column);
 	gtk_container_add(GTK_CONTAINER(widget), debug->view);
 	gtk_box_pack_start(GTK_BOX(vbox), widget, TRUE, TRUE, 0);
@@ -370,7 +379,8 @@ static int _debug_event(Debug * debug, PhoneEvent * event)
 			break;
 	}
 	gtk_list_store_append(debug->events, &iter);
-	gtk_list_store_set(debug->events, &iter, 0, date, 1, tbuf, 2, ebuf, -1);
+	gtk_list_store_set(debug->events, &iter, DC_DATE, date,
+			DC_DATE_DISPLAY, tbuf, DC_EVENT, ebuf, -1);
 	return 0;
 }
 
