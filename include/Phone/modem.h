@@ -106,6 +106,13 @@ typedef enum _ModemMessageStatus
 	MODEM_MESSAGE_STATUS_READ
 } ModemMessageStatus;
 
+typedef enum _ModemNotificationType
+{
+	MODEM_NOTIFICATION_TYPE_INFO = 0,
+	MODEM_NOTIFICATION_TYPE_ERROR,
+	MODEM_NOTIFICATION_TYPE_WARNING
+} ModemNotificationType;
+
 typedef enum _ModemRegistrationMode
 {
 	MODEM_REGISTRATION_MODE_UNKNOWN = 0,
@@ -286,6 +293,8 @@ typedef union _ModemEvent
 	struct
 	{
 		ModemEventType type;
+		ModemNotificationType ntype;
+		char const * title;
 		char const * content;
 	} notification;
 

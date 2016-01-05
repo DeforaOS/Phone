@@ -4024,6 +4024,8 @@ static void _on_code_cusd(HayesChannel * channel, char const * answer)
 
 	if(sscanf(answer, "%u,\"%31[^\"]\",%u", &u, buf, &u) >= 2)
 	{
+		event->notification.ntype = MODEM_NOTIFICATION_TYPE_INFO;
+		event->notification.title = NULL;
 		buf[sizeof(buf) - 1] = '\0';
 		event->notification.content = buf;
 		hayes->helper->event(hayes->helper->modem, event);

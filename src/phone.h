@@ -40,6 +40,7 @@ void phone_delete(Phone * phone);
 /* useful */
 int phone_error(Phone * phone, char const * message, int ret);
 void phone_info(Phone * phone, char const * message);
+int phone_warning(Phone * phone, char const * message, int ret);
 
 /* calls */
 void phone_call_answer(Phone * phone);

@@ -43,6 +43,7 @@ typedef struct _ModemPlugin
 	GtkWidget * me_number;
 	GtkWidget * me_folder;
 	GtkWidget * me_message;
+	GtkWidget * no_type;
 	GtkWidget * no_title;
 
 	/* events */
@@ -326,7 +327,37 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	vbox = gtk_vbox_new(FALSE, 4);
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
-	widget = gtk_label_new("Notification: ");
+	widget = gtk_label_new("Type: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.5);
+#endif
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	debug->no_type = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->no_type), NULL,
+			"Information");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->no_type), NULL,
+			"Error");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(debug->no_type), NULL,
+			"Warning");
+#else
+	debug->no_type = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->no_type), "Information");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->no_type), "Error");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(debug->no_type), "Warning");
+#endif
+	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->no_type), 0);
+	gtk_box_pack_start(GTK_BOX(hbox), debug->no_type, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	hbox = gtk_hbox_new(FALSE, 4);
+#endif
+	widget = gtk_label_new("Title: ");
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
 #else
@@ -338,12 +369,18 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	g_signal_connect_swapped(debug->no_title, "activate", G_CALLBACK(
 				_debug_on_notification), debug);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->no_title, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	hbox = gtk_hbox_new(FALSE, 4);
+#endif
 	widget = gtk_button_new_with_label("Send");
 	gtk_button_set_image(GTK_BUTTON(widget), gtk_image_new_from_icon_name(
 				"mail-send", GTK_ICON_SIZE_BUTTON));
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_debug_on_notification), debug);
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox,
 			gtk_label_new("Notifications"));
@@ -602,8 +639,11 @@ static void _debug_on_notification(gpointer data)
 	char const * p;
 
 	memset(&event, 0, sizeof(event));
-	p = gtk_entry_get_text(GTK_ENTRY(debug->no_title));
 	event.type = MODEM_EVENT_TYPE_NOTIFICATION;
+	event.notification.ntype = gtk_combo_box_get_active(
+			GTK_COMBO_BOX(debug->no_type));
+	event.notification.title = NULL;
+	p = gtk_entry_get_text(GTK_ENTRY(debug->no_title));
 	event.notification.content = p;
 	debug->helper->event(debug->helper->modem, &event);
 }

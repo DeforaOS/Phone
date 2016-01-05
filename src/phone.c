@@ -358,6 +358,9 @@ static int _phone_trigger(Phone * phone, ModemEventType event);
 
 static int _phone_unload(Phone * phone, PhonePlugin * plugin);
 
+static void _phone_warning(Phone * phone, GtkWidget * window,
+		char const * message, GCallback callback);
+
 /* callbacks */
 static void _phone_modem_event(void * priv, ModemEvent * event);
 static void _phone_modem_event_authentication(GtkWidget * widget, gint response,
@@ -3566,6 +3569,17 @@ void phone_unload_all(Phone * phone)
 }
 
 
+/* phone_warning */
+int phone_warning(Phone * phone, char const * message, int ret)
+{
+	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
+				PHONE_NOTIFICATION_TYPE_WARNING, NULL, message)
+			<= 0)
+		_phone_warning(phone, NULL, message, NULL);
+	return ret;
+}
+
+
 /* write */
 /* phone_write_attach_dialog */
 void phone_write_attach_dialog(Phone * phone)
@@ -4536,6 +4550,29 @@ static int _phone_unload(Phone * phone, PhonePlugin * plugin)
 }
 
 
+/* phone_warning */
+static void _phone_warning(Phone * phone, GtkWidget * window,
+		char const * message, GCallback callback)
+{
+	GtkWidget * dialog;
+	const unsigned int flags = (window != NULL)
+		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
+
+	if(callback == NULL)
+		callback = G_CALLBACK(gtk_widget_destroy);
+	dialog = gtk_message_dialog_new((window != NULL) ? GTK_WINDOW(window)
+			: NULL, flags, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+#if GTK_CHECK_VERSION(2, 6, 0)
+			"%s", _("Warning"));
+	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+#endif
+			"%s", message);
+	gtk_window_set_title(GTK_WINDOW(dialog), _("Warning"));
+	g_signal_connect(dialog, "response", G_CALLBACK(callback), phone);
+	gtk_widget_show(dialog);
+}
+
+
 /* callbacks */
 /* phone_modem_event */
 static void _modem_event_authentication(Phone * phone, ModemEvent * event);
@@ -4544,6 +4581,7 @@ static void _modem_event_contact(Phone * phone, ModemEvent * event);
 static void _modem_event_error(Phone * phone, ModemEvent * event);
 static void _modem_event_message(Phone * phone, ModemEvent * event);
 static void _modem_event_message_deleted(Phone * phone, ModemEvent * event);
+static void _modem_event_notification(Phone * phone, ModemEvent * event);
 static void _modem_event_registration(Phone * phone, ModemEvent * event);
 static void _modem_event_status(Phone * phone, ModemEvent * event);
 
@@ -4590,7 +4628,7 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 				phone_info(phone, event->model.serial);
 			break;
 		case MODEM_EVENT_TYPE_NOTIFICATION:
-			phone_info(phone, event->notification.content);
+			_modem_event_notification(phone, event);
 			break;
 		case MODEM_EVENT_TYPE_REGISTRATION:
 			_modem_event_registration(phone, event);
@@ -4754,6 +4792,23 @@ static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
 	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, FALSE);
 	phone->me_progress = _phone_progress_delete(phone->me_progress);
 	_phone_info(phone, phone->me_window, _("Message deleted"), NULL);
+}
+
+static void _modem_event_notification(Phone * phone, ModemEvent * event)
+{
+	/* FIXME also use the title */
+	switch(event->notification.ntype)
+	{
+		case MODEM_NOTIFICATION_TYPE_ERROR:
+			phone_error(phone, event->notification.content, 0);
+			break;
+		case MODEM_NOTIFICATION_TYPE_INFO:
+			phone_info(phone, event->notification.content);
+			break;
+		case MODEM_NOTIFICATION_TYPE_WARNING:
+			phone_warning(phone, event->notification.content, 0);
+			break;
+	}
 }
 
 static void _modem_event_registration(Phone * phone, ModemEvent * event)
