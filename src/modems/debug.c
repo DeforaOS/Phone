@@ -45,6 +45,7 @@ typedef struct _ModemPlugin
 	GtkWidget * me_message;
 	GtkWidget * no_type;
 	GtkWidget * no_title;
+	GtkWidget * no_message;
 
 	/* events */
 	ModemEvent event_call;
@@ -352,6 +353,7 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(debug->no_type), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->no_type, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* notification: title */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 #else
@@ -370,6 +372,29 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 				_debug_on_notification), debug);
 	gtk_box_pack_start(GTK_BOX(hbox), debug->no_title, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	/* notification: message */
+#if GTK_CHECK_VERSION(3, 0, 0)
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+#else
+	hbox = gtk_hbox_new(FALSE, 4);
+#endif
+	widget = gtk_label_new("Message: ");
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "halign", GTK_ALIGN_START, "valign",
+			GTK_ALIGN_START, NULL);
+#else
+	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
+#endif
+	gtk_size_group_add_widget(group, widget);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	debug->no_message = gtk_text_view_new();
+	gtk_container_add(GTK_CONTAINER(widget), debug->no_message);
+	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+	/* notification: send */
 #if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
 #else
@@ -636,16 +661,24 @@ static void _debug_on_notification(gpointer data)
 	ModemPlugin * modem = data;
 	Debug * debug = modem;
 	ModemEvent event;
-	char const * p;
+	GtkTextBuffer * tbuf;
+	GtkTextIter start;
+	GtkTextIter end;
+	gchar * p;
 
 	memset(&event, 0, sizeof(event));
 	event.type = MODEM_EVENT_TYPE_NOTIFICATION;
 	event.notification.ntype = gtk_combo_box_get_active(
 			GTK_COMBO_BOX(debug->no_type));
-	event.notification.title = NULL;
-	p = gtk_entry_get_text(GTK_ENTRY(debug->no_title));
+	event.notification.title = gtk_entry_get_text(GTK_ENTRY(
+				debug->no_title));
+	tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(debug->no_message));
+	gtk_text_buffer_get_start_iter(tbuf, &start);
+	gtk_text_buffer_get_end_iter(tbuf, &end);
+	p = gtk_text_buffer_get_text(tbuf, &start, &end, FALSE);
 	event.notification.content = p;
 	debug->helper->event(debug->helper->modem, &event);
+	g_free(p);
 }
 
 
