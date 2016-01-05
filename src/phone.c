@@ -314,8 +314,8 @@ static int _phone_error(GtkWidget * window, char const * message, int ret);
 
 static int _phone_helper_confirm(Phone * phone, char const * message);
 
-static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
-		GCallback callback);
+static void _phone_info(Phone * phone, GtkWidget * window, char const * title,
+		char const * message, GCallback callback);
 
 static gboolean _phone_log_filter_all(GtkTreeModel * model, GtkTreeIter * iter,
 		gpointer data);
@@ -1181,12 +1181,12 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 
 
 /* phone_info */
-void phone_info(Phone * phone, char const * message)
+void phone_info(Phone * phone, char const * title, char const * message)
 {
 	if(phone_event_type(phone, PHONE_EVENT_TYPE_NOTIFICATION,
-				PHONE_NOTIFICATION_TYPE_INFO, NULL, message)
+				PHONE_NOTIFICATION_TYPE_INFO, title, message)
 			<= 0)
-		_phone_info(phone, NULL, message, NULL);
+		_phone_info(phone, NULL, title, message, NULL);
 }
 
 
@@ -4100,19 +4100,21 @@ static int _phone_helper_confirm(Phone * phone, char const * message)
 
 
 /* phone_info */
-static void _phone_info(Phone * phone, GtkWidget * window, char const * message,
-		GCallback callback)
+static void _phone_info(Phone * phone, GtkWidget * window, char const * title,
+		char const * message, GCallback callback)
 {
 	GtkWidget * dialog;
 	const unsigned int flags = (window != NULL)
 		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 
+	if(title == NULL)
+		title = _("Information");
 	if(callback == NULL)
 		callback = G_CALLBACK(gtk_widget_destroy);
 	dialog = gtk_message_dialog_new((window != NULL) ? GTK_WINDOW(window)
 			: NULL, flags, GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
 #if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", _("Information"));
+			"%s", title);
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
 #endif
 			"%s", message);
@@ -4620,12 +4622,13 @@ static void _phone_modem_event(void * priv, ModemEvent * event)
 				_phone_error(phone->wr_window,
 						event->message_sent.error, 0);
 			else
-				_phone_info(phone, phone->wr_window,
+				_phone_info(phone, phone->wr_window, NULL,
 						_("Message sent"), NULL);
 			break;
 		case MODEM_EVENT_TYPE_MODEL:
 			if(event->model.serial != NULL)
-				phone_info(phone, event->model.serial);
+				phone_info(phone, _("Model information"),
+						event->model.serial);
 			break;
 		case MODEM_EVENT_TYPE_NOTIFICATION:
 			_modem_event_notification(phone, event);
@@ -4677,8 +4680,9 @@ static void _modem_event_authentication(Phone * phone, ModemEvent * event)
 						NULL, buf) != 0)
 				phone_show_code(phone, FALSE);
 			else
-				_phone_info(phone, phone->en_window, buf,
-						callback);
+				_phone_info(phone, phone->en_window,
+						_("Authentication successful"),
+						buf, callback);
 			break;
 		case MODEM_AUTHENTICATION_STATUS_REQUIRED:
 			if(event->authentication.method
@@ -4791,7 +4795,7 @@ static void _modem_event_message_deleted(Phone * phone, ModemEvent * event)
 	}
 	_phone_track(phone, PHONE_TRACK_MESSAGE_DELETED, FALSE);
 	phone->me_progress = _phone_progress_delete(phone->me_progress);
-	_phone_info(phone, phone->me_window, _("Message deleted"), NULL);
+	_phone_info(phone, phone->me_window, NULL, _("Message deleted"), NULL);
 }
 
 static void _modem_event_notification(Phone * phone, ModemEvent * event)
@@ -4803,7 +4807,8 @@ static void _modem_event_notification(Phone * phone, ModemEvent * event)
 			phone_error(phone, event->notification.content, 0);
 			break;
 		case MODEM_NOTIFICATION_TYPE_INFO:
-			phone_info(phone, event->notification.content);
+			phone_info(phone, event->notification.title,
+					event->notification.content);
 			break;
 		case MODEM_NOTIFICATION_TYPE_WARNING:
 			phone_warning(phone, event->notification.content, 0);
