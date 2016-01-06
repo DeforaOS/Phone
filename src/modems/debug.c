@@ -395,8 +395,8 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 #endif
 	widget = gtk_label_new("Message: ");
 #if GTK_CHECK_VERSION(3, 0, 0)
-	g_object_set(widget, "halign", GTK_ALIGN_START, "valign",
-			GTK_ALIGN_START, NULL);
+	g_object_set(widget, "halign", GTK_ALIGN_START,
+			"valign", GTK_ALIGN_START, NULL);
 #else
 	gtk_misc_set_alignment(GTK_MISC(widget), 0.0, 0.0);
 #endif
@@ -405,6 +405,8 @@ static ModemPlugin * _debug_init(ModemPluginHelper * helper)
 	widget = gtk_scrolled_window_new(NULL, NULL);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
 			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(widget),
+			GTK_SHADOW_ETCHED_IN);
 	debug->no_message = gtk_text_view_new();
 	gtk_container_add(GTK_CONTAINER(widget), debug->no_message);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
