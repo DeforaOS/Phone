@@ -552,7 +552,7 @@ static int _trigger_em1_do(Engineering * engineering, unsigned int * p,
 		{
 			case ESCI_ARFCN:
 				freq = _engineering_get_frequency(p[i]);
-				snprintf(buf, sizeof(buf), "%.1lf", freq);
+				snprintf(buf, sizeof(buf), "%.1f", freq);
 				gtk_list_store_set(engineering->sc_store, &iter,
 						SC_COL_FREQUENCY, buf, -1);
 				break;
@@ -704,7 +704,7 @@ static int _do_arfcn(Engineering * engineering, unsigned int arfcn,
 	char buf[32];
 
 	freq = _engineering_get_frequency(arfcn);
-	snprintf(buf, sizeof(buf), "%.1lf", freq);
+	snprintf(buf, sizeof(buf), "%.1f", freq);
 	gtk_list_store_set(engineering->nc_store, iter, 0, buf, -1);
 	return 0;
 }
