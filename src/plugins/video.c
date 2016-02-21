@@ -22,6 +22,7 @@
 #include <sys/mman.h>
 #ifdef __NetBSD__
 # include <sys/videoio.h>
+# include <paths.h>
 #else
 # include <linux/videodev2.h>
 #endif
@@ -126,6 +127,14 @@ static gboolean _video_on_open(gpointer data);
 static gboolean _video_on_refresh(gpointer data);
 
 
+/* constants */
+#ifdef _PATH_VIDEO0
+# define VIDEO_DEVICE	_PATH_VIDEO0
+#else
+# define VIDEO_DEVICE	"/dev/video0"
+#endif
+
+
 /* public */
 /* variables */
 PhonePluginDefinition plugin =
@@ -156,7 +165,7 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	video->helper = helper;
 	if((device = helper->config_get(helper->phone, "video", "device"))
 			== NULL)
-		device = "/dev/video0";
+		device = VIDEO_DEVICE;
 	p = helper->config_get(helper->phone, "video", "hflip");
 	video->hflip = (p != NULL && p[0] != '\0' && strtol(p, NULL, 10) > 0)
 		? TRUE : FALSE;
