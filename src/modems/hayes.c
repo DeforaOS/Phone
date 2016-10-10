@@ -3486,7 +3486,7 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	size_t i;
 	struct tm tm;
 	time_t t;
-#ifndef __linux__
+#if defined(__NetBSD__)
 	timezone_t tz;
 #endif
 #ifdef DEBUG
@@ -3515,7 +3515,7 @@ static time_t _cmgr_pdu_parse_timestamp(char const * timestamp)
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &tm);
 	fprintf(stderr, "DEBUG: %s() => \"%s\"\n", __func__, buf);
 #endif
-#ifdef __linux__
+#if !defined(__NetBSD__)
 	t = mktime(&tm);
 #else
 	/* XXX assumes UTC */
