@@ -2720,7 +2720,10 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 #endif
 	if(phone->re_window == NULL)
 		_show_read_window(phone);
-	if(name != NULL)
+	if(name == NULL)
+		gtk_label_set_text(GTK_LABEL(phone->re_name),
+				_("Unknown contact"));
+	else
 		gtk_label_set_text(GTK_LABEL(phone->re_name), name);
 	if(number != NULL)
 		gtk_label_set_text(GTK_LABEL(phone->re_number), number);
