@@ -75,6 +75,14 @@ static USSDCode _ussd_codes_za_mtn[] =
 	{ NULL,		NULL						}
 };
 
+/* Telekom */
+static USSDCode _ussd_codes_de_telekom[] =
+{
+	{ "*2221#",	"Multi-SIM: current status"			},
+	{ "*2222#",	"Multi-SIM: set card as default"		},
+	{ NULL,		NULL						}
+};
+
 /* Virgin Mobile, see
  * http://fr.wikipedia.org/wiki/Unstructured_Supplementary_Service_Data */
 static USSDCode _ussd_codes_fr_virgin[] =
@@ -104,15 +112,16 @@ static const struct
 } _ussd_operators[] =
 {
 	/* FIXME obtain the corresponding operator names */
-	{ "CCC 32C3",	NULL,	_ussd_codes_de_ccc_32c3			},
-	{ "E-Plus",	NULL,	_ussd_codes_de_eplus			},
-	{ "FYVE",	NULL,	_ussd_codes_de_fyve			},
-	{ "Monacell",	NULL,	_ussd_codes_fr_virgin			},
-	{ "MTN",	NULL,	_ussd_codes_za_mtn			},
-	{ "NRJ",	NULL,	_ussd_codes_fr_virgin			},
-	{ "Virgin",	NULL,	_ussd_codes_fr_virgin			},
-	{ "Vodafone",	NULL,	_ussd_codes_in_vodafone			},
-	{ NULL,		NULL,	NULL					}
+	{ "CCC 32C3",	NULL,		_ussd_codes_de_ccc_32c3		},
+	{ "E-Plus",	NULL,		_ussd_codes_de_eplus		},
+	{ "FYVE",	NULL,		_ussd_codes_de_fyve		},
+	{ "Monacell",	NULL,		_ussd_codes_fr_virgin		},
+	{ "MTN",	NULL,		_ussd_codes_za_mtn		},
+	{ "NRJ",	NULL,		_ussd_codes_fr_virgin		},
+	{ "Telekom",	"Telekom.de",	_ussd_codes_de_telekom		},
+	{ "Virgin",	NULL,		_ussd_codes_fr_virgin		},
+	{ "Vodafone",	NULL,		_ussd_codes_in_vodafone		},
+	{ NULL,		NULL,		NULL				}
 };
 
 
