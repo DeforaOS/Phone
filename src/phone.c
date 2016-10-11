@@ -1286,7 +1286,7 @@ void phone_log_append(Phone * phone, PhoneCallType type, char const * number)
 	gtk_list_store_append(phone->lo_store, &iter);
 	date = time(NULL);
 	localtime_r(&date, &t);
-	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
+	strftime(dd, sizeof(dd), _("%d/%m/%Y %H:%M:%S"), &t);
 	gtk_list_store_set(phone->lo_store, &iter,
 			PHONE_LOG_COLUMN_CALL_TYPE, type,
 			PHONE_LOG_COLUMN_CALL_TYPE_DISPLAY, display,
@@ -1503,7 +1503,7 @@ void phone_messages_set(Phone * phone, unsigned int index, char const * number,
 	 * - this may cut in the middle of a UTF-8 character */
 	snprintf(nd, sizeof(nd), "%s\n%s", number, summary);
 	localtime_r(&date, &t); /* XXX gmtime_r() or localtime_r()? */
-	strftime(dd, sizeof(dd), "%d/%m/%Y %H:%M:%S", &t);
+	strftime(dd, sizeof(dd), _("%d/%m/%Y %H:%M:%S"), &t);
 	if(status != MODEM_MESSAGE_STATUS_READ)
 		weight = PANGO_WEIGHT_BOLD;
 	gtk_list_store_set(phone->me_store, &iter,
@@ -2725,7 +2725,7 @@ void phone_show_read(Phone * phone, gboolean show, ...)
 	if(number != NULL)
 		gtk_label_set_text(GTK_LABEL(phone->re_number), number);
 	localtime_r(&date, &t); /* XXX gmtime_r() or localtime_r() ? */
-	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
+	strftime(buf, sizeof(buf), _("%d/%m/%Y %H:%M:%S"), &t);
 	gtk_label_set_text(GTK_LABEL(phone->re_date), buf);
 	if(content != NULL)
 		_show_read_buffer(phone, content);
