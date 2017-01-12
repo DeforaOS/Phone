@@ -71,9 +71,6 @@ static int _pdu_decode(char const * pdu, char const * number,
 	char * p;
 	struct tm t;
 	size_t len;
-#ifndef __linux__
-	timezone_t tz;
-#endif
 
 	if((p = _cmgr_pdu_parse(pdu, &timestamp, buf, &e, &len)) == NULL)
 	{
@@ -87,13 +84,7 @@ static int _pdu_decode(char const * pdu, char const * number,
 		ret = 1;
 	}
 	/* check the timestamp */
-#ifdef __linux__
 	localtime_r(&timestamp, &t);
-#else
-	tz = tzalloc("Europe/Berlin");
-	localtime_rz(tz, &timestamp, &t);
-	tzfree(tz);
-#endif
 	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", &t);
 	if(strcmp(buf, datetime) != 0)
 	{
