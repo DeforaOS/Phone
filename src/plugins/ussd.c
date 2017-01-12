@@ -17,6 +17,9 @@
 
 
 
+#ifdef DEBUG
+# include <stdio.h>
+#endif
 #include <string.h>
 #include <gtk/gtk.h>
 #include <System.h>
