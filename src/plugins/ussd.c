@@ -29,6 +29,7 @@
 typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
+	size_t _operator;
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * operators;
@@ -167,6 +168,7 @@ static USSD * _ussd_init(PhonePluginHelper * helper)
 	if((ussd = object_new(sizeof(*ussd))) == NULL)
 		return NULL;
 	ussd->helper = helper;
+	ussd->_operator = 0;
 	ussd->window = NULL;
 	ussd->operators = NULL;
 	ussd->codes = NULL;
@@ -333,7 +335,8 @@ static void _settings_window(USSD * ussd)
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(ussd->window), vbox);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->operators), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->operators),
+			ussd->_operator);
 	gtk_widget_show_all(vbox);
 }
 
@@ -351,7 +354,7 @@ static int _ussd_load_operator(USSD * ussd, char const * _operator)
 			continue;
 		else if(strcmp(_ussd_operators[i]._operator, _operator) == 0)
 		{
-			/* FIXME keep track of the operator instead */
+			ussd->_operator = i;
 			if(ussd->window != NULL)
 				gtk_combo_box_set_active(GTK_COMBO_BOX(
 							ussd->operators), i);
