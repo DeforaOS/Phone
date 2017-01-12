@@ -1,6 +1,6 @@
 #!/bin/sh
 #$Id$
-#Copyright (c) 2011-2015 Pierre Pronchery <khorben@defora.org>
+#Copyright (c) 2011-2016 Pierre Pronchery <khorben@defora.org>
 #
 #Redistribution and use in source and binary forms, with or without
 #modification, are permitted provided that the following conditions are met:
@@ -66,7 +66,7 @@ _usage()
 clean=0
 install=0
 uninstall=0
-while getopts "ciuP:" name; do
+while getopts "ciuO:P:" name; do
 	case $name in
 		c)
 			clean=1
@@ -78,6 +78,9 @@ while getopts "ciuP:" name; do
 		u)
 			install=0
 			uninstall=1
+			;;
+		O)
+			export "${OPTARG%%=*}"="${OPTARG#*=}"
 			;;
 		P)
 			PREFIX="$OPTARG"
@@ -148,6 +151,7 @@ while [ $# -gt 0 ]; do
 	#create
 	source="${target#$OBJDIR}"
 	source="${source}.in"
+	([ -z "$OBJDIR" ] || $DEBUG $MKDIR -- "${target%/*}")	|| exit 2
 	$DEBUG $SED -e "s;@PACKAGE@;$PACKAGE;" \
 			-e "s;@VERSION@;$VERSION;" \
 			-e "s;@PREFIX@;$PREFIX;" \
