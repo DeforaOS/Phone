@@ -123,17 +123,9 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_window_set_title(GTK_WINDOW(password->window), "Password");
 	g_signal_connect_swapped(password->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), password);
-#if GTK_CHECK_VERSION(3, 0, 0)
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
-#else
-	vbox = gtk_vbox_new(FALSE, 4);
-#endif
 	/* entry */
-#if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-	hbox = gtk_hbox_new(FALSE, 0);
-#endif
 	widget = gtk_label_new("Name: ");
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
@@ -153,11 +145,7 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_start(GTK_BOX(hbox), password->entry, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* old password */
-#if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-	hbox = gtk_hbox_new(FALSE, 0);
-#endif
 	widget = gtk_label_new("Old password: ");
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
@@ -171,11 +159,7 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_start(GTK_BOX(hbox), password->oldpassword, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* new password */
-#if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-	hbox = gtk_hbox_new(FALSE, 0);
-#endif
 	widget = gtk_label_new("New password: ");
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
@@ -189,11 +173,7 @@ static void _password_settings(PasswordPhonePlugin * password)
 	gtk_box_pack_start(GTK_BOX(hbox), password->newpassword, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* new password */
-#if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-	hbox = gtk_hbox_new(FALSE, 0);
-#endif
 	widget = gtk_label_new("Confirm: ");
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
