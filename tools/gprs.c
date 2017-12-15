@@ -20,8 +20,11 @@
 #include <string.h>
 #include <System.h>
 
+#ifndef PROGNAME_GPRS
+# define PROGNAME_GPRS "gprs"
+#endif
 #ifndef PROGNAME
-# define PROGNAME "gprs"
+# define PROGNAME 	PROGNAME_GPRS
 #endif
 
 #include "../src/plugins/gprs.c"
@@ -65,7 +68,7 @@ static gboolean _gprs_on_idle(gpointer data)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PROGNAME "\n", stderr);
+	fputs("Usage: " PROGNAME_GPRS "\n", stderr);
 	return 1;
 }
 
@@ -88,6 +91,6 @@ int main(int argc, char * argv[])
 		return _usage();
 	gtk_init(&argc, &argv);
 	if((ret = (_gprs() == 0) ? 0 : 2) != 0)
-		error_print(PROGNAME);
+		error_print(PROGNAME_GPRS);
 	return ret;
 }

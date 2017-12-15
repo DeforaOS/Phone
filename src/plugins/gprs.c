@@ -21,7 +21,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <System.h>
-#ifdef PROGNAME
+#ifdef PROGNAME_GPRS
 # include <Desktop.h>
 #endif
 #include "Phone.h"
@@ -57,7 +57,7 @@ typedef struct _PhonePlugin
 	GtkWidget * apn;
 	GtkWidget * username;
 	GtkWidget * password;
-#ifndef PROGNAME
+#ifndef PROGNAME_GPRS
 	GtkWidget * defaults;
 #endif
 	GtkWidget * connect;
@@ -246,7 +246,7 @@ static void _gprs_event_modem_operator(GPRS * gprs, char const * _operator)
 	gprs->_operator = (_operator != NULL) ? strdup(_operator) : NULL;
 	if(gprs->window == NULL)
 		return;
-#ifndef PROGNAME
+#ifndef PROGNAME_GPRS
 	gtk_widget_set_sensitive(gprs->defaults, (gprs->_operator != NULL)
 			? TRUE : FALSE);
 #endif
@@ -275,7 +275,7 @@ static void _settings_on_apply(gpointer data);
 static void _settings_on_cancel(gpointer data);
 static gboolean _settings_on_closex(gpointer data);
 static void _settings_on_connect(gpointer data);
-#ifdef PROGNAME
+#ifdef PROGNAME_GPRS
 static void _settings_on_help(gpointer data);
 #endif
 static void _settings_on_ok(gpointer data);
@@ -325,7 +325,7 @@ static void _gprs_settings(GPRS * gprs)
 #endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
-#ifdef PROGNAME
+#ifdef PROGNAME_GPRS
 	widget = gtk_button_new_from_stock(GTK_STOCK_HELP);
 	g_signal_connect_swapped(widget, "clicked", G_CALLBACK(
 				_settings_on_help), gprs);
@@ -428,7 +428,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 	gtk_entry_set_visibility(GTK_ENTRY(gprs->password), FALSE);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->password, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox2), hbox, FALSE, TRUE, 0);
-#ifndef PROGNAME
+#ifndef PROGNAME_GPRS
 	/* defaults */
 # if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
@@ -611,10 +611,10 @@ static void _settings_on_connect(gpointer data)
 		gprs->helper->error(gprs->helper->phone, error_get(NULL), 1);
 }
 
-#ifdef PROGNAME
+#ifdef PROGNAME_GPRS
 static void _settings_on_help(gpointer data)
 {
-	desktop_help_contents(PACKAGE, PROGNAME);
+	desktop_help_contents(PACKAGE, PROGNAME_GPRS);
 }
 #endif
 
@@ -924,7 +924,7 @@ static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 	g_signal_connect_swapped(menuitem, "activate", G_CALLBACK(
 				_gprs_settings), gprs);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-#ifdef PROGNAME
+#ifdef PROGNAME_GPRS
 	menuitem = gtk_separator_menu_item_new();
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	/* quit */
