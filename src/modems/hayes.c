@@ -1134,6 +1134,8 @@ static char * _request_attention(Hayes * hayes, HayesChannel * channel,
 static char * _request_attention_apn(char const * protocol, char const * apn);
 static char * _request_attention_call(HayesChannel * channel,
 		ModemRequest * request);
+static char * _request_attention_call_data(HayesChannel * channel,
+		ModemRequest * request);
 static char * _request_attention_call_ussd(ModemRequest * request);
 static char * _request_attention_call_hangup(Hayes * hayes,
 		HayesChannel * channel);
@@ -1268,7 +1270,11 @@ static char * _request_attention(Hayes * hayes, HayesChannel * channel,
 			if(request->call.call_type == MODEM_CALL_TYPE_VOICE
 					&& _is_ussd_code(request->call.number))
 				return _request_attention_call_ussd(request);
-			return _request_attention_call(channel, request);
+			else if(request->call.call_type == MODEM_CALL_TYPE_DATA)
+				return _request_attention_call_data(channel,
+						request);
+			else
+				return _request_attention_call(channel, request);
 		case MODEM_REQUEST_CALL_HANGUP:
 			return _request_attention_call_hangup(hayes, channel);
 		case MODEM_REQUEST_CALL_PRESENTATION:
@@ -1372,6 +1378,14 @@ static char * _request_attention_call(HayesChannel * channel,
 			(request->call.call_type == MODEM_CALL_TYPE_VOICE)
 			? voice : "");
 	return ret;
+}
+
+static char * _request_attention_call_data(HayesChannel * channel,
+		ModemRequest * request)
+{
+	if(request->call.number == NULL)
+		return strdup("AT+CGDATA=\"PPP\"");
+	return _request_attention_call(channel, request);
 }
 
 static char * _request_attention_call_ussd(ModemRequest * request)
