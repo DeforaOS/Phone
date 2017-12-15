@@ -1,5 +1,5 @@
 /* $Id$ */
-/* Copyright (c) 2011-2016 Pierre Pronchery <khorben@defora.org> */
+/* Copyright (c) 2011-2017 Pierre Pronchery <khorben@defora.org> */
 /* This file is part of DeforaOS Desktop Phone */
 /* This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,12 @@
  * - implement priorities again
  * - parse messages from within +CMGL already
  * - add MCT callbacks/buttons to change the SIM code (via a helper in phone.c)
- * - implement new contacts */
+ * - implement new contacts
+ * - implement +PBREADY?
+ * - implement AT+CTZR=1 (timezone updates)
+ * - implement AT+CLCK="PN",2? (is SIM-locked)
+ * - implement AT+XREG? (band frequency, Sierra Wireless only?)
+ * - implement AT+XACT? (band frequency again, same) */
 
 
 
@@ -380,6 +385,7 @@ static HayesRequestHandler _hayes_request_handlers[] =
 		_on_request_generic },
 	{ HAYES_REQUEST_FUNCTIONAL_ENABLE,		"AT+CFUN=1",
 		_on_request_functional_enable },
+	/* XXX AT+CFUN=16 on Sierra Wireless? */
 	{ HAYES_REQUEST_FUNCTIONAL_ENABLE_RESET,	"AT+CFUN=1,1",
 		_on_request_functional_enable_reset },
 	{ HAYES_REQUEST_GPRS_ATTACHED,			"AT+CGATT?",
@@ -1922,10 +1928,13 @@ static int _reset_configure(Hayes * hayes, char const * device, int fd)
 	if((p = helper->config_get(helper->modem, "hwflow")) == NULL
 			|| (hwflow = strtoul(p, NULL, 10)) != 0)
 		hwflow = 1;
+	/* lock the port for exclusive access */
 	if(flock(fd, LOCK_EX | LOCK_NB) != 0)
 		return 1;
+	/* set the port as blocking */
 	fl = fcntl(fd, F_GETFL, 0);
-	if(fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
+	if((fl & ~O_NONBLOCK) != fl
+			&& fcntl(fd, F_SETFL, fl & ~O_NONBLOCK) == -1)
 		return 1;
 	if(fstat(fd, &st) != 0)
 		return 1;
