@@ -772,7 +772,6 @@ static int _gprs_connect(GPRS * gprs)
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_CALL;
 	request.call.call_type = MODEM_CALL_TYPE_DATA;
-	request.call.number = "*99***1#"; /* XXX specific to GSM/GPRS */
 	if(gprs->helper->request(gprs->helper->phone, &request) != 0)
 		return -gprs->helper->error(gprs->helper->phone,
 				error_get(NULL), 1);
