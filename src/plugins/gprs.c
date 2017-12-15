@@ -99,7 +99,9 @@ static int _gprs_load_operator(GPRS * gprs, char const * _operator);
 
 /* callbacks */
 static void _gprs_on_activate(gpointer data);
+#ifndef PROGNAME_GPRS
 static void _gprs_on_load_defaults(gpointer data);
+#endif
 static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 		guint time, gpointer data);
 static gboolean _gprs_on_timeout(gpointer data);
@@ -866,6 +868,7 @@ static void _gprs_on_activate(gpointer data)
 }
 
 
+#ifndef PROGNAME_GPRS
 /* gprs_on_load_defaults */
 static void _gprs_on_load_defaults(gpointer data)
 {
@@ -878,15 +881,16 @@ static void _gprs_on_load_defaults(gpointer data)
 		return;
 	widget = gtk_message_dialog_new(GTK_WINDOW(gprs->window),
 			flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 			"%s", "Error");
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					widget),
-#endif
+# endif
 			"%s", "No defaults known for the current operator");
 	gtk_dialog_run(GTK_DIALOG(widget));
 	gtk_widget_destroy(widget);
 }
+#endif
 
 
 /* gprs_on_popup_menu */
