@@ -81,10 +81,9 @@ char * hayespdu_encode(char const * number, ModemMessageEncoding encoding,
 	{
 		if(flags & HAYESPDU_FLAG_WANT_SMSC)
 			smsc = "00";
-		if(snprintf(ret, len, "%s%s%02lX%s%s%s%s%02lX%s", smsc, prefix,
-					(unsigned long)strlen(number), addr,
-					pid, dcs, vp, (unsigned long)length,
-					data) >= (int)len)
+		if(snprintf(ret, len, "%s%s%02zX%s%s%s%s%02zX%s", smsc, prefix,
+					strlen(number), addr, pid, dcs, vp,
+					length, data) >= (int)len)
 		{
 			free(ret);
 			ret = NULL;
