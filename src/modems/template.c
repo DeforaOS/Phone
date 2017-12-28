@@ -75,7 +75,7 @@ static ModemPlugin * _template_init(ModemPluginHelper * helper)
 		return NULL;
 	memset(template, 0, sizeof(*template));
 	template->helper = helper;
-	/* FIXME implement */
+	/* TODO implement */
 	return template;
 }
 
@@ -86,7 +86,7 @@ static void _template_destroy(ModemPlugin * modem)
 	Template * template = modem;
 
 	_template_stop(modem);
-	/* FIXME implement */
+	/* TODO implement */
 	object_delete(template);
 }
 
@@ -99,7 +99,7 @@ static int _template_start(ModemPlugin * modem, unsigned int retry)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME implement */
+	/* TODO implement */
 	return 0;
 }
 
@@ -112,7 +112,7 @@ static int _template_stop(ModemPlugin * modem)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* FIXME implement */
+	/* TODO implement */
 	return 0;
 }
 
@@ -122,7 +122,7 @@ static int _template_request(ModemPlugin * modem, ModemRequest * request)
 {
 	switch(request->type)
 	{
-		/* FIXME implement */
+		/* TODO implement */
 #ifndef DEBUG
 		default:
 			break;
