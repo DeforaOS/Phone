@@ -18,7 +18,7 @@
 
 #variables
 #executables
-XSLTPROC="xsltproc"
+XSLTPROC="xsltproc --nonet"
 
 
 #functions
