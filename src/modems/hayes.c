@@ -3589,6 +3589,14 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			_on_code_cpin(channel, "SIM PUK");
 			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
+		case 317: /* SIM PIN2 required */
+			_on_code_cpin(channel, "SIM PIN2");
+			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
+			break;
+		case 318: /* SIM PUK2 required */
+			_on_code_cpin(channel, "SIM PUK2");
+			_hayes_trigger(hayes, MODEM_EVENT_TYPE_AUTHENTICATION);
+			break;
 		case 500: /* Unknown error */
 			if(hayeschannel_has_quirks(channel,
 						HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
