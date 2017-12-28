@@ -2,4 +2,6 @@
 <!DOCTYPE serviceproviders [
 <!ENTITY serviceproviders SYSTEM "https://git.gnome.org/browse/mobile-broadband-provider-info/plain/serviceproviders.xml">
 ]>
+<serviceproviders>
 &serviceproviders;
+</serviceproviders>
