@@ -3603,6 +3603,7 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 				break;
 			/* fallback */
 		case 314: /* SIM busy */
+		case 532: /* SIM not ready */
 			/* repeat the command */
 			/* FIXME duplicated from _on_code_cme_error() */
 			if(command == NULL)
