@@ -3618,9 +3618,11 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 				channel->source = g_timeout_add(timeout,
 						_on_queue_timeout, channel);
 			break;
+		case 21:  /* Short message transfer rejected */
+		case 96:  /* Invalid mandatory information */
 		case 303: /* Operation not supported */
 		case 321: /* Invalid memory index */
-		default: /* FIXME implement the rest */
+		default:  /* FIXME implement the rest */
 			break;
 	}
 }
