@@ -1699,7 +1699,7 @@ static void _show_about_window(Phone * phone)
 		p = VERSION;
 	desktop_about_dialog_set_version(phone->ab_window, p);
 	if((p = config_get(phone->config, "about", "website")) == NULL)
-			p = "http://www.defora.org/";
+			p = "https://www.defora.org/";
 	desktop_about_dialog_set_website(phone->ab_window, p);
 	gtk_window_set_position(GTK_WINDOW(phone->ab_window),
 			GTK_WIN_POS_CENTER);
