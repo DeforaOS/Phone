@@ -177,7 +177,7 @@ static int _event_stopping(Profiles * profiles);
 
 static int _profiles_event(Profiles * profiles, PhoneEvent * event)
 {
-	ProfileDefinition * definition = &profiles->profiles[
+	ProfileDefinition * profile = &profiles->profiles[
 		profiles->profiles_cur];
 
 	switch(event->type)
@@ -191,8 +191,8 @@ static int _profiles_event(Profiles * profiles, PhoneEvent * event)
 		case PHONE_EVENT_TYPE_STOPPING:
 			return _event_stopping(profiles);
 		case PHONE_EVENT_TYPE_MESSAGE_RECEIVED:
-			_profiles_play(profiles, (definition->sample != NULL)
-					? definition->sample : "message", 2);
+			_profiles_play(profiles, (profile->sample != NULL)
+					? profile->sample : "message", 2);
 			break;
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
 			return _event_modem_event(profiles,
@@ -214,7 +214,7 @@ static int _event_key_tone(Profiles * profiles)
 
 static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 {
-	ProfileDefinition * definition = &profiles->profiles[
+	ProfileDefinition * profile = &profiles->profiles[
 		profiles->profiles_cur];
 	ModemCallDirection direction;
 	ModemCallStatus status;
@@ -229,9 +229,9 @@ static int _event_modem_event(Profiles * profiles, ModemEvent * event)
 			if(direction == MODEM_CALL_DIRECTION_INCOMING
 					&& status == MODEM_CALL_STATUS_RINGING)
 				_profiles_play(profiles,
-						(definition->sample != NULL)
-						? definition->sample
-						: "ringtone", 10);
+						(profile->sample != NULL)
+						? profile->sample : "ringtone",
+						10);
 			else if(direction == MODEM_CALL_DIRECTION_OUTGOING
 					&& status == MODEM_CALL_STATUS_RINGING)
 				_profiles_play(profiles, "ringback", 0);
@@ -256,10 +256,10 @@ static int _event_offline(Profiles * profiles)
 static int _event_starting(Profiles * profiles)
 {
 	PhonePluginHelper * helper = profiles->helper;
-	ProfileDefinition * definition = &profiles->profiles[
+	ProfileDefinition * profile = &profiles->profiles[
 		profiles->profiles_cur];
 
-	if(definition->online)
+	if(profile->online)
 		return 0;
 	if(helper->confirm(helper->phone, "You are currently offline.\n"
 				"Do you want to go online?") != 0)
@@ -270,11 +270,11 @@ static int _event_starting(Profiles * profiles)
 
 static int _event_stopping(Profiles * profiles)
 {
-	ProfileDefinition * definition = &profiles->profiles[
+	ProfileDefinition * profile = &profiles->profiles[
 		profiles->profiles_cur];
 
 	/* prevent stopping the modem except if we're going offline */
-	return definition->online ? 1 : 0;
+	return profile->online ? 1 : 0;
 }
 
 
@@ -477,13 +477,13 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 		int vibrator)
 {
 	PhonePluginHelper * helper = profiles->helper;
-	ProfileDefinition * definition = &profiles->profiles[
+	ProfileDefinition * profile = &profiles->profiles[
 		profiles->profiles_cur];
 	PhoneEvent event;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\") %s\n", __func__, sample,
-			definition->name);
+			profile->name);
 #endif
 	if(sample == NULL)
 	{
@@ -492,7 +492,7 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 		event.type = PHONE_EVENT_TYPE_AUDIO_STOP;
 		helper->event(helper->phone, &event);
 	}
-	else if(definition->volume != PROFILE_VOLUME_SILENT)
+	else if(profile->volume != PROFILE_VOLUME_SILENT)
 	{
 		memset(&event, 0, sizeof(event));
 		event.type = PHONE_EVENT_TYPE_AUDIO_PLAY;
@@ -512,7 +512,7 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 		profiles->source = 0;
 		profiles->vibrator = 0;
 	}
-	else if(definition->vibrate && profiles->vibrator != 0)
+	else if(profile->vibrate && profiles->vibrator != 0)
 	{
 		memset(&event, 0, sizeof(event));
 		event.type = PHONE_EVENT_TYPE_VIBRATOR_ON;
