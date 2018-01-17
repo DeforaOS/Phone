@@ -102,7 +102,6 @@ static void _profiles_settings(Profiles * profiles);
 static int _profiles_set(Profiles * profiles, ProfileType type);
 
 /* useful */
-static void _profiles_apply(Profiles * profiles, ProfileType type);
 static void _profiles_play(Profiles * profiles, char const * sound,
 		int vibrator);
 static void _profiles_switch(Profiles * profiles, ProfileType type);
@@ -269,7 +268,7 @@ static int _event_starting(Profiles * profiles)
 	if(helper->confirm(helper->phone, "You are currently offline.\n"
 				"Do you want to go online?") != 0)
 		return 1;
-	_profiles_apply(profiles, PROFILE_TYPE_GENERAL);
+	_profiles_switch(profiles, PROFILE_TYPE_GENERAL);
 	return 0;
 }
 
@@ -469,13 +468,6 @@ static int _profiles_set(Profiles * profiles, ProfileType type)
 
 
 /* useful */
-/* profiles_apply */
-static void _profiles_apply(Profiles * profiles, ProfileType type)
-{
-	_profiles_set(profiles, type);
-}
-
-
 /* profiles_play */
 static void _profiles_play(Profiles * profiles, char const * sample,
 		int vibrator)
@@ -541,7 +533,7 @@ static void _profiles_switch(Profiles * profiles, ProfileType type)
 	if(type > profiles->profiles_cnt)
 		/* XXX report error */
 		return;
-	_profiles_apply(profiles, type);
+	_profiles_set(profiles, type);
 	memset(&pevent, 0, sizeof(pevent));
 	if(profiles->profiles[current].online
 			&& !profiles->profiles[type].online)
