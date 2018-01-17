@@ -102,6 +102,9 @@ static void _profiles_settings(Profiles * profiles);
 static int _profiles_set(Profiles * profiles, ProfileType type);
 
 /* useful */
+static int _profiles_load(Profiles * profiles);
+static int _profiles_save(Profiles * profiles);
+
 static void _profiles_play(Profiles * profiles, char const * sound,
 		int vibrator);
 static void _profiles_switch(Profiles * profiles, ProfileType type);
@@ -130,8 +133,6 @@ PhonePluginDefinition plugin =
 static Profiles * _profiles_init(PhonePluginHelper * helper)
 {
 	Profiles * profiles;
-	char const * p;
-	size_t i;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
@@ -143,17 +144,10 @@ static Profiles * _profiles_init(PhonePluginHelper * helper)
 	profiles->profiles = _profiles_definitions;
 	profiles->profiles_cnt = sizeof(_profiles_definitions)
 		/ sizeof(*_profiles_definitions);
-	profiles->profiles_cur = 0;
-	if((p = helper->config_get(helper->phone, "profiles", "default"))
-			!= NULL)
-		for(i = 0; i < profiles->profiles_cnt; i++)
-			if(strcmp(profiles->profiles[i].name, p) == 0)
-			{
-				profiles->profiles_cur = i;
-				break;
-			}
+	profiles->profiles_cur = PROFILE_TYPE_GENERAL;
 	profiles->vibrator = 0;
 	profiles->pr_window = NULL;
+	_profiles_load(profiles);
 	return profiles;
 }
 
@@ -452,22 +446,30 @@ static int _profiles_set(Profiles * profiles, ProfileType type)
 	if(type > profiles->profiles_cnt)
 		return -helper->error(NULL, "Invalid profile", 1);
 	profiles->profiles_cur = type;
-	helper->config_set(helper->phone, "profiles", "default",
-			profiles->profiles[profiles->profiles_cur].name);
-	switch(type)
-	{
-		case PROFILE_TYPE_OFFLINE:
-			helper->config_set(helper->phone, NULL, "online", "0");
-			break;
-		default:
-			helper->config_set(helper->phone, NULL, "online", NULL);
-			break;
-	}
 	return 0;
 }
 
 
 /* useful */
+/* profiles_load */
+static int _profiles_load(Profiles * profiles)
+{
+	PhonePluginHelper * helper = profiles->helper;
+	char const * p;
+	size_t i = 0;
+
+	/* default profile */
+	if((p = helper->config_get(helper->phone, "profiles", "default"))
+			!= NULL)
+		for(i = 0; i < profiles->profiles_cnt; i++)
+			if(strcmp(profiles->profiles[i].name, p) == 0)
+				break;
+	if(i == profiles->profiles_cnt)
+		i = PROFILE_TYPE_GENERAL;
+	return _profiles_set(profiles, i);
+}
+
+
 /* profiles_play */
 static void _profiles_play(Profiles * profiles, char const * sample,
 		int vibrator)
@@ -521,6 +523,23 @@ static void _profiles_play(Profiles * profiles, char const * sample,
 }
 
 
+/* profiles_save */
+static int _profiles_save(Profiles * profiles)
+{
+	int ret = 0;
+	PhonePluginHelper * helper = profiles->helper;
+
+	/* default profile */
+	ret |= helper->config_set(helper->phone, "profiles", "default",
+			profiles->profiles[profiles->profiles_cur].name);
+	/* online */
+	ret |= helper->config_set(helper->phone, NULL, "online",
+			profiles->profiles[profiles->profiles_cur].online
+			? NULL : "0");
+	return ret;
+}
+
+
 /* profiles_switch */
 static void _profiles_switch(Profiles * profiles, ProfileType type)
 {
@@ -534,6 +553,7 @@ static void _profiles_switch(Profiles * profiles, ProfileType type)
 		/* XXX report error */
 		return;
 	_profiles_set(profiles, type);
+	_profiles_save(profiles);
 	memset(&pevent, 0, sizeof(pevent));
 	if(profiles->profiles[current].online
 			&& !profiles->profiles[type].online)
