@@ -22,6 +22,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <net/if.h>
+#include <System/string.h>
 
 
 /* private */
