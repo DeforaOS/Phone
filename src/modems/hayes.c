@@ -12,7 +12,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* FIXME:
+/* TODO:
  * - implement priorities again
  * - parse messages from within +CMGL already
  * - add MCT callbacks/buttons to change the SIM code (via a helper in phone.c)
