@@ -4018,8 +4018,11 @@ static GtkWidget * _phone_create_progress(GtkWidget * parent, char const * text)
 	/* progress bar */
 	widget = gtk_progress_bar_new();
 	g_object_set_data(G_OBJECT(dialog), "progress", widget);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	g_object_set(widget, "show-text", TRUE, NULL);
+#endif
 	gtk_progress_bar_pulse(GTK_PROGRESS_BAR(widget));
-	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), " ");
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(widget), "");
 	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_hide),
 			dialog);
