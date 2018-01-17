@@ -32,6 +32,22 @@
 /* Profiles */
 /* private */
 /* types */
+typedef enum _ProfileColumn
+{
+	PROFILE_COLUMN_RADIO = 0,
+	PROFILE_COLUMN_TYPE,
+	PROFILE_COLUMN_DEFAULT,
+	PROFILE_COLUMN_ONLINE,
+	PROFILE_COLUMN_VOLUME,
+	PROFILE_COLUMN_VIBRATE,
+	PROFILE_COLUMN_SAMPLE,
+	PROFILE_COLUMN_ICON,
+	PROFILE_COLUMN_NAME,
+	PROFILE_COLUMN_NAME_DISPLAY
+} ProfileColumn;
+#define PROFILE_COLUMN_LAST PROFILE_COLUMN_NAME_DISPLAY
+#define PROFILE_COLUMN_COUNT (PROFILE_COLUMN_LAST + 1)
+
 typedef enum _ProfileType
 {
 	PROFILE_TYPE_GENERAL = 0,
@@ -54,6 +70,7 @@ typedef enum _ProfileVolume
 
 typedef struct _ProfileDefinition
 {
+	char const * icon;
 	char const * name;
 	gboolean online;
 	ProfileVolume volume;
@@ -77,9 +94,11 @@ typedef struct _PhonePlugin
 
 	/* settings */
 	GtkWidget * pr_window;
-	GtkWidget * pr_combo;
+	GtkListStore * pr_store;
+	GtkWidget * pr_view;
 	GtkWidget * pr_online;
 	GtkWidget * pr_volume;
+	GtkWidget * pr_ring;
 	GtkWidget * pr_vibrator;
 } Profiles;
 
@@ -89,10 +108,11 @@ typedef struct _PhonePlugin
 /* variables */
 static ProfileDefinition _profiles_definitions[PROFILE_TYPE_COUNT] =
 {
-	{ N_("General"),TRUE,	PROFILE_VOLUME_ASC,	TRUE,	NULL	},
-	{ N_("Beep"),	TRUE,	PROFILE_VOLUME_25,	TRUE,	"beep"	},
-	{ N_("Silent"),	TRUE,	PROFILE_VOLUME_SILENT,	TRUE,	NULL	},
-	{ N_("Offline"),FALSE,	PROFILE_VOLUME_SILENT,	FALSE,	NULL	}
+	{ NULL, N_("General"),	TRUE,	PROFILE_VOLUME_ASC,	TRUE,	NULL	},
+	{ NULL, N_("Beep"),	TRUE,	PROFILE_VOLUME_25,	TRUE,	"beep"	},
+	{ "audio-volume-muted",
+		N_("Silent"),	TRUE,	PROFILE_VOLUME_SILENT,	TRUE,	NULL	},
+	{ NULL, N_("Offline"),	FALSE,	PROFILE_VOLUME_SILENT,	FALSE,	NULL	}
 };
 
 /* prototypes */
@@ -151,6 +171,17 @@ static Profiles * _profiles_init(PhonePluginHelper * helper)
 	profiles->profiles_cur = PROFILE_TYPE_GENERAL;
 	profiles->vibrator = 0;
 	profiles->pr_window = NULL;
+	profiles->pr_store = gtk_list_store_new(PROFILE_COLUMN_COUNT,
+			G_TYPE_BOOLEAN,		/* radio */
+			G_TYPE_UINT,		/* type */
+			G_TYPE_BOOLEAN,		/* default */
+			G_TYPE_BOOLEAN,		/* online */
+			G_TYPE_INT,		/* volume */
+			G_TYPE_BOOLEAN,		/* vibrate */
+			G_TYPE_STRING,		/* sample */
+			GDK_TYPE_PIXBUF,	/* icon */
+			G_TYPE_STRING,		/* name */
+			G_TYPE_STRING);		/* name display */
 	_profiles_load(profiles);
 	return profiles;
 }
@@ -283,8 +314,10 @@ static int _event_stopping(Profiles * profiles)
 /* profiles_settings */
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_cancel(gpointer data);
-static void _on_settings_changed(gpointer data);
+static void _on_settings_changed(GtkTreeSelection * treesel, gpointer data);
 static void _on_settings_ok(gpointer data);
+static void _on_settings_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data);
 
 static void _profiles_settings(Profiles * profiles)
 {
@@ -292,7 +325,9 @@ static void _profiles_settings(Profiles * profiles)
 	GtkWidget * frame;
 	GtkWidget * bbox;
 	GtkWidget * widget;
-	size_t i;
+	GtkTreeSelection * treesel;
+	GtkTreeViewColumn * column;
+	GtkCellRenderer * renderer;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(\"%s\")\n", __func__,
@@ -314,22 +349,37 @@ static void _profiles_settings(Profiles * profiles)
 #else
 	vbox = gtk_vbox_new(FALSE, 0);
 #endif
-	/* combo */
-#if GTK_CHECK_VERSION(3, 0, 0)
-	profiles->pr_combo = gtk_combo_box_text_new();
-	for(i = 0; i < profiles->profiles_cnt; i++)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(
-					profiles->pr_combo), NULL,
-				profiles->profiles[i].name);
-#else
-	profiles->pr_combo = gtk_combo_box_new_text();
-	for(i = 0; i < profiles->profiles_cnt; i++)
-		gtk_combo_box_append_text(GTK_COMBO_BOX(profiles->pr_combo),
-				profiles->profiles[i].name);
-#endif
-	g_signal_connect_swapped(profiles->pr_combo, "changed", G_CALLBACK(
-				_on_settings_changed), profiles);
-	gtk_box_pack_start(GTK_BOX(vbox), profiles->pr_combo, FALSE, TRUE, 0);
+	/* view */
+	widget = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget),
+			GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	profiles->pr_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(
+				profiles->pr_store));
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(profiles->pr_view),
+			FALSE);
+	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(profiles->pr_view));
+	g_signal_connect(treesel, "changed", G_CALLBACK(_on_settings_changed),
+			profiles);
+	/* view: radio */
+	renderer = gtk_cell_renderer_toggle_new();
+	g_signal_connect(renderer, "toggled", G_CALLBACK(
+				_on_settings_toggled), profiles);
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"active", PROFILE_COLUMN_DEFAULT,
+			"radio", PROFILE_COLUMN_RADIO, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(profiles->pr_view), column);
+	/* view: icon */
+	renderer = gtk_cell_renderer_pixbuf_new();
+	column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+			"pixbuf", PROFILE_COLUMN_ICON, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(profiles->pr_view), column);
+	/* view: name */
+	renderer = gtk_cell_renderer_text_new();
+	column = gtk_tree_view_column_new_with_attributes(_("Name"), renderer,
+			"text", PROFILE_COLUMN_NAME_DISPLAY, NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(profiles->pr_view), column);
+	gtk_container_add(GTK_CONTAINER(widget), profiles->pr_view);
+	gtk_box_pack_start(GTK_BOX(vbox), widget, FALSE, TRUE, 0);
 	/* frame */
 	frame = gtk_frame_new("Overview");
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -354,6 +404,10 @@ static void _profiles_settings(Profiles * profiles)
 	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
 	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), bbox, FALSE, TRUE, 0);
+	profiles->pr_ring = gtk_check_button_new_with_label(_("Ring"));
+	gtk_widget_set_sensitive(profiles->pr_ring, FALSE);
+	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_ring, FALSE, TRUE,
+			0);
 	profiles->pr_vibrator = gtk_check_button_new_with_label(_("Vibrate"));
 	gtk_widget_set_sensitive(profiles->pr_vibrator, FALSE);
 	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_vibrator, FALSE, TRUE,
@@ -394,50 +448,108 @@ static gboolean _on_settings_closex(gpointer data)
 static void _on_settings_cancel(gpointer data)
 {
 	Profiles * profiles = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(profiles->pr_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	size_t i;
 
 	gtk_widget_hide(profiles->pr_window);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(profiles->pr_combo),
-			profiles->profiles_cur);
+	valid = gtk_tree_model_get_iter_first(model, &iter);
+	for(i = 0; valid; valid = gtk_tree_model_iter_next(model, &iter), i++)
+		gtk_list_store_set(profiles->pr_store, &iter,
+				PROFILE_COLUMN_DEFAULT,
+				(i == profiles->profiles_cur) ? TRUE : FALSE,
+				-1);
 }
 
-static void _on_settings_changed(gpointer data)
+static void _on_settings_changed(GtkTreeSelection * treesel, gpointer data)
 {
 	Profiles * profiles = data;
-	int i;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean online;
+	ProfileVolume volume;
+	gboolean ring;
+	gboolean vibrate;
 	char buf[16];
 	double fraction;
 
-	i = gtk_combo_box_get_active(GTK_COMBO_BOX(profiles->pr_combo));
-	if(i < 0)
+	if(gtk_tree_selection_get_selected(treesel, &model, &iter) == FALSE)
 		return;
+	gtk_tree_model_get(model, &iter, PROFILE_COLUMN_ONLINE, &online,
+			PROFILE_COLUMN_VOLUME, &volume,
+			PROFILE_COLUMN_VIBRATE, &vibrate, -1);
+	fraction = volume;
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_online),
-			profiles->profiles[i].online);
-	fraction = profiles->profiles[i].volume;
-	if(profiles->profiles[i].volume > 0)
-		snprintf(buf, sizeof(buf), "%u %%",
-				profiles->profiles[i].volume);
-	else if(profiles->profiles[i].volume == 0)
-		snprintf(buf, sizeof(buf), "%s", "Silent");
+			online);
+	if(volume > 0)
+	{
+		snprintf(buf, sizeof(buf), "%u %%", volume);
+		ring = TRUE;
+	}
+	else if(volume == 0)
+	{
+		snprintf(buf, sizeof(buf), "%s", _("Silent"));
+		ring = FALSE;
+	}
 	else
 	{
-		snprintf(buf, sizeof(buf), "%s", "Ascending");
+		snprintf(buf, sizeof(buf), "%s", _("Ascending"));
 		fraction = 0.0;
+		ring = TRUE;
 	}
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(profiles->pr_volume),
 			fraction / 100.0);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(profiles->pr_volume), buf);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_ring),
+			ring);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_vibrator),
-			profiles->profiles[i].vibrate);
+			vibrate);
 }
 
 static void _on_settings_ok(gpointer data)
 {
 	Profiles * profiles = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(profiles->pr_store);
+	GtkTreeIter iter;
 	ProfileType type;
+	gboolean valid;
 
 	gtk_widget_hide(profiles->pr_window);
-	type = gtk_combo_box_get_active(GTK_COMBO_BOX(profiles->pr_combo));
-	_profiles_switch(profiles, type);
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter,
+				PROFILE_COLUMN_TYPE, &type,
+				PROFILE_COLUMN_DEFAULT, &valid, -1);
+		if(valid)
+		{
+			_profiles_switch(profiles, type);
+			break;
+		}
+	}
+}
+
+static void _on_settings_toggled(GtkCellRendererToggle * renderer,
+		char * path, gpointer data)
+{
+	Profiles * profiles = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(profiles->pr_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	ProfileType type;
+	(void) renderer;
+
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+			valid = gtk_tree_model_iter_next(model, &iter))
+		gtk_list_store_set(profiles->pr_store, &iter,
+				PROFILE_COLUMN_DEFAULT, FALSE, -1);
+	gtk_tree_model_get_iter_from_string(model, &iter, path);
+	gtk_tree_model_get(model, &iter, PROFILE_COLUMN_TYPE, &type, -1);
+	if(type < profiles->profiles_cnt)
+		profiles->profiles_cur = type;
+	gtk_list_store_set(profiles->pr_store, &iter, PROFILE_COLUMN_DEFAULT,
+			TRUE, -1);
 }
 
 
@@ -447,7 +559,7 @@ static int _profiles_set(Profiles * profiles, ProfileType type)
 {
 	PhonePluginHelper * helper = profiles->helper;
 
-	if(type > profiles->profiles_cnt)
+	if(type >= profiles->profiles_cnt)
 		return -helper->error(NULL, _("Invalid profile"), 1);
 	profiles->profiles_cur = type;
 	return 0;
@@ -459,15 +571,39 @@ static int _profiles_set(Profiles * profiles, ProfileType type)
 static int _profiles_load(Profiles * profiles)
 {
 	PhonePluginHelper * helper = profiles->helper;
+	GtkIconTheme * theme;
+	ProfileDefinition * profile;
+	GtkTreeIter iter;
 	char const * p;
 	size_t i = 0;
 
-	/* default profile */
+	theme = gtk_icon_theme_get_default();
+	/* profiles */
 	if((p = helper->config_get(helper->phone, "profiles", "default"))
-			!= NULL)
-		for(i = 0; i < profiles->profiles_cnt; i++)
-			if(strcmp(profiles->profiles[i].name, p) == 0)
-				break;
+			== NULL)
+		p = profiles->profiles[0].name;
+	gtk_list_store_clear(profiles->pr_store);
+	for(i = 0; i < profiles->profiles_cnt; i++)
+	{
+		profile = &profiles->profiles[i];
+		gtk_list_store_append(profiles->pr_store, &iter);
+		gtk_list_store_set(profiles->pr_store, &iter,
+				PROFILE_COLUMN_RADIO, TRUE,
+				PROFILE_COLUMN_DEFAULT,
+				(strcmp(profile->name, p) == 0) ? TRUE : FALSE,
+				PROFILE_COLUMN_ONLINE, profile->online,
+				PROFILE_COLUMN_VOLUME, profile->volume,
+				PROFILE_COLUMN_VIBRATE, profile->vibrate,
+				PROFILE_COLUMN_SAMPLE, profile->sample,
+				PROFILE_COLUMN_ICON,
+				gtk_icon_theme_load_icon(theme,
+				(profile->icon != NULL)
+				? profile->icon : "gnome-settings",
+				16, 0, NULL),
+				PROFILE_COLUMN_NAME, profile->name,
+				PROFILE_COLUMN_NAME_DISPLAY, _(profile->name),
+				-1);
+	}
 	if(i == profiles->profiles_cnt)
 		i = PROFILE_TYPE_GENERAL;
 	return _profiles_set(profiles, i);
@@ -553,10 +689,8 @@ static void _profiles_switch(Profiles * profiles, ProfileType type)
 
 	if(type == current)
 		return;
-	if(type > profiles->profiles_cnt)
-		/* XXX report error */
+	if(_profiles_set(profiles, type) != 0)
 		return;
-	_profiles_set(profiles, type);
 	_profiles_save(profiles);
 	memset(&pevent, 0, sizeof(pevent));
 	if(profiles->profiles[current].online
