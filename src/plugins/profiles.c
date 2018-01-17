@@ -12,8 +12,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* TODO:
- * - enable translations */
 
 
 
@@ -24,6 +22,10 @@
 #include <gtk/gtk.h>
 #include <System.h>
 #include "Phone.h"
+#define _(string) gettext(string)
+#define N_(string) string
+
+/* macros */
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
 
@@ -87,10 +89,10 @@ typedef struct _PhonePlugin
 /* variables */
 static ProfileDefinition _profiles_definitions[PROFILE_TYPE_COUNT] =
 {
-	{ "General",	TRUE,	PROFILE_VOLUME_ASC,	TRUE,	NULL	},
-	{ "Beep",	TRUE,	PROFILE_VOLUME_25,	TRUE,	"beep"	},
-	{ "Silent",	TRUE,	PROFILE_VOLUME_SILENT,	TRUE,	NULL	},
-	{ "Offline",	FALSE,	PROFILE_VOLUME_SILENT,	FALSE,	NULL	}
+	{ N_("General"),TRUE,	PROFILE_VOLUME_ASC,	TRUE,	NULL	},
+	{ N_("Beep"),	TRUE,	PROFILE_VOLUME_25,	TRUE,	"beep"	},
+	{ N_("Silent"),	TRUE,	PROFILE_VOLUME_SILENT,	TRUE,	NULL	},
+	{ N_("Offline"),FALSE,	PROFILE_VOLUME_SILENT,	FALSE,	NULL	}
 };
 
 /* prototypes */
@@ -336,7 +338,7 @@ static void _profiles_settings(Profiles * profiles)
 	widget = gtk_vbox_new(FALSE, 4);
 #endif
 	gtk_container_set_border_width(GTK_CONTAINER(widget), 4);
-	profiles->pr_online = gtk_check_button_new_with_label("Online");
+	profiles->pr_online = gtk_check_button_new_with_label(_("Online"));
 	gtk_widget_set_sensitive(profiles->pr_online, FALSE);
 	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_online, FALSE, TRUE,
 			0);
@@ -345,14 +347,14 @@ static void _profiles_settings(Profiles * profiles)
 #else
 	bbox = gtk_hbox_new(FALSE, 4);
 #endif
-	profiles->pr_volume = gtk_label_new("Volume: ");
+	profiles->pr_volume = gtk_label_new(_("Volume: "));
 	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
 	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, FALSE, TRUE, 0);
 	profiles->pr_volume = gtk_progress_bar_new();
 	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
 	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(widget), bbox, FALSE, TRUE, 0);
-	profiles->pr_vibrator = gtk_check_button_new_with_label("Vibrate");
+	profiles->pr_vibrator = gtk_check_button_new_with_label(_("Vibrate"));
 	gtk_widget_set_sensitive(profiles->pr_vibrator, FALSE);
 	gtk_box_pack_start(GTK_BOX(widget), profiles->pr_vibrator, FALSE, TRUE,
 			0);
@@ -446,7 +448,7 @@ static int _profiles_set(Profiles * profiles, ProfileType type)
 	PhonePluginHelper * helper = profiles->helper;
 
 	if(type > profiles->profiles_cnt)
-		return -helper->error(NULL, "Invalid profile", 1);
+		return -helper->error(NULL, _("Invalid profile"), 1);
 	profiles->profiles_cur = type;
 	return 0;
 }
