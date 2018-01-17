@@ -413,12 +413,12 @@ static void _on_settings_changed(gpointer data)
 	if(i < 0)
 		return;
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_online),
-			_profiles_definitions[i].online);
-	fraction = _profiles_definitions[i].volume;
-	if(_profiles_definitions[i].volume > 0)
+			profiles->profiles[i].online);
+	fraction = profiles->profiles[i].volume;
+	if(profiles->profiles[i].volume > 0)
 		snprintf(buf, sizeof(buf), "%u %%",
-				_profiles_definitions[i].volume);
-	else if(_profiles_definitions[i].volume == 0)
+				profiles->profiles[i].volume);
+	else if(profiles->profiles[i].volume == 0)
 		snprintf(buf, sizeof(buf), "%s", "Silent");
 	else
 	{
@@ -429,7 +429,7 @@ static void _on_settings_changed(gpointer data)
 			fraction / 100.0);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(profiles->pr_volume), buf);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(profiles->pr_vibrator),
-			_profiles_definitions[i].vibrate);
+			profiles->profiles[i].vibrate);
 }
 
 static void _on_settings_ok(gpointer data)
