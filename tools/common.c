@@ -96,6 +96,8 @@ static int _phone_init(Phone * phone, PhonePluginDefinition * plugind)
 static void _phone_destroy(Phone * phone)
 {
 	free(phone->username);
+	if(phone->password != NULL)
+		string_clear(phone->password);
 	free(phone->password);
 	if(phone->fd >= 0)
 		close(phone->fd);
@@ -200,6 +202,8 @@ static int _request_authenticate(Phone * phone, ModemRequest * request)
 	else if(strcmp(request->authenticate.name, "GPRS") == 0)
 	{
 		free(phone->username);
+		if(phone->password != NULL)
+			string_clear(phone->password);
 		free(phone->password);
 		p = (request->authenticate.username != NULL)
 			? request->authenticate.username : "";
@@ -211,6 +215,8 @@ static int _request_authenticate(Phone * phone, ModemRequest * request)
 		{
 			free(phone->username);
 			phone->username = NULL;
+			if(phone->password != NULL)
+				string_clear(phone->password);
 			free(phone->password);
 			phone->password = NULL;
 			return -error_set_code(1, "%s", strerror(errno));
