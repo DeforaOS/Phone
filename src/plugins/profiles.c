@@ -269,7 +269,7 @@ static int _event_starting(Profiles * profiles)
 	if(helper->confirm(helper->phone, "You are currently offline.\n"
 				"Do you want to go online?") != 0)
 		return 1;
-	_profiles_apply(profiles, 0);
+	_profiles_apply(profiles, PROFILE_TYPE_GENERAL);
 	return 0;
 }
 
