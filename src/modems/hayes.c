@@ -836,8 +836,7 @@ static int _hayes_parse(Hayes * hayes, HayesChannel * channel)
 	char * p;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__,
-			(unsigned long)channel->rd_buf_cnt);
+	fprintf(stderr, "DEBUG: %s() cnt=%zu\n", __func__, channel->rd_buf_cnt);
 #endif
 	for(i = 0; i < channel->rd_buf_cnt;)
 	{
@@ -903,8 +902,7 @@ static int _hayes_parse_pdu(Hayes * hayes, HayesChannel * channel)
 	size_t i;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() cnt=%lu\n", __func__,
-			(unsigned long)channel->rd_buf_cnt);
+	fprintf(stderr, "DEBUG: %s() cnt=%zu\n", __func__, channel->rd_buf_cnt);
 	for(i = 0; i < channel->rd_buf_cnt; i++)
 		fprintf(stderr, " %02x", channel->rd_buf[i]);
 	fputc('\n', stderr);
@@ -1665,7 +1663,7 @@ static char * _request_attention_message_send(Hayes * hayes,
 	pdulen = strlen(pdu);
 	if(hayeschannel_has_quirks(channel, HAYES_QUIRK_WANT_SMSC_IN_PDU))
 		pdulen -= 2;
-	snprintf(ret, len, "%s%lu", cmd, (unsigned long)pdulen / 2);
+	snprintf(ret, len, "%s%zu", cmd, pdulen / 2);
 	*data = pdu;
 	return ret;
 }
@@ -3438,7 +3436,7 @@ static char * _cmgr_pdu_parse_encoding_default(char const * pdu, size_t len,
 	char * r;
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%lu, %lu)\n", __func__, i, hdr);
+	fprintf(stderr, "DEBUG: %s(%zu, %zu)\n", __func__, i, hdr);
 #endif
 	if((p = malloc(len - i + 1)) == NULL)
 		return NULL;
@@ -3504,8 +3502,8 @@ static void _cmgr_pdu_parse_number(unsigned int type, char const * number,
 	}
 	b[i] = '\0';
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(\"%s\", %lu) => \"%s\"\n", __func__, number,
-			(unsigned long)length, b);
+	fprintf(stderr, "DEBUG: %s(\"%s\", %zu) => \"%s\"\n", __func__, number,
+			length, b);
 #endif
 }
 
