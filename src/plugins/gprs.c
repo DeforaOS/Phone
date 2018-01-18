@@ -365,6 +365,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 #else
 	vbox = gtk_vbox_new(FALSE, 4);
 #endif
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label(
 			_("Force GPRS registration"));
@@ -466,6 +467,7 @@ static GtkWidget * _settings_status(GPRS * gprs)
 #else
 	vbox = gtk_vbox_new(FALSE, 4);
 #endif
+	gtk_container_set_border_width(GTK_CONTAINER(vbox), 4);
 	/* details */
 	widget = gtk_frame_new(_("Details"));
 #if GTK_CHECK_VERSION(3, 0, 0)
