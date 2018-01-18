@@ -165,6 +165,7 @@ static int _smscrypt_event_sms_sending(SMSCrypt * smscrypt,
 static int _smscrypt_event(SMSCrypt * smscrypt, PhoneEvent * event)
 {
 	int ret = 0;
+#if 0 /* FIXME re-implement */
 	char const * number;
 	PhoneEncoding * encoding;
 	char ** buf;
@@ -172,7 +173,6 @@ static int _smscrypt_event(SMSCrypt * smscrypt, PhoneEvent * event)
 
 	switch(event->type)
 	{
-#if 0 /* FIXME re-implement */
 		/* our deal */
 		case PHONE_EVENT_TYPE_SMS_RECEIVING:
 			number = va_arg(ap, char const *);
@@ -190,11 +190,11 @@ static int _smscrypt_event(SMSCrypt * smscrypt, PhoneEvent * event)
 			ret = _smscrypt_event_sms_sending(plugin, number,
 					encoding, *buf, len);
 			break;
-#endif
 		/* ignore the rest */
 		default:
 			break;
 	}
+#endif
 	return ret;
 }
 
