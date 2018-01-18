@@ -1061,6 +1061,10 @@ int phone_event(Phone * phone, PhoneEvent * event)
 			modem_trigger(phone->modem,
 					MODEM_EVENT_TYPE_AUTHENTICATION);
 			break;
+		case PHONE_EVENT_TYPE_QUIT:
+			if(ret == 0)
+				gtk_main_quit();
+			break;
 		case PHONE_EVENT_TYPE_STARTED:
 			if(ret == 0)
 				ret = _event_type_started(phone);
@@ -1131,6 +1135,7 @@ int phone_event_type(Phone * phone, PhoneEventType type, ...)
 		case PHONE_EVENT_TYPE_KEY_TONE:
 		case PHONE_EVENT_TYPE_OFFLINE:
 		case PHONE_EVENT_TYPE_ONLINE:
+		case PHONE_EVENT_TYPE_QUIT:
 		case PHONE_EVENT_TYPE_RESUME:
 		case PHONE_EVENT_TYPE_STARTED:
 		case PHONE_EVENT_TYPE_STARTING:
