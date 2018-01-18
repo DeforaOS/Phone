@@ -92,7 +92,9 @@ static gboolean _smscrypt_confirm(SMSCrypt * smscrypt, char const * message)
 	int res;
 	(void) smscrypt;
 
+#ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,
 			GTK_BUTTONS_YES_NO, "%s",
 #if GTK_CHECK_VERSION(2, 6, 0)
