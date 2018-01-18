@@ -312,6 +312,8 @@ static int _event_stopping(Profiles * profiles)
 
 
 /* profiles_settings */
+static void _on_settings_activated(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_cancel(gpointer data);
 static void _on_settings_changed(GtkTreeSelection * treesel, gpointer data);
@@ -357,6 +359,9 @@ static void _profiles_settings(Profiles * profiles)
 				profiles->pr_store));
 	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(profiles->pr_view),
 			FALSE);
+	gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(profiles->pr_view), TRUE);
+	g_signal_connect(profiles->pr_view, "row-activated",
+			G_CALLBACK(_on_settings_activated), profiles);
 	treesel = gtk_tree_view_get_selection(GTK_TREE_VIEW(profiles->pr_view));
 	g_signal_connect(treesel, "changed", G_CALLBACK(_on_settings_changed),
 			profiles);
@@ -441,6 +446,22 @@ static void _profiles_settings(Profiles * profiles)
 	gtk_window_present(GTK_WINDOW(profiles->pr_window));
 }
 
+static void _on_settings_activated(GtkTreeView * view, GtkTreePath * path,
+		GtkTreeViewColumn * column, gpointer data)
+{
+	Profiles * profiles = data;
+	GtkTreeModel * model = GTK_TREE_MODEL(profiles->pr_store);
+	GtkTreeIter iter;
+	ProfileType type;
+	(void) view;
+	(void) column;
+
+	if(gtk_tree_model_get_iter(model, &iter, path) != TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, PROFILE_COLUMN_TYPE, &type, -1);
+	_profiles_set(profiles, type);
+}
+
 static gboolean _on_settings_closex(gpointer data)
 {
 	Profiles * profiles = data;
@@ -478,7 +499,7 @@ static void _on_settings_changed(GtkTreeSelection * treesel, gpointer data)
 	char buf[16];
 	double fraction;
 
-	if(gtk_tree_selection_get_selected(treesel, &model, &iter) == FALSE)
+	if(gtk_tree_selection_get_selected(treesel, &model, &iter) != TRUE)
 		return;
 	gtk_tree_model_get(model, &iter, PROFILE_COLUMN_ONLINE, &online,
 			PROFILE_COLUMN_VOLUME, &volume,
@@ -540,20 +561,12 @@ static void _on_settings_toggled(GtkCellRendererToggle * renderer,
 	Profiles * profiles = data;
 	GtkTreeModel * model = GTK_TREE_MODEL(profiles->pr_store);
 	GtkTreeIter iter;
-	gboolean valid;
 	ProfileType type;
 	(void) renderer;
 
-	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
-			valid = gtk_tree_model_iter_next(model, &iter))
-		gtk_list_store_set(profiles->pr_store, &iter,
-				PROFILE_COLUMN_DEFAULT, FALSE, -1);
 	gtk_tree_model_get_iter_from_string(model, &iter, path);
 	gtk_tree_model_get(model, &iter, PROFILE_COLUMN_TYPE, &type, -1);
-	if(type < profiles->profiles_cnt)
-		profiles->profiles_cur = type;
-	gtk_list_store_set(profiles->pr_store, &iter, PROFILE_COLUMN_DEFAULT,
-			TRUE, -1);
+	_profiles_set(profiles, type);
 }
 
 
@@ -562,10 +575,22 @@ static void _on_settings_toggled(GtkCellRendererToggle * renderer,
 static int _profiles_set(Profiles * profiles, ProfileType type)
 {
 	PhonePluginHelper * helper = profiles->helper;
+	GtkTreeModel * model = GTK_TREE_MODEL(profiles->pr_store);
+	GtkTreeIter iter;
+	gboolean valid;
+	ProfileType pt;
 
 	if(type >= profiles->profiles_cnt)
 		return -helper->error(NULL, _("Invalid profile"), 1);
 	profiles->profiles_cur = type;
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, PROFILE_COLUMN_TYPE, &pt, -1);
+		gtk_list_store_set(profiles->pr_store, &iter,
+				PROFILE_COLUMN_DEFAULT,
+				(pt == type) ? TRUE : FALSE, -1);
+	}
 	return 0;
 }
 
@@ -593,6 +618,7 @@ static int _profiles_load(Profiles * profiles)
 		gtk_list_store_append(profiles->pr_store, &iter);
 		gtk_list_store_set(profiles->pr_store, &iter,
 				PROFILE_COLUMN_RADIO, TRUE,
+				PROFILE_COLUMN_TYPE, i,
 				PROFILE_COLUMN_DEFAULT,
 				(strcmp(profile->name, p) == 0) ? TRUE : FALSE,
 				PROFILE_COLUMN_ONLINE, profile->online,
