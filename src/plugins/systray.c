@@ -15,11 +15,12 @@
 
 
 
-#include <System.h>
-#include <Desktop.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <string.h>
+#include <System.h>
+#include <Desktop.h>
 #include <gtk/gtk.h>
 #include "Phone.h"
 #include "../../config.h"
@@ -283,8 +284,12 @@ static void _popup_menu_on_suspend(gpointer data)
 
 static void _popup_menu_on_quit(gpointer data)
 {
-	(void) data;
+	Systray * systray = data;
+	PhonePluginHelper * helper = systray->helper;
+	PhoneEvent event;
 
-	gtk_main_quit();
+	memset(&event, 0, sizeof(event));
+	event.type = PHONE_EVENT_TYPE_QUIT;
+	helper->event(helper->phone, &event);
 }
 #endif
