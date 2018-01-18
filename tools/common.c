@@ -24,6 +24,11 @@
 #include <net/if.h>
 #include <System/string.h>
 
+/* constants */
+#ifndef PROGNAME_PPPD
+# define PROGNAME_PPPD	"pppd"
+#endif
+
 
 /* private */
 /* types */
@@ -229,8 +234,8 @@ static int _request_authenticate(Phone * phone, ModemRequest * request)
 
 static int _request_call(Phone * phone, ModemRequest * request)
 {
-	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "gprs",
-		"user", NULL, "password", NULL, NULL };
+	char * argv[] = { "/usr/sbin/" PROGNAME_PPPD, PROGNAME_PPPD,
+		"call", "gprs", "user", NULL, "password", NULL, NULL };
 	char const * p;
 	gboolean res;
 	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO

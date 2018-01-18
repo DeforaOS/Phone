@@ -49,6 +49,12 @@
 #include "hayes/quirks.h"
 #include "hayes.h"
 
+/* constants */
+#ifndef PROGNAME_PPPD
+# define PROGNAME_PPPD	"pppd"
+#endif
+
+/* macros */
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
@@ -3656,8 +3662,8 @@ static void _on_code_connect(HayesChannel * channel, char const * answer)
 	ModemEvent * event = &channel->events[MODEM_EVENT_TYPE_CONNECTION];
 	HayesCommand * command = (channel->queue != NULL)
 		? channel->queue->data : NULL;
-	char * argv[] = { "/usr/sbin/pppd", "pppd", "call", "phone",
-		"user", "", "password", "", NULL };
+	char * argv[] = { "/usr/sbin/" PROGNAME_PPPD, PROGNAME_PPPD,
+		"call", "phone", "user", "", "password", "", NULL };
 	char const * p;
 	gboolean res;
 	const GSpawnFlags flags = G_SPAWN_FILE_AND_ARGV_ZERO;
