@@ -155,7 +155,7 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 	gtk_status_icon_set_tooltip_text(gprs->icon, _("Not connected"));
 # endif
 # if GTK_CHECK_VERSION(2, 18, 0)
-	gtk_status_icon_set_title(gprs->icon, _(plugin.description));
+	gtk_status_icon_set_title(gprs->icon, _(plugin.name));
 #  if GTK_CHECK_VERSION(2, 20, 0)
 	gtk_status_icon_set_name(gprs->icon, "phone-gprs");
 #  endif
@@ -304,7 +304,7 @@ static void _gprs_settings(GPRS * gprs)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "phone-gprs");
 #endif
-	gtk_window_set_title(GTK_WINDOW(gprs->window), _(plugin.description));
+	gtk_window_set_title(GTK_WINDOW(gprs->window), _(plugin.name));
 	g_signal_connect_swapped(gprs->window, "delete-event", G_CALLBACK(
 				_settings_on_closex), gprs);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -890,6 +890,7 @@ static void _gprs_on_load_defaults(gpointer data)
 					widget),
 # endif
 			"%s", _("No defaults known for the current operator"));
+	gtk_window_set_title(GTK_WINDOW(widget), _("Error"));
 	gtk_dialog_run(GTK_DIALOG(widget));
 	gtk_widget_destroy(widget);
 }
