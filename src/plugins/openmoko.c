@@ -308,6 +308,10 @@ static int _event_volume_get(Openmoko * openmoko, gdouble * level)
 		return 0;
 	*level = value;
 	*level /= max;
+#else
+	(void) openmoko;
+	(void) level;
+
 #endif
 	return 0;
 }
@@ -318,6 +322,10 @@ static int _event_volume_set(Openmoko * openmoko, gdouble level)
 	if(openmoko->mixer_elem == NULL)
 		return 0;
 	snd_mixer_selem_set_playback_volume_all(openmoko->mixer_elem, level);
+#else
+	(void) openmoko;
+	(void) level;
+
 #endif
 	return 0;
 }
@@ -346,7 +354,10 @@ static int _openmoko_mixer_close(Openmoko * openmoko)
 	if(openmoko->mixer != NULL)
 		snd_mixer_close(openmoko->mixer);
 	openmoko->mixer = NULL;
-#endif /* __linux__ */
+#else
+	(void) openmoko;
+
+#endif
 	return 0;
 }
 
@@ -460,7 +471,10 @@ static int _openmoko_mixer_open(Openmoko * openmoko)
 		else if(strcmp(snd_mixer_selem_get_name(elem), "Speaker") == 0
 				&& snd_mixer_selem_has_playback_volume(elem))
 			openmoko->mixer_elem_speaker = elem;
-#endif /* __linux__ */
+#else
+	(void) openmoko;
+
+#endif
 	return 0;
 }
 

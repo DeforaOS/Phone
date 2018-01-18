@@ -245,6 +245,7 @@ static void _on_settings_number_edited(GtkCellRenderer * renderer, gchar * arg1,
 	GtkTreeIter iter;
 	char * number = NULL;
 	char const * reason;
+	(void) renderer;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
 		gtk_tree_model_get(model, &iter, 0, &number, -1);
@@ -267,6 +268,7 @@ static void _on_settings_reason_edited(GtkCellRenderer * renderer, gchar * arg1,
 	GtkTreeModel * model = GTK_TREE_MODEL(blacklist->store);
 	GtkTreeIter iter;
 	char * number = NULL;
+	(void) renderer;
 
 	if(gtk_tree_model_get_iter_from_string(model, &iter, arg1) == TRUE)
 		gtk_tree_model_get(model, &iter, 0, &number, -1);

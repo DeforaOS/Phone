@@ -54,11 +54,17 @@ static int _oss(char const * filename)
 static char const * _oss_config_get(Phone * phone, char const * section,
 		char const * variable)
 {
+	(void) phone;
+	(void) section;
+	(void) variable;
+
 	return NULL;
 }
 
 static int _oss_error(Phone * phone, char const * message, int ret)
 {
+	(void) phone;
+
 	fprintf(stderr, "oss: %s\n", message);
 	return ret;
 }

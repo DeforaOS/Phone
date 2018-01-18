@@ -2616,6 +2616,8 @@ static void _plugins_on_activated(GtkTreeView * view, GtkTreePath * path,
 	Phone * phone = data;
 	GtkTreeIter iter;
 	gboolean active;
+	(void) view;
+	(void) column;
 
 	gtk_tree_model_get_iter(GTK_TREE_MODEL(phone->pl_store), &iter, path);
 	gtk_tree_model_get(GTK_TREE_MODEL(phone->pl_store), &iter,
@@ -4058,6 +4060,7 @@ static int _phone_confirm(Phone * phone, GtkWidget * window,
 	const unsigned int flags = (window != NULL)
 		? GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT : 0;
 	int res;
+	(void) phone;
 
 	dialog = gtk_message_dialog_new(w, flags,
 			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
@@ -4135,6 +4138,7 @@ static gboolean _phone_log_filter_all(GtkTreeModel * model, GtkTreeIter * iter,
 		gpointer data)
 {
 	PhoneCallType type;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return TRUE;
@@ -4147,6 +4151,7 @@ static void _phone_log_get_iter(Phone * phone, GtkWidget * view,
 {
 	GtkTreeModel * model;
 	GtkTreeIter p;
+	(void) phone;
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
 	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
@@ -4178,6 +4183,7 @@ static gboolean _phone_log_filter_incoming(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	PhoneCallType type;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return (type == PHONE_CALL_TYPE_INCOMING) ? TRUE : FALSE;
@@ -4189,6 +4195,7 @@ static gboolean _phone_log_filter_outgoing(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	PhoneCallType type;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_LOG_COLUMN_CALL_TYPE, &type, -1);
 	return (type == PHONE_CALL_TYPE_OUTGOING) ? TRUE : FALSE;
@@ -4239,6 +4246,7 @@ static gboolean _phone_messages_filter_all(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	ModemMessageFolder folder;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_MESSAGE_COLUMN_FOLDER, &folder,
 			-1);
@@ -4251,6 +4259,7 @@ static gboolean _phone_messages_filter_drafts(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	ModemMessageFolder folder;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_MESSAGE_COLUMN_FOLDER, &folder,
 			-1);
@@ -4263,6 +4272,7 @@ static gboolean _phone_messages_filter_inbox(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	ModemMessageFolder folder;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_MESSAGE_COLUMN_FOLDER, &folder,
 			-1);
@@ -4275,6 +4285,7 @@ static gboolean _phone_messages_filter_sent(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	ModemMessageFolder folder;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_MESSAGE_COLUMN_FOLDER, &folder,
 			-1);
@@ -4287,6 +4298,7 @@ static gboolean _phone_messages_filter_trash(GtkTreeModel * model,
 		GtkTreeIter * iter, gpointer data)
 {
 	ModemMessageFolder folder;
+	(void) data;
 
 	gtk_tree_model_get(model, iter, PHONE_MESSAGE_COLUMN_FOLDER, &folder,
 			-1);
@@ -4878,6 +4890,7 @@ static void _phone_modem_event_authentication(GtkWidget * widget, gint response,
 		gpointer data)
 {
 	Phone * phone = data;
+	(void) response;
 
 	phone_show_code(phone, FALSE);
 	gtk_widget_destroy(widget);

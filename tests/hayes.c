@@ -157,6 +157,8 @@ static int _hayes_helper_config_set(Modem * modem, char const * variable,
 /* hayes_helper_error */
 static int _hayes_helper_error(Modem * modem, char const * message, int ret)
 {
+	(void) modem;
+
 	fprintf(stderr, "%s: %s\n", PROGNAME, message);
 	return ret;
 }
@@ -165,6 +167,8 @@ static int _hayes_helper_error(Modem * modem, char const * message, int ret)
 /* hayes_helper_event */
 static void _hayes_helper_event(Modem * modem, ModemEvent * event)
 {
+	(void) modem;
+
 	switch(event->type)
 	{
 		case MODEM_EVENT_TYPE_MODEL:
@@ -195,7 +199,7 @@ static void _hayes_helper_event(Modem * modem, ModemEvent * event)
 /* public */
 /* functions */
 /* main */
-int main(int argc, char * argv[])
+int main(void)
 {
 	return (_hayes() == 0) ? 0 : 2;
 }

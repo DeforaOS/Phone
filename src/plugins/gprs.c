@@ -578,6 +578,8 @@ static void _settings_on_connect(gpointer data)
 #ifdef PROGNAME_GPRS
 static void _settings_on_help(gpointer data)
 {
+	(void) data;
+
 	desktop_help_contents(PACKAGE, PROGNAME_GPRS);
 }
 #endif
@@ -863,6 +865,7 @@ static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 	GtkWidget * menu;
 	GtkWidget * menuitem;
 	GtkWidget * image;
+	(void) icon;
 
 	menu = gtk_menu_new();
 	/* status */

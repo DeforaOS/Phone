@@ -268,6 +268,8 @@ static int _request_call(Phone * phone, ModemRequest * request)
 
 static void _request_call_child(gpointer data)
 {
+	(void) data;
+
 	/* XXX lets the PID file readable with higher privileges */
 	umask(022);
 }
@@ -275,6 +277,7 @@ static void _request_call_child(gpointer data)
 static void _request_call_child_watch(GPid pid, gint status, gpointer data)
 {
 	Phone * phone = data;
+	(void) status;
 
 	phone->source = 0;
 	g_spawn_close_pid(pid);
@@ -289,6 +292,7 @@ static int _request_call_hangup(Phone * phone, ModemRequest * request)
 	FILE * fp;
 	char buf[16];
 	pid_t pid;
+	(void) request;
 
 	if((interface = _helper_config_get(phone, "gprs", "interface")) == NULL)
 		return -error_set_code(1, "Unknown interface");

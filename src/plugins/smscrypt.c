@@ -90,6 +90,7 @@ static gboolean _smscrypt_confirm(SMSCrypt * smscrypt, char const * message)
 {
 	GtkWidget * dialog;
 	int res;
+	(void) smscrypt;
 
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 	dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_QUESTION,

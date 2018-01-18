@@ -450,6 +450,7 @@ static gboolean _start_on_idle(gpointer data);
 static int _debug_start(ModemPlugin * modem, unsigned int retry)
 {
 	Debug * debug = modem;
+	(void) retry;
 
 	_debug_set_status(modem, "starting");
 	if(debug->source != 0)

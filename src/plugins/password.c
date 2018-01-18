@@ -84,6 +84,8 @@ static void _password_destroy(PasswordPhonePlugin * password)
 /* password_event */
 static int _password_event(PasswordPhonePlugin * password, PhoneEvent * event)
 {
+	(void) password;
+
 	switch(event->type)
 	{
 		default:

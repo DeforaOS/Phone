@@ -167,6 +167,7 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 		{ "gtk-quit", "_Quit", _popup_menu_on_quit },
 	};
 	size_t i;
+	(void) icon;
 
 	menu = gtk_menu_new();
 	for(i = 0; i < sizeof(items) / sizeof(*items); i++)
@@ -195,6 +196,8 @@ static void _systray_on_popup_menu(GtkStatusIcon * icon, guint button,
 
 static void _popup_menu_on_contents(gpointer data)
 {
+	(void) data;
+
 	desktop_help_contents(PACKAGE, "phone");
 }
 
@@ -280,6 +283,8 @@ static void _popup_menu_on_suspend(gpointer data)
 
 static void _popup_menu_on_quit(gpointer data)
 {
+	(void) data;
+
 	gtk_main_quit();
 }
 #endif
