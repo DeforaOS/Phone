@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include <System.h>
 #ifdef PROGNAME_GPRS
@@ -26,6 +27,8 @@
 #endif
 #include "Phone.h"
 #include "../../config.h"
+#define _(string) gettext(string)
+#define N_(string) string
 
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -111,7 +114,7 @@ static gboolean _gprs_on_timeout(gpointer data);
 /* variables */
 PhonePluginDefinition plugin =
 {
-	"Dial-up networking",
+	N_("Dial-up networking"),
 	"phone-gprs",
 	NULL,
 	_gprs_init,
@@ -149,10 +152,10 @@ static GPRS * _gprs_init(PhonePluginHelper * helper)
 #if GTK_CHECK_VERSION(2, 10, 0)
 	gprs->icon = gtk_status_icon_new_from_icon_name("phone-gprs");
 # if GTK_CHECK_VERSION(2, 16, 0)
-	gtk_status_icon_set_tooltip_text(gprs->icon, "Not connected");
+	gtk_status_icon_set_tooltip_text(gprs->icon, _("Not connected"));
 # endif
 # if GTK_CHECK_VERSION(2, 18, 0)
-	gtk_status_icon_set_title(gprs->icon, plugin.description);
+	gtk_status_icon_set_title(gprs->icon, _(plugin.description));
 #  if GTK_CHECK_VERSION(2, 20, 0)
 	gtk_status_icon_set_name(gprs->icon, "phone-gprs");
 #  endif
@@ -301,7 +304,7 @@ static void _gprs_settings(GPRS * gprs)
 #if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(gprs->window), "phone-gprs");
 #endif
-	gtk_window_set_title(GTK_WINDOW(gprs->window), plugin.description);
+	gtk_window_set_title(GTK_WINDOW(gprs->window), _(plugin.description));
 	g_signal_connect_swapped(gprs->window, "delete-event", G_CALLBACK(
 				_settings_on_closex), gprs);
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -313,11 +316,11 @@ static void _gprs_settings(GPRS * gprs)
 	/* preferences */
 	widget = _settings_preferences(gprs);
 	gtk_notebook_append_page(GTK_NOTEBOOK(gprs->notebook), widget,
-			gtk_label_new("Preferences"));
+			gtk_label_new(_("Preferences")));
 	/* status */
 	widget = _settings_status(gprs);
 	gtk_notebook_append_page(GTK_NOTEBOOK(gprs->notebook), widget,
-			gtk_label_new("Status"));
+			gtk_label_new(_("Status")));
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->notebook, TRUE, TRUE, 0);
 	/* button box */
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -364,13 +367,14 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 #endif
 	/* attachment */
 	gprs->attach = gtk_check_button_new_with_label(
-			"Force GPRS registration");
+			_("Force GPRS registration"));
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->attach, FALSE, TRUE, 0);
 	/* systray */
-	gprs->systray = gtk_check_button_new_with_label("Show in system tray");
+	gprs->systray = gtk_check_button_new_with_label(
+			_("Show in system tray"));
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->systray, FALSE, TRUE, 0);
 	/* credentials */
-	frame = gtk_frame_new("Credentials");
+	frame = gtk_frame_new(_("Credentials"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 #else
@@ -384,7 +388,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 #else
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
-	widget = gtk_label_new("Access point:");
+	widget = gtk_label_new(_("Access point:"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
 #else
@@ -401,7 +405,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 #else
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
-	widget = gtk_label_new("Username:");
+	widget = gtk_label_new(_("Username:"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
 #else
@@ -418,7 +422,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 #else
 	hbox = gtk_hbox_new(FALSE, 4);
 #endif
-	widget = gtk_label_new("Password:");
+	widget = gtk_label_new(_("Password:"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(widget, "halign", GTK_ALIGN_START, NULL);
 #else
@@ -437,7 +441,7 @@ static GtkWidget * _settings_preferences(GPRS * gprs)
 # else
 	hbox = gtk_hbox_new(FALSE, 4);
 # endif
-	gprs->defaults = gtk_button_new_with_label("Load defaults");
+	gprs->defaults = gtk_button_new_with_label(_("Load defaults"));
 	gtk_widget_set_sensitive(gprs->defaults, (gprs->_operator != NULL)
 			? TRUE : FALSE);
 	g_signal_connect_swapped(gprs->defaults, "clicked", G_CALLBACK(
@@ -463,7 +467,7 @@ static GtkWidget * _settings_status(GPRS * gprs)
 	vbox = gtk_vbox_new(FALSE, 4);
 #endif
 	/* details */
-	widget = gtk_frame_new("Details");
+	widget = gtk_frame_new(_("Details"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	bbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 #else
@@ -478,7 +482,7 @@ static GtkWidget * _settings_status(GPRS * gprs)
 	gprs->st_image = gtk_image_new_from_icon_name(GTK_STOCK_DISCONNECT,
 			GTK_ICON_SIZE_BUTTON);
 	gtk_box_pack_start(GTK_BOX(hbox), gprs->st_image, FALSE, TRUE, 0);
-	gprs->st_label = gtk_label_new("Not connected");
+	gprs->st_label = gtk_label_new(_("Not connected"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	g_object_set(gprs->st_label, "halign", GTK_ALIGN_START, NULL);
 #else
@@ -510,7 +514,7 @@ static GtkWidget * _settings_status(GPRS * gprs)
 				_settings_on_connect), gprs);
 	gtk_box_pack_start(GTK_BOX(vbox), gprs->connect, FALSE, TRUE, 0);
 	/* counters */
-	widget = gtk_frame_new("Counters");
+	widget = gtk_frame_new(_("Counters"));
 #if GTK_CHECK_VERSION(3, 0, 0)
 	hbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
 #else
@@ -650,7 +654,7 @@ static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 
 	gprs->connected = connected;
 	if(message == NULL)
-		message = connected ? "Connected" : "Not connected";
+		message = connected ? _("Connected") : _("Not connected");
 	if(gprs->window == NULL)
 		return;
 	gtk_image_set_from_icon_name(GTK_IMAGE(gprs->st_image), connected
@@ -661,16 +665,17 @@ static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 			? GTK_STOCK_DISCONNECT : GTK_STOCK_CONNECT);
 	if(connected)
 	{
-		snprintf(buf, sizeof(buf), "Received: %zu kB (%zu kB/s)",
+		snprintf(buf, sizeof(buf), _("Received: %zu kB (%zu kB/s)"),
 				in / 1024, (in - gprs->in) / 1024);
 		gtk_label_set_text(GTK_LABEL(gprs->st_in), buf);
-		snprintf(buf, sizeof(buf), "Sent: %zu kB (%zu kB/s)",
+		snprintf(buf, sizeof(buf), _("Sent: %zu kB (%zu kB/s)"),
 				out / 1024, (out - gprs->out) / 1024);
 		gtk_label_set_text(GTK_LABEL(gprs->st_out), buf);
 		gtk_widget_show(gprs->st_in);
 		gtk_widget_show(gprs->st_out);
 #if GTK_CHECK_VERSION(2, 16, 0)
-		snprintf(buf, sizeof(buf), "%s\nReceived: %zu kB\nSent: %zu kB",
+		snprintf(buf, sizeof(buf),
+				_("%s\nReceived: %zu kB\nSent: %zu kB"),
 				message, in / 1024, out / 1024);
 		gtk_status_icon_set_tooltip_text(gprs->icon, buf);
 #endif
@@ -700,10 +705,11 @@ static void _gprs_set_connected(GPRS * gprs, gboolean connected,
 		gprs->out = 0;
 	}
 	/* counters */
-	snprintf(buf, sizeof(buf), "Received: %zu kB",
+	snprintf(buf, sizeof(buf), _("Received: %zu kB"),
 			(gprs->glin + in) / 1024);
 	gtk_label_set_text(GTK_LABEL(gprs->st_glin), buf);
-	snprintf(buf, sizeof(buf), "Sent: %zu kB", (gprs->glout + out) / 1024);
+	snprintf(buf, sizeof(buf), _("Sent: %zu kB"),
+			(gprs->glout + out) / 1024);
 	gtk_label_set_text(GTK_LABEL(gprs->st_glout), buf);
 }
 
@@ -742,9 +748,9 @@ static int _gprs_connect(GPRS * gprs)
 {
 	GtkDialogFlags flags = GTK_DIALOG_MODAL
 		| GTK_DIALOG_DESTROY_WITH_PARENT;
-	char const message[] = "You are currently roaming, and additional"
+	char const message[] = N_("You are currently roaming, and additional"
 		" charges are therefore likely to apply.\n"
-		"Do you really want to connect?";
+		"Do you really want to connect?");
 	GtkWidget * widget;
 	int res;
 	ModemRequest request;
@@ -756,18 +762,18 @@ static int _gprs_connect(GPRS * gprs)
 		widget = gtk_message_dialog_new(GTK_WINDOW(gprs->window), flags,
 				GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
 #if GTK_CHECK_VERSION(2, 6, 0)
-				"%s", "Warning");
+				"%s", _("Warning"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					widget),
 #endif
-				"%s", message);
-		gtk_window_set_title(GTK_WINDOW(widget), "Warning");
+				"%s", _(message));
+		gtk_window_set_title(GTK_WINDOW(widget), _("Warning"));
 		res = gtk_dialog_run(GTK_DIALOG(widget));
 		gtk_widget_destroy(widget);
 		if(res != GTK_RESPONSE_YES)
 			return 0;
 	}
-	_gprs_set_connected(gprs, TRUE, "Connecting...", 0, 0);
+	_gprs_set_connected(gprs, TRUE, _("Connecting..."), 0, 0);
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_CALL;
 	request.call.call_type = MODEM_CALL_TYPE_DATA;
@@ -813,7 +819,7 @@ static int _gprs_disconnect(GPRS * gprs)
 
 	if(_gprs_access_point(gprs) != 0)
 		return -1;
-	_gprs_set_connected(gprs, TRUE, "Disconnecting...", 0, 0);
+	_gprs_set_connected(gprs, TRUE, _("Disconnecting..."), 0, 0);
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_CALL_HANGUP;
 	return gprs->helper->request(gprs->helper->phone, &request);
@@ -879,11 +885,11 @@ static void _gprs_on_load_defaults(gpointer data)
 	widget = gtk_message_dialog_new(GTK_WINDOW(gprs->window),
 			flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
 # if GTK_CHECK_VERSION(2, 6, 0)
-			"%s", "Error");
+			"%s", _("Error"));
 		gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(
 					widget),
 # endif
-			"%s", "No defaults known for the current operator");
+			"%s", _("No defaults known for the current operator"));
 	gtk_dialog_run(GTK_DIALOG(widget));
 	gtk_widget_destroy(widget);
 }
@@ -909,7 +915,7 @@ static void _gprs_on_popup_menu(GtkStatusIcon * icon, guint button,
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 	/* connection */
 	menuitem = gtk_image_menu_item_new_with_mnemonic(gprs->connected
-			? "_Disconnect" : "_Connect");
+			? _("_Disconnect") : _("_Connect"));
 	image = gtk_image_new_from_stock(gprs->connected ? GTK_STOCK_DISCONNECT
 			: GTK_STOCK_CONNECT, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menuitem), image);
