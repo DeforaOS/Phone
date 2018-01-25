@@ -407,7 +407,8 @@ static void _profiles_settings(Profiles * profiles)
 	gtk_box_pack_start(GTK_BOX(bbox), profiles->pr_volume, FALSE, TRUE, 0);
 	profiles->pr_volume = gtk_progress_bar_new();
 #if GTK_CHECK_VERSION(3, 0, 0)
-	g_object_set(profiles->pr_volume, "show-text", TRUE, NULL);
+	gtk_progress_bar_set_show_text(GTK_PROGRESS_BAR(profiles->pr_volume),
+			TRUE);
 #endif
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(profiles->pr_volume), "");
 	gtk_widget_set_sensitive(profiles->pr_volume, FALSE);
