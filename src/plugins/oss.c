@@ -538,7 +538,7 @@ static void _on_settings_cancel(gpointer data)
 #ifdef __NetBSD__
 	const char devdsp[] = "/dev/sound";
 #else
-	const char devdsp = "/dev/dsp";
+	const char devdsp[] = "/dev/dsp";
 #endif
 	char const * p;
 
