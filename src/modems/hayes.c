@@ -3070,18 +3070,17 @@ static void _on_code_clip(HayesChannel * channel, char const * answer)
 
 
 /* on_code_cme_error */
+static void _cme_command_repeat(HayesChannel * channel, HayesCommand * command);
 static void _cme_error_registration(HayesChannel * channel, char const * error);
 
 static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 {
-	const guint timeout = 5000;
 	Hayes * hayes = channel->hayes;
 	ModemPluginHelper * helper = hayes->helper;
 	/* XXX ugly */
 	HayesCommand * command = (channel->queue != NULL)
 		? channel->queue->data : NULL;
 	unsigned int u;
-	HayesCommand * p;
 	ModemEvent * event;
 
 	if(command != NULL)
@@ -3108,19 +3107,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 				break;
 			/* fallback */
 		case 14: /* SIM busy */
-			/* repeat the command */
-			if(command == NULL)
-				break;
-			if((p = hayes_command_new_copy(command)) == NULL)
-				break;
-			hayes_command_set_data(p,
-					hayes_command_get_data(command));
-			hayes_command_set_data(command, NULL);
-			channel->queue_timeout = g_slist_append(
-					channel->queue_timeout, p);
-			if(channel->source == 0)
-				channel->source = g_timeout_add(timeout,
-						_on_queue_timeout, channel);
+			_cme_command_repeat(channel, command);
 			break;
 		case 30:  /* No network service */
 			_cme_error_registration(channel, "No network service");
@@ -3165,6 +3152,23 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 		case 263: /* Invalid block */
 			break;
 	}
+}
+
+static void _cme_command_repeat(HayesChannel * channel, HayesCommand * command)
+{
+	const guint timeout = 5000;
+	HayesCommand * p;
+
+	if(command == NULL)
+		return;
+	if((p = hayes_command_new_copy(command)) == NULL)
+		return;
+	hayes_command_set_data(p, hayes_command_get_data(command));
+	hayes_command_set_data(command, NULL);
+	channel->queue_timeout = g_slist_append(channel->queue_timeout, p);
+	if(channel->source == 0)
+		channel->source = g_timeout_add(timeout, _on_queue_timeout,
+				channel);
 }
 
 static void _cme_error_registration(HayesChannel * channel, char const * error)
