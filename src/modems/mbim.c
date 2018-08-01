@@ -20,9 +20,26 @@
 # include <stdio.h>
 #endif
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <net/if.h>
+#include <errno.h>
+#include <glib.h>
 #include <System.h>
 #include <Phone/modem.h>
+
+#include <dev/usb/mbim.h>
+#include <dev/usb/if_umbreg.h>
+
+#ifndef SIOCGUMBINFO
+# define SIOCGUMBINFO	_IOWR('i', 190, struct ifreq)	/* get MBIM info */
+#endif
+#ifndef SIOCSUMBPARAM
+# define SIOCSUMBPARAM	_IOW('i', 191, struct ifreq)	/* set MBIM param */
+#endif
+#ifndef SIOCGUMBPARAM
+# define SIOCGUMBPARAM	_IOWR('i', 192, struct ifreq)	/* get MBIM param */
+#endif
 
 
 /* MBIM */
@@ -33,6 +50,8 @@ typedef struct _ModemPlugin
 	ModemPluginHelper * helper;
 
 	int fd;
+
+	unsigned int source;
 } MBIM;
 
 
@@ -51,6 +70,12 @@ static void _mbim_destroy(ModemPlugin * modem);
 static int _mbim_start(ModemPlugin * modem, unsigned int retry);
 static int _mbim_stop(ModemPlugin * modem);
 static int _mbim_request(ModemPlugin * modem, ModemRequest * request);
+
+static int _mbim_ioctl(ModemPlugin * modem, unsigned long request,
+		struct ifreq * ifr);
+
+/* callbacks */
+static gboolean _mbim_on_timeout(gpointer data);
 
 
 /* public */
@@ -81,6 +106,7 @@ static ModemPlugin * _mbim_init(ModemPluginHelper * helper)
 	memset(mbim, 0, sizeof(*mbim));
 	mbim->helper = helper;
 	mbim->fd = -1;
+	mbim->source = 0;
 	return mbim;
 }
 
@@ -105,6 +131,7 @@ static int _mbim_start(ModemPlugin * modem, unsigned int retry)
 #endif
 	if(mbim->fd < 0 && (mbim->fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		return -1;
+	mbim->source = g_timeout_add(1000, _mbim_on_timeout, mbim);
 	return 0;
 }
 
@@ -117,6 +144,9 @@ static int _mbim_stop(ModemPlugin * modem)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
+	if(mbim->source > 0)
+		g_source_remove(mbim->source);
+	mbim->source = 0;
 	if(mbim->fd >= 0)
 		close(mbim->fd);
 	mbim->fd = -1;
@@ -136,4 +166,43 @@ static int _mbim_request(ModemPlugin * modem, ModemRequest * request)
 #endif
 	}
 	return 0;
+}
+
+
+/* mbim_ioctl */
+static int _mbim_ioctl(ModemPlugin * modem, unsigned long request,
+		struct ifreq * ifr)
+{
+	MBIM * mbim = modem;
+
+	if(ioctl(mbim->fd, request, ifr) != 0)
+		return -1;
+	return 0;
+}
+
+
+/* callbacks */
+/* mbim_on_timeout */
+static gboolean _mbim_on_timeout(gpointer data)
+{
+	ModemPlugin * mbim = data;
+	ModemPluginHelper * helper = mbim->helper;
+	struct ifreq ifr;
+	struct umb_info umbi;
+	char const * p;
+
+	if((p = helper->config_get(helper->modem, "interface")) == NULL
+			|| strlen(p) == 0)
+		p = "umb0";
+	memset(&ifr, 0, sizeof(ifr));
+	strlcpy(ifr.ifr_name, p, sizeof(ifr.ifr_name));
+	memset(&umbi, 0, sizeof(umbi));
+	ifr.ifr_data = &umbi;
+	if(_mbim_ioctl(mbim, SIOCGUMBINFO, &ifr) != 0)
+	{
+		mbim->helper->error(mbim->helper->modem, strerror(errno),
+				-errno);
+		return TRUE;
+	}
+	return TRUE;
 }
