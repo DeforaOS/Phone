@@ -16,10 +16,10 @@
 
 
 #include <unistd.h>
-#include <string.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <string.h>
 #include <sys/socket.h>
 #include <System.h>
 #include <Phone/modem.h>
