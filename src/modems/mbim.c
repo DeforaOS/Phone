@@ -15,10 +15,12 @@
 
 
 
+#include <unistd.h>
 #include <string.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
+#include <sys/socket.h>
 #include <System.h>
 #include <Phone/modem.h>
 
@@ -29,6 +31,8 @@
 typedef struct _ModemPlugin
 {
 	ModemPluginHelper * helper;
+
+	int fd;
 } MBIM;
 
 
@@ -76,7 +80,7 @@ static ModemPlugin * _mbim_init(ModemPluginHelper * helper)
 		return NULL;
 	memset(mbim, 0, sizeof(*mbim));
 	mbim->helper = helper;
-	/* TODO implement */
+	mbim->fd = -1;
 	return mbim;
 }
 
@@ -87,7 +91,6 @@ static void _mbim_destroy(ModemPlugin * modem)
 	MBIM * mbim = modem;
 
 	_mbim_stop(modem);
-	/* TODO implement */
 	object_delete(mbim);
 }
 
@@ -100,7 +103,8 @@ static int _mbim_start(ModemPlugin * modem, unsigned int retry)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* TODO implement */
+	if(mbim->fd < 0 && (mbim->fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+		return -1;
 	return 0;
 }
 
@@ -113,7 +117,9 @@ static int _mbim_stop(ModemPlugin * modem)
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	/* TODO implement */
+	if(mbim->fd >= 0)
+		close(mbim->fd);
+	mbim->fd = -1;
 	return 0;
 }
 
