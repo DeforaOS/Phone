@@ -344,7 +344,7 @@ static void _ussd_on_operators_changed(gpointer data)
 	USSD * ussd = data;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
-	gchar * p;
+	gchar * _operator;
 
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->codes));
 	gtk_list_store_clear(GTK_LIST_STORE(model));
@@ -352,11 +352,11 @@ static void _ussd_on_operators_changed(gpointer data)
 			!= TRUE)
 		return;
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->operators));
-	gtk_tree_model_get(model, &iter, UO_OPERATOR, &p, -1);
+	gtk_tree_model_get(model, &iter, UO_OPERATOR, &_operator, -1);
 	if(ussd->config != NULL)
-		config_foreach_section(ussd->config, p,
+		config_foreach_section(ussd->config, _operator,
 				_ussd_on_operators_changed_operator, ussd);
-	g_free(p);
+	g_free(_operator);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->codes), 0);
 }
 
