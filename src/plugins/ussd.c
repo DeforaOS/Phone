@@ -314,6 +314,8 @@ static int _ussd_load_operator(USSD * ussd, char const * name)
 	free(ussd->_operator);
 	if((ussd->_operator = strdup(name)) == NULL)
 		return -1;
+	if(ussd->operators == NULL)
+		return 0;
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->operators));
 	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
 			valid = gtk_tree_model_iter_next(model, &iter))
