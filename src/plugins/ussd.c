@@ -12,11 +12,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-/* FIXME:
- * - use a configuration file instead */
 
 
 
+#include <stdlib.h>
 #ifdef DEBUG
 # include <stdio.h>
 #endif
@@ -24,6 +23,14 @@
 #include <gtk/gtk.h>
 #include <System.h>
 #include "Phone.h"
+#include "../../config.h"
+
+#ifndef PREFIX
+# define PREFIX		"/usr/local"
+#endif
+#ifndef SYSCONFDIR
+# define SYSCONFDIR	PREFIX "/etc"
+#endif
 
 
 /* USSD */
@@ -32,103 +39,29 @@
 typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
-	size_t _operator;
+	Config * config;
+	char * _operator;
 	/* widgets */
 	GtkWidget * window;
 	GtkWidget * operators;
 	GtkWidget * codes;
 } USSD;
 
-typedef struct _USSDCode
+typedef enum _USSDOperator
 {
-	char const * number;
-	char const * name;
+	UO_OPERATOR = 0,
+	UO_DISPLAY
+} USSDOperator;
+#define UO_LAST UO_DISPLAY
+#define UO_COUNT (UO_LAST + 1)
+
+typedef enum _USSDCode
+{
+	UC_CODE = 0,
+	UC_DISPLAY
 } USSDCode;
-
-
-/* constants */
-/* Germany */
-static USSDCode _ussd_codes_de_ccc_32c3[] =
-{
-	{ "*#100#",	"Number request"				},
-	{ NULL,		NULL						}
-};
-
-/* E-Plus, see http://www.prepaid-wiki.de/index.php5/E-Plus */
-static USSDCode _ussd_codes_de_eplus[] =
-{
-	{ "*100#",	"Balance enquiry"				},
-	{ NULL,		NULL						}
-};
-
-/* FYVE, see http://www.prepaid-wiki.de/index.php5/FYVE#Servicefunktionen */
-static USSDCode _ussd_codes_de_fyve[] =
-{
-	{ "*100#",	"Balance enquiry and charging menu"		},
-	{ "*106#",	"Balance enquiry"				},
-	{ NULL,		NULL						}
-};
-
-/* MTN, see http://www.mtn.co.za/Support/faq/Pages/USSD.aspx */
-static USSDCode _ussd_codes_za_mtn[] =
-{
-	{ "*141#",	"Balance enquiry"				},
-	{ "*141*4#",	"Tariff Analyser and Priceplan Migrations menu"	},
-	{ "*141*4*0#",	"Tariff Analyser"				},
-	{ "*141*6*0#",	"Data bundle cancellation"			},
-	{ "*141*7*0#",	"SMS bundle cancellation"			},
-	{ "*141*8#",	"Yello Fortune Entries"				},
-	{ NULL,		NULL						}
-};
-
-/* Telekom */
-static USSDCode _ussd_codes_de_telekom[] =
-{
-	{ "*2221#",	"Multi-SIM: current status"			},
-	{ "*2222#",	"Multi-SIM: set card as default"		},
-	{ NULL,		NULL						}
-};
-
-/* Virgin Mobile, see
- * http://fr.wikipedia.org/wiki/Unstructured_Supplementary_Service_Data */
-static USSDCode _ussd_codes_fr_virgin[] =
-{
-	{ "*144#",	"Balance enquiry"				},
-	{ NULL,		NULL						}
-};
-
-/* Vodafone India, see
- * http://broadbandforum.in/vodafone-3g/66861-important-vodafone-sms-codes-ussd/
- */
-static USSDCode _ussd_codes_in_vodafone[] =
-{
-	{ "*141#",	"Balance enquiry"				},
-	{ "*444#",	"Self-service portal"				},
-	{ "*225*6#",	"See unused GPRS data and expiry"		},
-	{ "*225*3#",	"See unused 3G data and expiry"			},
-	{ "*444*5#",	"Activate 30MB, 1 day, GPRS plan"		},
-	{ NULL,		NULL						}
-};
-
-static const struct
-{
-	char const * name;
-	char const * _operator;
-	USSDCode * codes;
-} _ussd_operators[] =
-{
-	/* FIXME obtain the corresponding operator names */
-	{ "CCC 32C3",	NULL,		_ussd_codes_de_ccc_32c3		},
-	{ "E-Plus",	NULL,		_ussd_codes_de_eplus		},
-	{ "FYVE",	NULL,		_ussd_codes_de_fyve		},
-	{ "Monacell",	NULL,		_ussd_codes_fr_virgin		},
-	{ "MTN",	NULL,		_ussd_codes_za_mtn		},
-	{ "NRJ",	NULL,		_ussd_codes_fr_virgin		},
-	{ "Telekom",	"Telekom.de",	_ussd_codes_de_telekom		},
-	{ "Virgin",	NULL,		_ussd_codes_fr_virgin		},
-	{ "Vodafone",	NULL,		_ussd_codes_in_vodafone		},
-	{ NULL,		NULL,		NULL				}
-};
+#define UC_LAST UC_DISPLAY
+#define UC_COUNT (UC_LAST + 1)
 
 
 /* prototypes */
@@ -139,7 +72,7 @@ static int _ussd_event(USSD * ussd, PhoneEvent * event);
 static void _ussd_settings(USSD * ussd);
 
 /* useful */
-static int _ussd_load_operator(USSD * ussd, char const * _operator);
+static int _ussd_load_operator(USSD * ussd, char const * name);
 
 /* callbacks */
 static void _ussd_on_operators_changed(gpointer data);
@@ -170,11 +103,16 @@ static USSD * _ussd_init(PhonePluginHelper * helper)
 
 	if((ussd = object_new(sizeof(*ussd))) == NULL)
 		return NULL;
+	ussd->config = config_new();
+	ussd->_operator = NULL;
 	ussd->helper = helper;
-	ussd->_operator = 0;
 	ussd->window = NULL;
 	ussd->operators = NULL;
 	ussd->codes = NULL;
+	/* check for errors */
+	if(ussd->config == NULL || config_load(ussd->config,
+				SYSCONFDIR "/" PACKAGE "/ussd.conf") != 0)
+		helper->error(helper->phone, error_get(NULL), 1);
 	return ussd;
 }
 
@@ -184,6 +122,9 @@ static void _ussd_destroy(USSD * ussd)
 {
 	if(ussd->window != NULL)
 		gtk_widget_destroy(ussd->window);
+	free(ussd->_operator);
+	if(ussd->config != NULL)
+		config_delete(ussd->config);
 	object_delete(ussd);
 }
 
@@ -221,6 +162,7 @@ static int _event_modem(USSD * ussd, ModemEvent * event)
 
 /* ussd_settings */
 static void _settings_window(USSD * ussd);
+static void _settings_window_operators(String const * section, void * data);
 
 static void _ussd_settings(USSD * ussd)
 {
@@ -232,11 +174,12 @@ static void _ussd_settings(USSD * ussd)
 static void _settings_window(USSD * ussd)
 {
 	GtkSizeGroup * group;
+	GtkListStore * model;
 	GtkWidget * vbox;
 	GtkWidget * hbox;
 	GtkWidget * image;
 	GtkWidget * widget;
-	size_t i;
+	GtkCellRenderer * renderer;
 
 	group = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 	ussd->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -267,17 +210,15 @@ static void _settings_window(USSD * ussd)
 #endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-#if GTK_CHECK_VERSION(3, 0, 0)
-	ussd->operators = gtk_combo_box_text_new();
-	for(i = 0; _ussd_operators[i].name != NULL; i++)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ussd->operators),
-				NULL, _ussd_operators[i].name);
-#else
-	ussd->operators = gtk_combo_box_new_text();
-	for(i = 0; _ussd_operators[i].name != NULL; i++)
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ussd->operators),
-				_ussd_operators[i].name);
-#endif
+	model = gtk_list_store_new(UO_COUNT, G_TYPE_STRING, G_TYPE_STRING);
+	ussd->operators = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+	renderer = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ussd->operators), renderer,
+			TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ussd->operators),
+			renderer, "text", UO_DISPLAY, NULL);
+	if(ussd->config != NULL)
+		config_foreach(ussd->config, _settings_window_operators, ussd);
 	g_signal_connect_swapped(ussd->operators, "changed", G_CALLBACK(
 				_ussd_on_operators_changed), ussd);
 	gtk_box_pack_start(GTK_BOX(hbox), ussd->operators, TRUE, TRUE, 0);
@@ -296,11 +237,13 @@ static void _settings_window(USSD * ussd)
 #endif
 	gtk_size_group_add_widget(group, widget);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, TRUE, 0);
-#if GTK_CHECK_VERSION(3, 0, 0)
-	ussd->codes = gtk_combo_box_text_new();
-#else
-	ussd->codes = gtk_combo_box_new_text();
-#endif
+	model = gtk_list_store_new(UC_COUNT, G_TYPE_STRING, G_TYPE_STRING);
+	ussd->codes = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+	renderer = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ussd->codes), renderer,
+			TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ussd->codes), renderer,
+			"text", UC_DISPLAY, NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), ussd->codes, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	/* send */
@@ -338,57 +281,96 @@ static void _settings_window(USSD * ussd)
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(ussd->window), vbox);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->operators),
-			ussd->_operator);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->operators), 0);
 	gtk_widget_show_all(vbox);
+}
+
+static void _settings_window_operators(String const * section, void * data)
+{
+	USSD * ussd = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	String const * name;
+
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->operators));
+	gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+	name = config_get(ussd->config, section, "name");
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, UO_OPERATOR, section,
+			UO_DISPLAY, (name != NULL) ? name : section, -1);
 }
 
 
 /* useful */
 /* ussd_load_operator */
-static int _ussd_load_operator(USSD * ussd, char const * _operator)
+static int _ussd_load_operator(USSD * ussd, char const * name)
 {
-	size_t i;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gboolean valid;
+	gchar * _operator;
 
-	if(_operator == NULL)
+	if(name == NULL)
 		return -1;
-	for(i = 0; _ussd_operators[i].name != NULL; i++)
-		if(_ussd_operators[i]._operator == NULL)
-			continue;
-		else if(strcmp(_ussd_operators[i]._operator, _operator) == 0)
+	free(ussd->_operator);
+	if((ussd->_operator = strdup(name)) == NULL)
+		return -1;
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->operators));
+	for(valid = gtk_tree_model_get_iter_first(model, &iter); valid;
+			valid = gtk_tree_model_iter_next(model, &iter))
+	{
+		gtk_tree_model_get(model, &iter, UO_OPERATOR, &_operator, -1);
+		valid = (strcmp(name, _operator) == 0) ? TRUE : FALSE;
+		g_free(_operator);
+		if(valid)
 		{
-			ussd->_operator = i;
-			if(ussd->window != NULL)
-				gtk_combo_box_set_active(GTK_COMBO_BOX(
-							ussd->operators), i);
+			gtk_combo_box_set_active_iter(
+					GTK_COMBO_BOX(ussd->operators), &iter);
 			break;
 		}
+	}
 	return 0;
 }
 
 
 /* callbacks */
 /* ussd_on_operators_changed */
+static void _ussd_on_operators_changed_operator(char const * variable,
+		char const * value, void * data);
+
 static void _ussd_on_operators_changed(gpointer data)
 {
 	USSD * ussd = data;
 	GtkTreeModel * model;
-	int i;
-	USSDCode * codes;
+	GtkTreeIter iter;
+	gchar * p;
 
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->codes));
 	gtk_list_store_clear(GTK_LIST_STORE(model));
-	i = gtk_combo_box_get_active(GTK_COMBO_BOX(ussd->operators));
-	codes = _ussd_operators[i].codes;
-	for(i = 0; codes[i].name != NULL; i++)
-#if GTK_CHECK_VERSION(3, 0, 0)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ussd->codes),
-				NULL, codes[i].name);
-#else
-		gtk_combo_box_append_text(GTK_COMBO_BOX(ussd->codes),
-				codes[i].name);
-#endif
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(ussd->operators), &iter)
+			!= TRUE)
+		return;
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->operators));
+	gtk_tree_model_get(model, &iter, UO_OPERATOR, &p, -1);
+	if(ussd->config != NULL)
+		config_foreach_section(ussd->config, p,
+				_ussd_on_operators_changed_operator, ussd);
+	g_free(p);
 	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->codes), 0);
+}
+
+static void _ussd_on_operators_changed_operator(char const * variable,
+		char const * value, void * data)
+{
+	USSD * ussd = data;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+
+	if(strcmp(variable, "name") == 0)
+		return;
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->codes));
+	gtk_list_store_append(GTK_LIST_STORE(model), &iter);
+	gtk_list_store_set(GTK_LIST_STORE(model), &iter, UC_CODE, variable,
+			UC_DISPLAY, value, -1);
 }
 
 
@@ -406,19 +388,20 @@ static void _ussd_on_settings_send(gpointer data)
 {
 	USSD * ussd = data;
 	PhonePluginHelper * helper = ussd->helper;
-	int i;
-	USSDCode * codes;
+	GtkTreeModel * model;
+	GtkTreeIter iter;
+	gchar * code;
 	ModemRequest request;
 
-	i = gtk_combo_box_get_active(GTK_COMBO_BOX(ussd->operators));
-	codes = _ussd_operators[i].codes;
-	i = gtk_combo_box_get_active(GTK_COMBO_BOX(ussd->codes));
-#ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s() \"%s\"\n", __func__, codes[i].number);
-#endif
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->codes));
+	if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(ussd->codes), &iter)
+			!= TRUE)
+		return;
+	gtk_tree_model_get(model, &iter, UC_CODE, &code, -1);
 	memset(&request, 0, sizeof(request));
 	request.type = MODEM_REQUEST_CALL;
 	request.call.call_type = MODEM_CALL_TYPE_VOICE;
-	request.call.number = codes[i].number;
+	request.call.number = code;
 	helper->request(helper->phone, &request);
+	g_free(code);
 }
