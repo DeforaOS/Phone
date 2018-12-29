@@ -15,6 +15,7 @@
 
 
 
+#if defined(__NetBSD__) || defined(__OpenBSD__)
 #include <unistd.h>
 #ifdef DEBUG
 # include <stdio.h>
@@ -315,3 +316,4 @@ static void _utf16_to_char(uint16_t *in, int inlen, char *out, size_t outlen)
 		inlen--;
 	}
 }
+#endif
