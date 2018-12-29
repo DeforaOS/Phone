@@ -313,6 +313,8 @@ static int _ussd_load_operator(USSD * ussd, char const * name)
 
 	if(name == NULL)
 		return -1;
+	if(ussd->_operator != NULL && strcmp(ussd->_operator, name) == 0)
+		return 0;
 	free(ussd->_operator);
 	if((ussd->_operator = strdup(name)) == NULL)
 		return -1;
