@@ -240,8 +240,8 @@ static int _trigger_registration(MBIM * mbim)
 				-errno);
 	memset(&event, 0, sizeof(event));
 	event.type = MODEM_EVENT_TYPE_REGISTRATION;
-	event.registration.mode = umb_val2enum(_mbim_regstate, umbi.regstate);
-	event.registration.status = MODEM_REGISTRATION_STATUS_UNKNOWN;
+	event.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
+	event.registration.status = umb_val2enum(_mbim_regstate, umbi.regstate);
 	event.registration.media = umb_val2descr(_mbim_dataclass,
 			umbi.cellclass);
 	_utf16_to_char(umbi.provider, UMB_PROVIDERNAME_MAXLEN,
