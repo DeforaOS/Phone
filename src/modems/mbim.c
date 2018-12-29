@@ -20,6 +20,7 @@
 # include <stdio.h>
 #endif
 #include <string.h>
+#include <ctype.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <net/if.h>
@@ -50,9 +51,32 @@ typedef struct _ModemPlugin
 	ModemPluginHelper * helper;
 
 	int fd;
+	struct ifreq ifr;
+
+	char provider[UMB_PROVIDERNAME_MAXLEN + 1];
 
 	unsigned int source;
 } MBIM;
+
+struct umb_valenum {
+	int		 val;
+	int		 conv;
+};
+
+
+/* constants */
+static const struct umb_valdescr _mbim_dataclass[] =
+	MBIM_DATACLASS_DESCRIPTIONS;
+static const struct umb_valenum _mbim_regstate[] =
+{
+	{ MBIM_REGSTATE_UNKNOWN,	MODEM_REGISTRATION_STATUS_UNKNOWN },
+	{ MBIM_REGSTATE_SEARCHING,	MODEM_REGISTRATION_STATUS_SEARCHING },
+	{ MBIM_REGSTATE_HOME,		MODEM_REGISTRATION_STATUS_REGISTERED },
+	{ MBIM_REGSTATE_ROAMING,	MODEM_REGISTRATION_STATUS_REGISTERED },
+	{ MBIM_REGSTATE_PARTNER,	MODEM_REGISTRATION_STATUS_REGISTERED },
+	{ MBIM_REGSTATE_DENIED,		MODEM_REGISTRATION_STATUS_DENIED },
+	{ 0,				-1 }
+};
 
 
 /* variables */
@@ -70,12 +94,17 @@ static void _mbim_destroy(ModemPlugin * modem);
 static int _mbim_start(ModemPlugin * modem, unsigned int retry);
 static int _mbim_stop(ModemPlugin * modem);
 static int _mbim_request(ModemPlugin * modem, ModemRequest * request);
+static int _mbim_trigger(ModemPlugin * modem, ModemEventType event);
 
-static int _mbim_ioctl(ModemPlugin * modem, unsigned long request,
-		struct ifreq * ifr);
+/* useful */
+static int _mbim_ioctl(ModemPlugin * modem, unsigned long request, void * data);
 
 /* callbacks */
 static gboolean _mbim_on_timeout(gpointer data);
+
+static int umb_val2enum(const struct umb_valenum *vdp, int val);
+
+static void _utf16_to_char(uint16_t *in, int inlen, char *out, size_t outlen);
 
 
 /* public */
@@ -90,7 +119,7 @@ ModemPluginDefinition plugin =
 	_mbim_start,
 	_mbim_stop,
 	_mbim_request,
-	NULL
+	_mbim_trigger
 };
 
 
@@ -100,12 +129,17 @@ ModemPluginDefinition plugin =
 static ModemPlugin * _mbim_init(ModemPluginHelper * helper)
 {
 	MBIM * mbim;
+	char const * p;
 
 	if((mbim = object_new(sizeof(*mbim))) == NULL)
 		return NULL;
 	memset(mbim, 0, sizeof(*mbim));
 	mbim->helper = helper;
 	mbim->fd = -1;
+	if((p = helper->config_get(helper->modem, "interface")) == NULL
+			|| strlen(p) == 0)
+		p = "umb0";
+	strlcpy(mbim->ifr.ifr_name, p, sizeof(mbim->ifr.ifr_name));
 	mbim->source = 0;
 	return mbim;
 }
@@ -169,13 +203,66 @@ static int _mbim_request(ModemPlugin * modem, ModemRequest * request)
 }
 
 
+/* mbim_trigger */
+static int _trigger_registration(MBIM * mbim);
+
+static int _mbim_trigger(ModemPlugin * modem, ModemEventType event)
+{
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event);
+#endif
+	switch(event)
+	{
+		case MODEM_EVENT_TYPE_REGISTRATION:
+			return _trigger_registration(modem);
+		case MODEM_EVENT_TYPE_ERROR:
+			break;
+		/* TODO implement the rest */
+#ifndef DEBUG
+		default:
+			break;
+#endif
+	}
+	return -1;
+}
+
+static int _trigger_registration(MBIM * mbim)
+{
+	ModemEvent event;
+	struct umb_info umbi;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
+	if(_mbim_ioctl(mbim, SIOCGUMBINFO, &umbi) != 0)
+		return mbim->helper->error(mbim->helper->modem, strerror(errno),
+				-errno);
+	memset(&event, 0, sizeof(event));
+	event.type = MODEM_EVENT_TYPE_REGISTRATION;
+	event.registration.mode = umb_val2enum(_mbim_regstate, umbi.regstate);
+	event.registration.status = MODEM_REGISTRATION_STATUS_UNKNOWN;
+	event.registration.media = umb_val2descr(_mbim_dataclass,
+			umbi.cellclass);
+	_utf16_to_char(umbi.provider, UMB_PROVIDERNAME_MAXLEN,
+			mbim->provider, sizeof(mbim->provider));
+	event.registration._operator = mbim->provider;
+	event.registration.signal = 0.0 / 0.0;
+	event.registration.roaming = (umbi.regstate == MBIM_REGSTATE_ROAMING)
+		? 1 : 0;
+	mbim->helper->event(mbim->helper->modem, &event);
+	return 0;
+}
+
+
+/* useful */
 /* mbim_ioctl */
 static int _mbim_ioctl(ModemPlugin * modem, unsigned long request,
-		struct ifreq * ifr)
+		void * data)
 {
 	MBIM * mbim = modem;
 
-	if(ioctl(mbim->fd, request, ifr) != 0)
+	mbim->ifr.ifr_data = data;
+	if(ioctl(mbim->fd, request, &mbim->ifr) != 0)
 		return -1;
 	return 0;
 }
@@ -187,22 +274,44 @@ static gboolean _mbim_on_timeout(gpointer data)
 {
 	ModemPlugin * mbim = data;
 	ModemPluginHelper * helper = mbim->helper;
-	struct ifreq ifr;
 	struct umb_info umbi;
-	char const * p;
 
-	if((p = helper->config_get(helper->modem, "interface")) == NULL
-			|| strlen(p) == 0)
-		p = "umb0";
-	memset(&ifr, 0, sizeof(ifr));
-	strlcpy(ifr.ifr_name, p, sizeof(ifr.ifr_name));
 	memset(&umbi, 0, sizeof(umbi));
-	ifr.ifr_data = &umbi;
-	if(_mbim_ioctl(mbim, SIOCGUMBINFO, &ifr) != 0)
+	if(_mbim_ioctl(mbim, SIOCGUMBINFO, &umbi) != 0)
 	{
-		mbim->helper->error(mbim->helper->modem, strerror(errno),
-				-errno);
+		helper->error(helper->modem, strerror(errno), -errno);
 		return TRUE;
 	}
 	return TRUE;
+}
+
+
+/* umb_val2enum */
+static int umb_val2enum(const struct umb_valenum *vdp, int val)
+{
+	while (vdp->conv != -1) {
+		if (vdp->val == val)
+			return vdp->conv;
+		vdp++;
+	}
+	return -1;
+}
+
+
+/* utf16_to_char */
+static void _utf16_to_char(uint16_t *in, int inlen, char *out, size_t outlen)
+{
+	uint16_t c;
+
+	while (outlen > 0) {
+		c = inlen > 0 ? htole16(*in) : 0;
+		if (c == 0 || --outlen == 0) {
+			/* always NUL terminate result */
+			*out = '\0';
+			break;
+		}
+		*out++ = isascii(c) ? (char)c : '?';
+		in++;
+		inlen--;
+	}
 }
