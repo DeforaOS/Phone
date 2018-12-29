@@ -217,8 +217,6 @@ static void _settings_window(USSD * ussd)
 			TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ussd->operators),
 			renderer, "text", UO_DISPLAY, NULL);
-	if(ussd->config != NULL)
-		config_foreach(ussd->config, _settings_window_operators, ussd);
 	g_signal_connect_swapped(ussd->operators, "changed", G_CALLBACK(
 				_ussd_on_operators_changed), ussd);
 	gtk_box_pack_start(GTK_BOX(hbox), ussd->operators, TRUE, TRUE, 0);
@@ -281,7 +279,8 @@ static void _settings_window(USSD * ussd)
 	gtk_container_add(GTK_CONTAINER(hbox), widget);
 	gtk_box_pack_end(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 	gtk_container_add(GTK_CONTAINER(ussd->window), vbox);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->operators), 0);
+	if(ussd->config != NULL)
+		config_foreach(ussd->config, _settings_window_operators, ussd);
 	gtk_widget_show_all(vbox);
 }
 
@@ -297,6 +296,9 @@ static void _settings_window_operators(String const * section, void * data)
 	name = config_get(ussd->config, section, "name");
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter, UO_OPERATOR, section,
 			UO_DISPLAY, (name != NULL) ? name : section, -1);
+	if(ussd->_operator != NULL && strcmp(ussd->_operator, section) == 0)
+		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(ussd->operators),
+				&iter);
 }
 
 
