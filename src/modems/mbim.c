@@ -106,6 +106,7 @@ static gboolean _mbim_on_timeout(gpointer data);
 
 static int umb_val2enum(const struct umb_valenum *vdp, int val);
 
+static int _char_to_utf16(const char * in, uint16_t * out, size_t outlen);
 static void _utf16_to_char(uint16_t *in, int inlen, char *out, size_t outlen);
 
 
@@ -191,10 +192,16 @@ static int _mbim_stop(ModemPlugin * modem)
 
 
 /* mbim_request */
+static int _request_authenticate(ModemPlugin * modem, ModemRequest * request);
+static int _request_authenticate_error(ModemPlugin * modem,
+		ModemRequest * request, char const * error, int code);
+
 static int _mbim_request(ModemPlugin * modem, ModemRequest * request)
 {
 	switch(request->type)
 	{
+		case MODEM_REQUEST_AUTHENTICATE:
+			return _request_authenticate(modem, request);
 		/* TODO implement */
 #ifndef DEBUG
 		default:
@@ -204,19 +211,78 @@ static int _mbim_request(ModemPlugin * modem, ModemRequest * request)
 	return 0;
 }
 
+static int _request_authenticate(ModemPlugin * modem, ModemRequest * request)
+{
+	struct umb_parameter umbp;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, request->type);
+#endif
+	memset(&umbp, 0, sizeof(umbp));
+	if(_mbim_ioctl(modem, SIOCGUMBPARAM, &umbp) != 0)
+		return _request_authenticate_error(modem, request,
+				strerror(errno), -errno);
+	if(strcmp(request->authenticate.name, "SIM PIN") == 0)
+	{
+		umbp.is_puk = 0;
+		umbp.op = MBIM_PIN_OP_ENTER;
+	}
+	else if(strcmp(request->authenticate.name, "SIM PUK") == 0)
+	{
+		umbp.is_puk = 1;
+		umbp.op = MBIM_PIN_OP_ENTER;
+	}
+	else
+		return -_request_authenticate_error(modem, request,
+				"Unknown authentication", 1);
+	umbp.pinlen = _char_to_utf16(request->authenticate.password, umbp.pin,
+			sizeof(umbp.pin));
+	if(umbp.pinlen < 0 || (size_t)umbp.pinlen > sizeof(umbp.pin))
+		return -_request_authenticate_error(modem, request,
+				"PIN code too long", 1);
+	if(_mbim_ioctl(modem, SIOCSUMBPARAM, &umbp) != 0)
+		return _request_authenticate_error(modem, request,
+				strerror(errno), -errno);
+	return 0;
+}
+
+static int _request_authenticate_error(ModemPlugin * modem,
+		ModemRequest * request, char const * error, int code)
+{
+	MBIM * mbim = modem;
+	ModemEvent event;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s(%u, \"%s\", %d)\n", __func__, request->type,
+			error, code);
+#endif
+	memset(&event, 0, sizeof(event));
+	event.type = MODEM_EVENT_TYPE_AUTHENTICATION;
+	event.authentication.name = request->authenticate.name;
+	event.authentication.status = MODEM_AUTHENTICATION_STATUS_ERROR;
+	event.authentication.error = error;
+	mbim->helper->event(mbim->helper->modem, &event);
+	return mbim->helper->error(mbim->helper->modem, error, code);
+}
+
 
 /* mbim_trigger */
-static int _trigger_registration(MBIM * mbim);
+static int _trigger_info(MBIM * mbim, struct umb_info * umbi);
+static int _trigger_registration(MBIM * mbim, struct umb_info * umbi);
 
 static int _mbim_trigger(ModemPlugin * modem, ModemEventType event)
 {
+	struct umb_info umbi;
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, event);
 #endif
 	switch(event)
 	{
 		case MODEM_EVENT_TYPE_REGISTRATION:
-			return _trigger_registration(modem);
+			if(_trigger_info(modem, &umbi) != 0)
+				return -1;
+			return _trigger_registration(modem, &umbi);
 		case MODEM_EVENT_TYPE_ERROR:
 			break;
 		/* TODO implement the rest */
@@ -228,28 +294,49 @@ static int _mbim_trigger(ModemPlugin * modem, ModemEventType event)
 	return -1;
 }
 
-static int _trigger_registration(MBIM * mbim)
+static int _trigger_info(MBIM * mbim, struct umb_info * umbi)
 {
 	ModemEvent event;
-	struct umb_info umbi;
 
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
 #endif
-	if(_mbim_ioctl(mbim, SIOCGUMBINFO, &umbi) != 0)
+	if(_mbim_ioctl(mbim, SIOCGUMBINFO, umbi) != 0)
 		return mbim->helper->error(mbim->helper->modem, strerror(errno),
 				-errno);
+	if(umbi->pin_state == UMB_PIN_REQUIRED)
+	{
+		memset(&event, 0, sizeof(event));
+		event.type = MODEM_EVENT_TYPE_AUTHENTICATION;
+		event.authentication.name = "SIM PIN";
+		event.authentication.method = MODEM_AUTHENTICATION_METHOD_PIN;
+		event.authentication.status = MODEM_AUTHENTICATION_STATUS_REQUIRED;
+		event.authentication.retries = umbi->pin_attempts_left;
+		event.authentication.error = NULL;
+		mbim->helper->event(mbim->helper->modem, &event);
+	}
+	return 0;
+}
+
+static int _trigger_registration(MBIM * mbim, struct umb_info * umbi)
+{
+	ModemEvent event;
+
+#ifdef DEBUG
+	fprintf(stderr, "DEBUG: %s()\n", __func__);
+#endif
 	memset(&event, 0, sizeof(event));
 	event.type = MODEM_EVENT_TYPE_REGISTRATION;
 	event.registration.mode = MODEM_REGISTRATION_MODE_AUTOMATIC;
-	event.registration.status = umb_val2enum(_mbim_regstate, umbi.regstate);
+	event.registration.status = umb_val2enum(_mbim_regstate,
+			umbi->regstate);
 	event.registration.media = umb_val2descr(_mbim_dataclass,
-			umbi.cellclass);
-	_utf16_to_char(umbi.provider, UMB_PROVIDERNAME_MAXLEN,
+			umbi->cellclass);
+	_utf16_to_char(umbi->provider, UMB_PROVIDERNAME_MAXLEN,
 			mbim->provider, sizeof(mbim->provider));
 	event.registration._operator = mbim->provider;
 	event.registration.signal = 0.0 / 0.0;
-	event.registration.roaming = (umbi.regstate == MBIM_REGSTATE_ROAMING)
+	event.registration.roaming = (umbi->regstate == MBIM_REGSTATE_ROAMING)
 		? 1 : 0;
 	mbim->helper->event(mbim->helper->modem, &event);
 	return 0;
@@ -285,6 +372,33 @@ static gboolean _mbim_on_timeout(gpointer data)
 		return TRUE;
 	}
 	return TRUE;
+}
+
+
+/* char_to_utf16 */
+static int _char_to_utf16(const char * in, uint16_t * out, size_t outlen)
+{
+	int	n = 0;
+	uint16_t c;
+
+	for (;;) {
+		c = *in++;
+
+		if (c == '\0') {
+			/*
+			 * NUL termination is not required, but zero out the
+			 * residual buffer
+			 */
+			memset(out, 0, outlen);
+			return n;
+		}
+		if (outlen < sizeof(*out))
+			return -1;
+
+		*out++ = htole16(c);
+		n += sizeof(*out);
+		outlen -= sizeof(*out);
+	}
 }
 
 
