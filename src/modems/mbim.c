@@ -15,7 +15,8 @@
 
 
 
-#if defined(__NetBSD__) || defined(__OpenBSD__)
+#if (defined(__NetBSD__) && __NetBSD_Version__ > 899000000) \
+	|| defined(__OpenBSD__)
 #include <unistd.h>
 #ifdef DEBUG
 # include <stdio.h>
