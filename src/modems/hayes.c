@@ -1194,8 +1194,8 @@ static int _hayes_request_channel(Hayes * hayes, HayesChannel * channel,
 		/ sizeof(*_hayes_request_handlers);
 
 #ifdef DEBUG
-	fprintf(stderr, "DEBUG: %s(%u)\n", __func__, (request != NULL)
-			? request->type : (unsigned)-1);
+	fprintf(stderr, "DEBUG: %s(%u)\n", __func__,
+			(request != NULL) ? request->type : (unsigned)-1);
 #endif
 	if(request == NULL)
 		return -1;
