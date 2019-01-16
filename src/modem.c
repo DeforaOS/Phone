@@ -82,7 +82,8 @@ Modem * modem_new(Config * config, char const * name, unsigned int retry)
 	if((modem->plugin = plugin_new(LIBDIR, PACKAGE, "modem", name)) != NULL)
 		modem->definition = plugin_lookup(modem->plugin, "plugin");
 	/* check errors */
-	if(modem->name == NULL || modem->plugin == NULL)
+	if(modem->name == NULL || modem->plugin == NULL
+			|| modem->definition == NULL)
 	{
 		modem_delete(modem);
 		return NULL;
