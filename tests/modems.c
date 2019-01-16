@@ -58,6 +58,13 @@ static int _modems(void)
 			continue;
 		if(strcmp(&de->d_name[len - sizeof(ext) + 1], ext) != 0)
 			continue;
+#if (defined(__NetBSD__) && __NetBSD_Version__ < 699000000) \
+		|| !defined(__OpenBSD__)
+		/* the MBIM plug-in may not build */
+		if(strncmp(de->d_name, "mbim.", 5) == 0
+				&& strcmp(&de->d_name[4], ext) == 0)
+			continue;
+#endif
 		if((s = malloc(sizeof(path) + len + 1)) == NULL)
 		{
 			ret += _perror(de->d_name, 1);
