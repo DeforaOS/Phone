@@ -1035,6 +1035,7 @@ static int _hayes_queue_command(Hayes * hayes, HayesChannel * channel,
 			if(hayes_command_get_priority(command)
 					!= HCP_IMMEDIATE)
 				return -1;
+			/* fallthrough */
 		case HAYESCHANNEL_MODE_COMMAND:
 		case HAYESCHANNEL_MODE_DATA:
 		case HAYESCHANNEL_MODE_PDU:
@@ -2192,7 +2193,7 @@ static gboolean _on_watch_can_read(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
-			/* fallback */
+			/* fallthrough */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen... */
 			channel->rd_source = 0;
@@ -2253,7 +2254,7 @@ static gboolean _on_watch_can_read_ppp(GIOChannel * source,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
-			/* fallback */
+			/* fallthrough */
 		case G_IO_STATUS_EOF:
 		default:
 			channel->rd_ppp_source = 0;
@@ -2307,7 +2308,7 @@ static gboolean _on_watch_can_write(GIOChannel * source, GIOCondition condition,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
-			/* fallback */
+			/* fallthrough */
 		case G_IO_STATUS_EOF:
 		default: /* should not happen */
 			channel->wr_source = 0;
@@ -2361,7 +2362,7 @@ static gboolean _on_watch_can_write_ppp(GIOChannel * source,
 		case G_IO_STATUS_ERROR:
 			helper->error(helper->modem, error->message, 1);
 			g_error_free(error);
-			/* fallback */
+			/* fallthrough */
 		case G_IO_STATUS_EOF:
 		default:
 			channel->wr_ppp_source = 0;
@@ -2395,7 +2396,7 @@ static HayesCommandStatus _on_request_authenticate(HayesCommand * command,
 			event->authentication.status
 				= MODEM_AUTHENTICATION_STATUS_ERROR;
 			hayes->helper->event(hayes->helper->modem, event);
-			/* fallback */
+			/* fallthrough */
 		default:
 			return status;
 	}
@@ -2900,6 +2901,7 @@ static void _on_code_cbc(HayesChannel * channel, char const * answer)
 	{
 		case MODEM_BATTERY_STATUS_CHARGING:
 			event->battery_level.charging = 1;
+			/* fallthrough */
 		case MODEM_BATTERY_STATUS_CONNECTED:
 			f = v;
 			if(hayeschannel_has_quirks(channel,
@@ -3105,7 +3107,7 @@ static void _on_code_cme_error(HayesChannel * channel, char const * answer)
 			if(hayeschannel_has_quirks(channel,
 						HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
 				break;
-			/* fallback */
+			/* fallthrough */
 		case 14: /* SIM busy */
 			_cme_command_repeat(channel, command);
 			break;
@@ -3609,7 +3611,7 @@ static void _on_code_cms_error(HayesChannel * channel, char const * answer)
 			if(hayeschannel_has_quirks(channel,
 						HAYES_QUIRK_REPEAT_ON_UNKNOWN_ERROR) == 0)
 				break;
-			/* fallback */
+			/* fallthrough */
 		case 314: /* SIM busy */
 		case 532: /* SIM not ready */
 			/* repeat the command */
