@@ -1655,7 +1655,7 @@ static char * _request_attention_message_send(Hayes * hayes,
 	if((pdu = _hayes_message_to_pdu(channel, number, encoding, length,
 					content)) == NULL)
 		return NULL;
-	len = sizeof(cmd) + 10;
+	len = sizeof(cmd) + 11;
 	if((ret = malloc(len)) == NULL)
 	{
 		free(pdu);
