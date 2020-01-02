@@ -2008,8 +2008,8 @@ static void _show_code_window(Phone * phone)
 				on_phone_code_enter), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->en_entry, TRUE, TRUE, 0);
 #if GTK_CHECK_VERSION(2, 16, 0)
-	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->en_entry),
-			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_GO_BACK); /* XXX */
+	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(phone->en_entry),
+			GTK_ENTRY_ICON_SECONDARY, "gtk-go-back"); /* XXX */
 	g_signal_connect_swapped(phone->en_entry, "icon-press", G_CALLBACK(
 				on_phone_code_backspace), phone);
 #else
@@ -2172,8 +2172,8 @@ static void _show_dialer_window(Phone * phone)
 				on_phone_dialer_changed), phone);
 	gtk_box_pack_start(GTK_BOX(hbox), phone->di_entry, TRUE, TRUE, 0);
 #if GTK_CHECK_VERSION(2, 16, 0)
-	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->di_entry),
-			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_GO_BACK); /* XXX */
+	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(phone->di_entry),
+			GTK_ENTRY_ICON_SECONDARY, "gtk-go-back"); /* XXX */
 	g_signal_connect_swapped(phone->di_entry, "icon-press", G_CALLBACK(
 				on_phone_dialer_backspace), phone);
 #else
@@ -3493,8 +3493,8 @@ static void _show_write_window(Phone * phone)
 	phone->wr_entry = gtk_entry_new();
 	gtk_box_pack_start(GTK_BOX(hbox), phone->wr_entry, TRUE, TRUE, 2);
 #if GTK_CHECK_VERSION(2, 16, 0)
-	gtk_entry_set_icon_from_stock(GTK_ENTRY(phone->wr_entry),
-			GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_GO_BACK); /* XXX */
+	gtk_entry_set_icon_from_icon_name(GTK_ENTRY(phone->wr_entry),
+			GTK_ENTRY_ICON_SECONDARY, "gtk-go-back"); /* XXX */
 	g_signal_connect_swapped(phone->wr_entry, "icon-press", G_CALLBACK(
 				on_phone_write_backspace), phone);
 #else
