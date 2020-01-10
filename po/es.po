@@ -1,6 +1,6 @@
 # $Id$
 # Spanish translations for Phone package.
-# Copyright (c) 2014 Pierre Pronchery <khorben@defora.org>
+# Copyright (c) 2014-2020 Pierre Pronchery <khorben@defora.org>
 # This file is distributed under the same license as the Phone package.
 # Pierre Pronchery <khorben@defora.org>, 2014.
 #
