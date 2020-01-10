@@ -6,5 +6,5 @@ libdir=${exec_prefix}/lib
 Name: Phone
 Description: DeforaOS Desktop Phone extensions
 Version: @VERSION@
-Requires: gtk+-2.0
+Requires: gtk+-3.0
 Cflags: -I${includedir}
