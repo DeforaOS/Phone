@@ -96,7 +96,7 @@ msgstr "Manqué"
 
 #: ../src/phone.c:1294 ../src/phone.c:1511 ../src/phone.c:2738
 msgid "%d/%m/%Y %H:%M:%S"
-msgstr ""
+msgstr "%d/%m/%Y %H:%M:%S"
 
 #: ../src/phone.c:1401 ../src/phone.c:1588
 msgid "Delete this message?"
@@ -428,12 +428,12 @@ msgstr ""
 
 #: ../src/plugins/gprs.c:117
 msgid "Dial-up networking"
-msgstr ""
+msgstr "Accès par ligne commutée"
 
 #: ../src/plugins/gprs.c:155 ../src/plugins/gprs.c:447
 #: ../src/plugins/gprs.c:617
 msgid "Not connected"
-msgstr ""
+msgstr "Non connecté"
 
 #: ../src/plugins/gprs.c:315
 msgid "Preferences"
@@ -441,53 +441,53 @@ msgstr "Préférences"
 
 #: ../src/plugins/gprs.c:363
 msgid "Force GPRS registration"
-msgstr ""
+msgstr "Forcer l'enregistrement GPRS"
 
 #: ../src/plugins/gprs.c:367
 msgid "Show in system tray"
-msgstr ""
+msgstr "Afficher dans la zone de notifications"
 
 #: ../src/plugins/gprs.c:370
 msgid "Credentials"
-msgstr ""
+msgstr "Identifiants de connexion"
 
 #: ../src/plugins/gprs.c:376
 msgid "Access point:"
-msgstr ""
+msgstr "Point d'accès :"
 
 #: ../src/plugins/gprs.c:389
 msgid "Username:"
-msgstr ""
+msgstr "Utilisateur :"
 
 #: ../src/plugins/gprs.c:402
 msgid "Password:"
-msgstr ""
+msgstr "Mot de passe :"
 
 #: ../src/plugins/gprs.c:417
 msgid "Load defaults"
-msgstr ""
+msgstr "Charger les préférences par défaut"
 
 #: ../src/plugins/gprs.c:440
 msgid "Details"
-msgstr ""
+msgstr "Détails"
 
 #: ../src/plugins/gprs.c:479
 msgid "Counters"
-msgstr ""
+msgstr "Compteurs"
 
 #: ../src/plugins/gprs.c:617
 msgid "Connected"
-msgstr ""
+msgstr "Connecté"
 
 #: ../src/plugins/gprs.c:628
 #, c-format
 msgid "Received: %zu kB (%zu kB/s)"
-msgstr ""
+msgstr "Reçu : %zu kB (%zu kB/s)"
 
 #: ../src/plugins/gprs.c:631
 #, c-format
 msgid "Sent: %zu kB (%zu kB/s)"
-msgstr ""
+msgstr "Envoyé : %zu kB (%zu kB/s)"
 
 #: ../src/plugins/gprs.c:638
 #, c-format
@@ -496,16 +496,19 @@ msgid ""
 "Received: %zu kB\n"
 "Sent: %zu kB"
 msgstr ""
+"%s\n"
+"Reçu: %zu kB\n"
+"Envoyé: %zu kB"
 
 #: ../src/plugins/gprs.c:668
 #, c-format
 msgid "Received: %zu kB"
-msgstr ""
+msgstr "Reçu : %zu kB"
 
 #: ../src/plugins/gprs.c:671
 #, c-format
 msgid "Sent: %zu kB"
-msgstr ""
+msgstr "Envoyé : %zu kB"
 
 #: ../src/plugins/gprs.c:711
 msgid ""
@@ -513,63 +516,66 @@ msgid ""
 "apply.\n"
 "Do you really want to connect?"
 msgstr ""
+"Vous êtes actuellement en roaming, des frais additionnels vont probablement "
+"être appliqués.\n"
+"Voulez-vous vraiment vous connecter ?"
 
 #: ../src/plugins/gprs.c:736
 msgid "Connecting..."
-msgstr ""
+msgstr "Connexion..."
 
 #: ../src/plugins/gprs.c:782
 msgid "Disconnecting..."
-msgstr ""
+msgstr "Déconnexion..."
 
 #: ../src/plugins/gprs.c:852
 msgid "No defaults known for the current operator"
-msgstr ""
+msgstr "Pas de préférences par défaut connues pour l'opérateur actuel"
 
 #: ../src/plugins/gprs.c:880
 msgid "_Disconnect"
-msgstr ""
+msgstr "_Déconnexion"
 
 #: ../src/plugins/gprs.c:880
 msgid "_Connect"
-msgstr ""
+msgstr "_Connexion"
 
 #: ../src/plugins/profiles.c:111
 msgid "General"
-msgstr ""
+msgstr "Général"
 
 #: ../src/plugins/profiles.c:112
 msgid "Beep"
-msgstr ""
+msgstr "Bip"
 
 #: ../src/plugins/profiles.c:114 ../src/plugins/profiles.c:518
 msgid "Silent"
-msgstr ""
+msgstr "Silencieux"
 
 #: ../src/plugins/profiles.c:115
 msgid "Offline"
-msgstr ""
+msgstr "Hors ligne"
 
 #: ../src/plugins/profiles.c:396
 msgid "Online"
-msgstr ""
+msgstr "En ligne"
 
 #: ../src/plugins/profiles.c:405
 msgid "Volume: "
-msgstr ""
+msgstr "Volume : "
 
 #: ../src/plugins/profiles.c:417
 msgid "Ring"
-msgstr ""
+msgstr "Sonner"
 
 #: ../src/plugins/profiles.c:421
 msgid "Vibrate"
-msgstr ""
+msgstr "Vibrer"
 
 #: ../src/plugins/profiles.c:523
 msgid "Ascending"
-msgstr ""
+msgstr "Ascendant"
 
 #: ../src/plugins/profiles.c:585
 msgid "Invalid profile"
-msgstr ""
+msgstr "Profil invalide"
