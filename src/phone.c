@@ -4317,6 +4317,7 @@ static void _phone_messages_get_iter(Phone * phone, GtkWidget * view,
 {
 	GtkTreeModel * model;
 	GtkTreeIter p;
+	(void) phone;
 
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
 	gtk_tree_model_sort_convert_iter_to_child_iter(GTK_TREE_MODEL_SORT(
