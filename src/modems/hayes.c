@@ -36,7 +36,6 @@
 
 
 #ifdef __linux__
-# define _XOPEN_SOURCE
 # include <sys/file.h>
 #endif
 #include <sys/stat.h>
