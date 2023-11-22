@@ -27,8 +27,10 @@
 
 
 
-#include <sys/ioctl.h>
-#include <sys/soundcard.h>
+#ifndef __APPLE__
+# include <sys/ioctl.h>
+# include <sys/soundcard.h>
+#endif
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -140,6 +142,7 @@ static void _oss_destroy(OSS * oss)
 
 
 /* oss_event */
+#ifndef __APPLE__
 static int _event_audio_play(OSS * oss, char const * sample);
 static int _event_audio_play_chunk(OSS * oss, FILE * fp);
 static int _event_audio_play_chunk_riff(OSS * oss, FILE * fp, RIFFChunk * rc);
@@ -152,9 +155,11 @@ static int _event_audio_play_write(OSS * oss, RIFFChunk * rc, RIFFChunk * rc2,
 		FILE * fp, int fd);
 static int _event_volume_get(OSS * oss, gdouble * level);
 static int _event_volume_set(OSS * oss, gdouble level);
+#endif
 
 static int _oss_event(OSS * oss, PhoneEvent * event)
 {
+#ifndef __APPLE__
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_AUDIO_PLAY:
@@ -172,9 +177,11 @@ static int _oss_event(OSS * oss, PhoneEvent * event)
 		default: /* not relevant */
 			break;
 	}
+#endif
 	return 0;
 }
 
+#ifndef __APPLE__
 static int _event_audio_play(OSS * oss, char const * sample)
 {
 	const char path[] = DATADIR "/sounds/" PACKAGE;
@@ -445,6 +452,7 @@ static int _event_volume_set(OSS * oss, gdouble level)
 	}
 	return 0;
 }
+#endif
 
 
 /* oss_open */
