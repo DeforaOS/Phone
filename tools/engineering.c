@@ -31,8 +31,8 @@
 #include <System.h>
 #include "../src/plugins/engineering.c"
 
-#ifndef PROGNAME
-# define PROGNAME "engineering"
+#ifndef PROGNAME_ENGINEERING
+# define PROGNAME_ENGINEERING "engineering"
 #endif
 
 #include "common.c"
@@ -63,7 +63,7 @@ static int _engineering(void)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " PROGNAME "\n", stderr);
+	fputs("Usage: " PROGNAME_ENGINEERING "\n", stderr);
 	return 1;
 }
 
@@ -138,6 +138,6 @@ int main(int argc, char * argv[])
 		return _usage();
 	gtk_init(&argc, &argv);
 	if((ret = (_engineering() == 0) ? 0 : 2) != 0)
-		error_print(PROGNAME);
+		error_print(PROGNAME_ENGINEERING);
 	return ret;
 }
