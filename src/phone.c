@@ -1,6 +1,6 @@
 /* $Id$ */
 static char _copyright[] =
-"Copyright © 2010-2020 DeforaOS Project <contact@defora.org>";
+"Copyright © 2010-2023 DeforaOS Project <contact@defora.org>";
 /* This file is part of DeforaOS Desktop Phone */
 static char const _license[] =
 "Redistribution and use in source and binary forms, with or without\n"
