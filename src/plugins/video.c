@@ -33,7 +33,7 @@
 #ifdef __NetBSD__
 # include <sys/videoio.h>
 # include <paths.h>
-#else
+#elif !defined(__APPLE__)
 # include <linux/videodev2.h>
 #endif
 #include <fcntl.h>
@@ -70,8 +70,10 @@ typedef struct _PhonePlugin
 
 	guint source;
 	int fd;
+#ifndef __APPLE__
 	struct v4l2_capability cap;
 	struct v4l2_format format;
+#endif
 
 	/* I/O channel */
 	GIOChannel * channel;
@@ -111,17 +113,21 @@ static void _video_destroy(VideoPhonePlugin * video);
 static void _video_settings(VideoPhonePlugin * video);
 
 /* useful */
+#ifndef __APPLE__
 static int _video_ioctl(VideoPhonePlugin * video, unsigned long request,
 		void * data);
+#endif
 
 static void _video_start(VideoPhonePlugin * video);
 static void _video_stop(VideoPhonePlugin * video);
 
 /* callbacks */
+#ifndef __APPLE__
 static gboolean _video_on_can_mmap(GIOChannel * channel, GIOCondition condition,
 		gpointer data);
 static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 		gpointer data);
+#endif
 #if GTK_CHECK_VERSION(3, 0, 0)
 static gboolean _video_on_drawing_area_draw(GtkWidget * widget, cairo_t * cr,
 		gpointer data);
@@ -134,7 +140,9 @@ static gboolean _video_on_drawing_area_expose(GtkWidget * widget,
 		GdkEventExpose * event, gpointer data);
 #endif
 static gboolean _video_on_open(gpointer data);
+#ifndef __APPLE__
 static gboolean _video_on_refresh(gpointer data);
+#endif
 
 
 /* constants */
@@ -188,7 +196,9 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	video->interp = GDK_INTERP_BILINEAR;
 	video->source = 0;
 	video->fd = -1;
+#ifndef __APPLE__
 	memset(&video->cap, 0, sizeof(video->cap));
+#endif
 	video->channel = NULL;
 	video->buffers = NULL;
 	video->buffers_cnt = 0;
@@ -235,8 +245,10 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	g_signal_connect(video->area, "expose-event", G_CALLBACK(
 				_video_on_drawing_area_expose), video);
 #endif
+#ifndef __APPLE__
 	gtk_widget_set_size_request(video->area, video->format.fmt.pix.width,
 			video->format.fmt.pix.height);
+#endif
 	gtk_container_add(GTK_CONTAINER(video->window), video->area);
 	gtk_widget_show_all(video->window);
 	_video_start(video);
@@ -298,6 +310,7 @@ static void _video_settings(VideoPhonePlugin * video)
 
 /* useful */
 /* video_ioctl */
+#ifndef __APPLE__
 static int _video_ioctl(VideoPhonePlugin * video, unsigned long request,
 		void * data)
 {
@@ -309,6 +322,7 @@ static int _video_ioctl(VideoPhonePlugin * video, unsigned long request,
 			break;
 	return ret;
 }
+#endif
 
 
 /* video_start */
@@ -330,6 +344,7 @@ static void _video_stop(VideoPhonePlugin * video)
 
 
 /* callbacks */
+#ifndef __APPLE__
 /* video_on_can_mmap */
 static gboolean _video_on_can_mmap(GIOChannel * channel, GIOCondition condition,
 		gpointer data)
@@ -347,15 +362,15 @@ static gboolean _video_on_can_mmap(GIOChannel * channel, GIOCondition condition,
 	}
 	video->raw_buffer = video->buffers[buf.index].start;
 	video->raw_buffer_cnt = buf.bytesused;
-#if 0 /* FIXME the raw buffer is not meant to be free()'d */
+# if 0 /* FIXME the raw buffer is not meant to be free()'d */
 	video->source = g_idle_add(_video_on_refresh, video);
 	return FALSE;
-#else
+# else
 	_video_on_refresh(video);
 	video->raw_buffer = NULL;
 	video->raw_buffer_cnt = 0;
 	return TRUE;
-#endif
+# endif
 }
 
 
@@ -367,9 +382,9 @@ static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 	PhonePluginHelper * helper = video->helper;
 	ssize_t s;
 
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+# endif
 	if(channel != video->channel || condition != G_IO_IN)
 		return FALSE;
 	if((s = read(video->fd, video->raw_buffer, video->raw_buffer_cnt))
@@ -385,13 +400,14 @@ static gboolean _video_on_can_read(GIOChannel * channel, GIOCondition condition,
 		video->source = 0;
 		return FALSE;
 	}
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() %lu %ld\n", __func__,
 			video->raw_buffer_cnt, s);
-#endif
+# endif
 	video->source = g_idle_add(_video_on_refresh, video);
 	return FALSE;
 }
+#endif
 
 
 #if GTK_CHECK_VERSION(3, 0, 0)
@@ -470,7 +486,9 @@ static int _open_setup(VideoPhonePlugin * video);
 #ifdef NOTYET
 static int _open_setup_mmap(VideoPhonePlugin * video);
 #endif
+#ifndef __APPLE__
 static int _open_setup_read(VideoPhonePlugin * video);
+#endif
 
 static gboolean _video_on_open(gpointer data)
 {
@@ -504,14 +522,20 @@ static gboolean _video_on_open(gpointer data)
 			video->format.fmt.pix.width,
 			video->format.fmt.pix.height);
 #endif
+#ifndef __APPLE__
 	/* FIXME allow the window to be smaller */
 	gtk_widget_set_size_request(video->area, video->format.fmt.pix.width,
 			video->format.fmt.pix.height);
+#endif
 	return FALSE;
 }
 
 static int _open_setup(VideoPhonePlugin * video)
 {
+#ifdef __APPLE__
+	return -error_set_code(1, "%s: %s", video->device,
+			"Video is not supported on this platform");
+#else
 	int ret;
 	struct v4l2_cropcap cropcap;
 	struct v4l2_crop crop;
@@ -573,6 +597,7 @@ static int _open_setup(VideoPhonePlugin * video)
 	video->source = g_io_add_watch(video->channel, G_IO_IN,
 			_video_on_can_read, video);
 	return 0;
+#endif
 }
 
 #ifdef NOTYET
@@ -623,6 +648,7 @@ static int _open_setup_mmap(VideoPhonePlugin * video)
 }
 #endif
 
+#ifndef __APPLE__
 static int _open_setup_read(VideoPhonePlugin * video)
 {
 	size_t cnt;
@@ -645,9 +671,11 @@ static int _open_setup_read(VideoPhonePlugin * video)
 	video->rgb_buffer_cnt = cnt;
 	return 0;
 }
+#endif
 
 
 /* video_on_refresh */
+#ifndef __APPLE__
 static void _refresh_convert(VideoPhonePlugin * video);
 static void _refresh_convert_yuv(int amp, uint8_t y, uint8_t u, uint8_t v,
                 uint8_t * r, uint8_t * g, uint8_t * b);
@@ -658,18 +686,19 @@ static void _refresh_vflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf);
 static gboolean _video_on_refresh(gpointer data)
 {
 	VideoPhonePlugin * video = data;
-#if !GTK_CHECK_VERSION(3, 0, 0)
+	video->source = 0;
+# if !GTK_CHECK_VERSION(3, 0, 0)
 	GtkAllocation * allocation = &video->area_allocation;
-#endif
+# endif
 	int width = video->format.fmt.pix.width;
 	int height = video->format.fmt.pix.height;
 
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s() 0x%x\n", __func__,
 			video->format.fmt.pix.pixelformat);
-#endif
+# endif
 	_refresh_convert(video);
-#if !GTK_CHECK_VERSION(3, 0, 0)
+# if !GTK_CHECK_VERSION(3, 0, 0)
 	if(video->hflip == FALSE
 			&& video->vflip == FALSE
 			&& width == allocation->width
@@ -679,7 +708,7 @@ static gboolean _video_on_refresh(gpointer data)
 				width, height, GDK_RGB_DITHER_NORMAL,
 				video->rgb_buffer, width * 3);
 	else
-#endif
+# endif
 	{
 		if(video->pixbuf != NULL)
 			g_object_unref(video->pixbuf);
@@ -690,11 +719,11 @@ static gboolean _video_on_refresh(gpointer data)
 		_refresh_hflip(video, &video->pixbuf);
 		_refresh_vflip(video, &video->pixbuf);
 		_refresh_scale(video, &video->pixbuf);
-#if !GTK_CHECK_VERSION(3, 0, 0)
+# if !GTK_CHECK_VERSION(3, 0, 0)
 		gdk_pixbuf_render_to_drawable(video->pixbuf, video->pixmap,
 				video->gc, 0, 0, 0, 0, -1, -1,
 				GDK_RGB_DITHER_NORMAL, 0, 0);
-#endif
+# endif
 	}
 	/* force a refresh */
 	gtk_widget_queue_draw(video->area);
@@ -818,3 +847,4 @@ static void _refresh_vflip(VideoPhonePlugin * video, GdkPixbuf ** pixbuf)
 	g_object_unref(*pixbuf);
 	*pixbuf = pixbuf2;
 }
+#endif
