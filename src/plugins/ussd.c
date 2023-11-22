@@ -172,7 +172,8 @@ static int _event_modem(USSD * ussd, ModemEvent * event)
 
 /* ussd_settings */
 static void _settings_window(USSD * ussd);
-static void _settings_window_operators(String const * section, void * data);
+static void _settings_window_operators(Config const * config,
+		String const * section, void * data);
 
 static void _ussd_settings(USSD * ussd)
 {
@@ -294,7 +295,8 @@ static void _settings_window(USSD * ussd)
 	gtk_widget_show_all(vbox);
 }
 
-static void _settings_window_operators(String const * section, void * data)
+static void _settings_window_operators(Config const * config,
+		String const * section, void * data)
 {
 	USSD * ussd = data;
 	GtkTreeModel * model;
@@ -303,7 +305,7 @@ static void _settings_window_operators(String const * section, void * data)
 
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(ussd->operators));
 	gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-	name = config_get(ussd->config, section, "name");
+	name = config_get(config, section, "name");
 	gtk_list_store_set(GTK_LIST_STORE(model), &iter, UO_OPERATOR, section,
 			UO_DISPLAY, (name != NULL) ? name : section, -1);
 	if(ussd->_operator != NULL && strcmp(ussd->_operator, section) == 0)
@@ -350,8 +352,9 @@ static int _ussd_load_operator(USSD * ussd, char const * name)
 
 /* callbacks */
 /* ussd_on_operators_changed */
-static void _ussd_on_operators_changed_operator(char const * variable,
-		char const * value, void * data);
+static void _ussd_on_operators_changed_operator(Config const * config,
+		String const * section, String const * variable,
+		String const * value, void * data);
 
 static void _ussd_on_operators_changed(gpointer data)
 {
@@ -374,12 +377,15 @@ static void _ussd_on_operators_changed(gpointer data)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(ussd->codes), 0);
 }
 
-static void _ussd_on_operators_changed_operator(char const * variable,
-		char const * value, void * data)
+static void _ussd_on_operators_changed_operator(Config const * config,
+		String const * section, String const * variable,
+		String const * value, void * data)
 {
 	USSD * ussd = data;
 	GtkTreeModel * model;
 	GtkTreeIter iter;
+	(void) config;
+	(void) section;
 
 	if(strcmp(variable, "name") == 0)
 		return;
