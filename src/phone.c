@@ -54,8 +54,8 @@ static char const _license[] =
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 /* constants */
-#ifndef PROGNAME
-# define PROGNAME	"phone"
+#ifndef PROGNAME_PHONE
+# define PROGNAME_PHONE	"phone"
 #endif
 #ifndef PREFIX
 # define PREFIX		"/usr/local"
@@ -653,7 +653,7 @@ int phone_error(Phone * phone, char const * message, int ret)
 
 static int _error_text(char const * message, int ret)
 {
-	fprintf(stderr, PROGNAME ": %s\n", message);
+	fprintf(stderr, PROGNAME_PHONE ": %s\n", message);
 	return ret;
 }
 
