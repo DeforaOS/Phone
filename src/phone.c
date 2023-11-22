@@ -3840,10 +3840,34 @@ static char * _phone_config_filename(void)
 
 
 /* phone_config_foreach */
+static void _config_foreach_section(Config const * config,
+		String const * section, String const * variable,
+		String const * value, void * priv);
+
 static void _phone_config_foreach(Phone * phone, char const * section,
 		PhoneConfigForeachCallback callback, void * priv)
 {
-	config_foreach_section(phone->config, section, callback, priv);
+	struct PhoneConfigForeachData
+	{
+		PhoneConfigForeachCallback * callback;
+		void * priv;
+	} pcfd = { callback, priv };
+
+	config_foreach_section(phone->config, section, _config_foreach_section,
+			&pcfd);
+}
+
+static void _config_foreach_section(Config const * config,
+		String const * section, String const * variable,
+		String const * value, void * priv)
+{
+	struct PhoneConfigForeachData
+	{
+		PhoneConfigForeachCallback * callback;
+		void * priv;
+	} * pcfd = priv;
+
+	pcfd->callback(variable, value, pcfd->priv);
 }
 
 

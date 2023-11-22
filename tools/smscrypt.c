@@ -34,15 +34,38 @@
 
 
 /* helper_config_foreach */
+static void _config_foreach_section(Config const * config,
+		String const * section, String const * variable,
+		String const * value, void * priv);
+
 static void _helper_config_foreach(Phone * phone, char const * section,
 		PhoneConfigForeachCallback callback, void * priv)
 {
-	Config * config = (Config*)phone;
+	Config * config = (Config *)phone;
+	struct PhoneConfigForeachData
+	{
+		PhoneConfigForeachCallback * callback;
+		void * priv;
+	} pcfd = { callback, priv };
+
 #ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(%p, \"%s\", %p, %p)\n", __func__,
 			(void *)phone, section, (void *)callback, priv);
 #endif
-	config_foreach_section(config, section, callback, priv);
+	config_foreach_section(config, section, _config_foreach_section, &pcfd);
+}
+
+static void _config_foreach_section(Config const * config,
+		String const * section, String const * variable,
+		String const * value, void * priv)
+{
+	struct PhoneConfigForeachData
+	{
+		PhoneConfigForeachCallback * callback;
+		void * priv;
+	} * pcfd = priv;
+
+	pcfd->callback(variable, value, pcfd->priv);
 }
 
 
@@ -50,7 +73,7 @@ static void _helper_config_foreach(Phone * phone, char const * section,
 static char const * _helper_config_get(Phone * phone, char const * section,
 		char const * variable)
 {
-	Config * config = (Config*)phone;
+	Config * config = (Config *)phone;
 #ifdef DEBUG
 	char const * ret;
 
