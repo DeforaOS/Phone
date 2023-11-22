@@ -388,7 +388,14 @@ static int _trigger_connection_interface(Phone * phone, PhoneEvent * event,
 {
 	ModemEvent * mevent = event->modem_event.event;
 # ifdef SIOCGIFDATA
+#  ifdef __NetBSD__
 	struct ifdatareq ifdr;
+	struct if_data * pifdr = &ifdr.ifdr_data;
+#  else
+	struct ifreq ifdr;
+	struct if_data ifd;
+	struct if_data * pifdr = &ifd;
+#  endif
 # endif
 # ifdef SIOCGIFFLAGS
 	struct ifreq ifr;
@@ -398,15 +405,20 @@ static int _trigger_connection_interface(Phone * phone, PhoneEvent * event,
 		return -error_set_print(PROGNAME, 1, "%s", strerror(errno));
 # ifdef SIOCGIFDATA
 	memset(&ifdr, 0, sizeof(ifdr));
+#  ifdef __NetBSD__
 	strncpy(ifdr.ifdr_name, interface, sizeof(ifdr.ifdr_name));
+#  else
+	strncpy(ifdr.ifr_name, interface, sizeof(ifdr.ifr_name));
+	ifdr.ifr_data = (caddr_t)pifdr;
+#  endif
 	if(ioctl(phone->fd, SIOCGIFDATA, &ifdr) == -1)
 		error_set_print(PROGNAME, 1, "%s: %s", interface,
 				strerror(errno));
 	else
 	{
 		mevent->connection.connected = TRUE;
-		mevent->connection.in = ifdr.ifdr_data.ifi_ibytes;
-		mevent->connection.out = ifdr.ifdr_data.ifi_obytes;
+		mevent->connection.in = pifdr->ifi_ibytes;
+		mevent->connection.out = pifdr->ifi_obytes;
 	}
 # endif
 # ifdef SIOCGIFFLAGS
