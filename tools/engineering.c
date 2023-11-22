@@ -34,6 +34,9 @@
 #ifndef PROGNAME_ENGINEERING
 # define PROGNAME_ENGINEERING "engineering"
 #endif
+#ifndef PROGNAME
+# define PROGNAME PROGNAME_ENGINEERING
+#endif
 
 #include "common.c"
 

@@ -32,8 +32,8 @@
 #include <System.h>
 #include "../src/plugins/smscrypt.c"
 
-#ifndef SMSCRYPT_PROGNAME
-# define SMSCRYPT_PROGNAME "smscrypt"
+#ifndef PROGNAME_SMSCRYPT
+# define PROGNAME_SMSCRYPT "smscrypt"
 #endif
 
 
@@ -113,7 +113,7 @@ static void _hexdump(char const * buf, size_t len)
 /* usage */
 static int _usage(void)
 {
-	fputs("Usage: " SMSCRYPT_PROGNAME " [-p number] message\n", stderr);
+	fputs("Usage: " PROGNAME_SMSCRYPT " [-p number] message\n", stderr);
 	return 1;
 }
 
@@ -164,7 +164,7 @@ static gboolean _main_idle(gpointer data)
 	plugin.helper = &helper;
 	if(_smscrypt_init(&plugin) != 0)
 	{
-		error_print(SMSCRYPT_PROGNAME);
+		error_print(PROGNAME_SMSCRYPT);
 		return FALSE;
 	}
 	if((p = strdup(mn->message)) == NULL)
