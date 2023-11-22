@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Phone 0.5.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-11 00:47+0100\n"
+"POT-Creation-Date: 2023-11-22 20:07+0100\n"
 "PO-Revision-Date: 2010-04-24 02:07+0200\n"
 "Last-Translator: Pierre Pronchery <khorben@defora.org>\n"
 "Language-Team: DeforaOS development (French) <devel-fr@lists.defora.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../src/main.c:63
+#: ../src/main.c:73
 #, c-format
 msgid ""
 "Usage: %s [-m modem][-r retry]\n"
@@ -29,368 +29,368 @@ msgstr ""
 "  -m\tNom du greffon modem à charger\n"
 "  -r\tDélai entre deux tentatives d'accès au modem (ms)\n"
 
-#: ../src/phone.c:384 ../src/phone.c:400
+#: ../src/phone.c:394 ../src/phone.c:410
 msgid "All"
 msgstr "Tous"
 
-#: ../src/phone.c:384 ../src/phone.c:2423
+#: ../src/phone.c:394 ../src/phone.c:2433
 msgid "To/From"
 msgstr "Vers/De"
 
-#: ../src/phone.c:386 ../src/phone.c:1282
+#: ../src/phone.c:396 ../src/phone.c:1292
 msgid "Incoming"
 msgstr "Entrant"
 
-#: ../src/phone.c:386
+#: ../src/phone.c:396
 msgid "From"
 msgstr "De"
 
-#: ../src/phone.c:388 ../src/phone.c:1288
+#: ../src/phone.c:398 ../src/phone.c:1298
 msgid "Outgoing"
 msgstr "Sortant"
 
-#: ../src/phone.c:388
+#: ../src/phone.c:398
 msgid "To"
 msgstr "Vers"
 
-#: ../src/phone.c:401
+#: ../src/phone.c:411
 msgid "Inbox"
 msgstr "Reçus"
 
-#: ../src/phone.c:402
+#: ../src/phone.c:412
 msgid "Sent"
 msgstr "Envoyés"
 
-#: ../src/phone.c:403
+#: ../src/phone.c:413
 msgid "Drafts"
 msgstr "Brouillons"
 
-#: ../src/phone.c:404
+#: ../src/phone.c:414
 msgid "Trash"
 msgstr "Corbeille"
 
-#: ../src/phone.c:561 ../src/phone.c:3148
+#: ../src/phone.c:571 ../src/phone.c:3158
 msgid "System preferences"
 msgstr "Préférences système"
 
-#: ../src/phone.c:573 ../src/phone.c:2495
+#: ../src/phone.c:583 ../src/phone.c:2505
 msgid "Plug-ins"
 msgstr "Greffons"
 
-#: ../src/phone.c:734
+#: ../src/phone.c:744
 #, c-format
 msgid "Checking %s..."
 msgstr "Vérification %s..."
 
-#: ../src/phone.c:831
+#: ../src/phone.c:841
 msgid "Delete this contact?"
 msgstr "Supprimer ce contact?"
 
-#: ../src/phone.c:1097
+#: ../src/phone.c:1107
 msgid "Connect to the network?"
 msgstr "Se connecter au réseau ?"
 
-#: ../src/phone.c:1285
+#: ../src/phone.c:1295
 msgid "Missed"
 msgstr "Manqué"
 
-#: ../src/phone.c:1294 ../src/phone.c:1511 ../src/phone.c:2738
+#: ../src/phone.c:1304 ../src/phone.c:1521 ../src/phone.c:2748
 msgid "%d/%m/%Y %H:%M:%S"
 msgstr "%d/%m/%Y %H:%M:%S"
 
-#: ../src/phone.c:1401 ../src/phone.c:1588
+#: ../src/phone.c:1411 ../src/phone.c:1598
 msgid "Delete this message?"
 msgstr "Supprimer ce message?"
 
-#: ../src/phone.c:1407 ../src/phone.c:1593
+#: ../src/phone.c:1417 ../src/phone.c:1603
 msgid "Deleting message..."
 msgstr "Suppression du message..."
 
-#: ../src/phone.c:1686
+#: ../src/phone.c:1696
 msgid "Telephony application for the DeforaOS desktop"
 msgstr "Téléphonie pour l'environnement DeforaOS"
 
-#: ../src/phone.c:1701
+#: ../src/phone.c:1711
 msgid "translator-credits"
 msgstr "Pierre Pronchery <khorben@defora.org>"
 
-#: ../src/phone.c:1749 ../src/phone.c:2732
+#: ../src/phone.c:1759 ../src/phone.c:2742
 msgid "Unknown contact"
 msgstr "Contact inconnu"
 
-#: ../src/phone.c:1752
+#: ../src/phone.c:1762
 msgid "Unknown number"
 msgstr "Numéro inconnu"
 
-#: ../src/phone.c:1773
+#: ../src/phone.c:1783
 msgid "Busy"
 msgstr "Occupé"
 
-#: ../src/phone.c:1784
+#: ../src/phone.c:1794
 msgid "In conversation"
 msgstr "En conversation"
 
-#: ../src/phone.c:1795
+#: ../src/phone.c:1805
 msgid "Incoming call"
 msgstr "Appel entrant"
 
-#: ../src/phone.c:1805
+#: ../src/phone.c:1815
 msgid "Outgoing call"
 msgstr "Appel sortant"
 
-#: ../src/phone.c:1816
+#: ../src/phone.c:1826
 msgid "Call finished"
 msgstr "Appel terminé"
 
-#: ../src/phone.c:1858
+#: ../src/phone.c:1868
 msgid "_Answer"
 msgstr "_Répondre"
 
-#: ../src/phone.c:1864
+#: ../src/phone.c:1874
 msgid "_Hangup"
 msgstr "Ra_ccrocher"
 
-#: ../src/phone.c:1870
+#: ../src/phone.c:1880
 msgid "_Reject"
 msgstr "Re_jeter"
 
-#: ../src/phone.c:1902
+#: ../src/phone.c:1912
 msgid "_Loudspeaker"
 msgstr "_Haut-parleur"
 
-#: ../src/phone.c:1908
+#: ../src/phone.c:1918
 msgid "_Mute microphone"
 msgstr "_Couper le microphone"
 
-#: ../src/phone.c:1913
+#: ../src/phone.c:1923
 msgid "Show dialer"
 msgstr "Afficher le cadran"
 
-#: ../src/phone.c:1956 ../src/phone.c:1964
+#: ../src/phone.c:1966 ../src/phone.c:1974
 #, c-format
 msgid "Enter %s"
 msgstr "Entrer %s"
 
-#: ../src/phone.c:2024
+#: ../src/phone.c:2034
 msgid "Enter"
 msgstr "Entrer"
 
-#: ../src/phone.c:2026
+#: ../src/phone.c:2036
 msgid "Skip"
 msgstr "Ignorer"
 
-#: ../src/phone.c:2062
+#: ../src/phone.c:2072
 msgid "Contacts"
 msgstr "Contacts"
 
-#: ../src/phone.c:2072 ../src/phone.c:2193 ../src/phone.c:2247
-#: ../src/phone.c:2377 ../src/phone.c:2815
+#: ../src/phone.c:2082 ../src/phone.c:2203 ../src/phone.c:2257
+#: ../src/phone.c:2387 ../src/phone.c:2825
 msgid "Call"
 msgstr "Appeler"
 
-#: ../src/phone.c:2077
+#: ../src/phone.c:2087
 msgid "Write"
 msgstr "Écrire"
 
-#: ../src/phone.c:2115 ../src/phone.c:2525 ../src/phone.c:2909
-#: ../src/plugins/profiles.c:383
+#: ../src/phone.c:2125 ../src/phone.c:2535 ../src/phone.c:2919
+#: ../src/plugins/profiles.c:393
 msgid "Name"
 msgstr "Nom"
 
-#: ../src/phone.c:2153
+#: ../src/phone.c:2163
 msgid "Dialer"
 msgstr "Composer"
 
-#: ../src/phone.c:2195
+#: ../src/phone.c:2205
 msgid "Hang up"
 msgstr "Raccrocher"
 
-#: ../src/phone.c:2237
+#: ../src/phone.c:2247
 msgid "Phone logs"
 msgstr "Journal d'appels"
 
-#: ../src/phone.c:2252
+#: ../src/phone.c:2262
 msgid "Message"
 msgstr "Message"
 
-#: ../src/phone.c:2290
+#: ../src/phone.c:2300
 msgid "Direction"
 msgstr "Direction"
 
-#: ../src/phone.c:2299 ../src/phone.c:2431
+#: ../src/phone.c:2309 ../src/phone.c:2441
 msgid "Date"
 msgstr "Date"
 
-#: ../src/phone.c:2367
+#: ../src/phone.c:2377
 msgid "Messages"
 msgstr "Messages"
 
-#: ../src/phone.c:2382
+#: ../src/phone.c:2392
 msgid "New message"
 msgstr "Nouveau message"
 
-#: ../src/phone.c:2388 ../src/phone.c:2820
+#: ../src/phone.c:2398 ../src/phone.c:2830
 msgid "Reply"
 msgstr "Répondre"
 
-#: ../src/phone.c:2517
+#: ../src/phone.c:2527
 msgid "Enabled"
 msgstr "Activé"
 
-#: ../src/phone.c:2805
+#: ../src/phone.c:2815
 msgid "Read message"
 msgstr "Lire le message"
 
-#: ../src/phone.c:2826
+#: ../src/phone.c:2836
 msgid "Forward"
 msgstr "Transmettre"
 
-#: ../src/phone.c:2884
+#: ../src/phone.c:2894
 msgid "Telephony settings"
 msgstr "Paramètres de téléphonie"
 
-#: ../src/phone.c:2961
+#: ../src/phone.c:2971
 msgid "missed calls"
 msgstr "appels manqués"
 
-#: ../src/phone.c:2961
+#: ../src/phone.c:2971
 msgid "missed call"
 msgstr "appel manqué"
 
-#: ../src/phone.c:2970
+#: ../src/phone.c:2980
 msgid "new messages"
 msgstr "nouveaux messages"
 
-#: ../src/phone.c:2971
+#: ../src/phone.c:2981
 msgid "new message"
 msgstr "nouveau message"
 
-#: ../src/phone.c:2991 ../src/phone.c:4125 ../src/phone.c:4135
+#: ../src/phone.c:3001 ../src/phone.c:4159 ../src/phone.c:4169
 msgid "Information"
 msgstr "Information"
 
-#: ../src/phone.c:3001 ../src/plugins/gprs.c:319
+#: ../src/phone.c:3011 ../src/plugins/gprs.c:329
 msgid "Status"
 msgstr "État"
 
-#: ../src/phone.c:3037
+#: ../src/phone.c:3047
 msgid "_View"
 msgstr "_Vue"
 
-#: ../src/phone.c:3068
+#: ../src/phone.c:3078
 msgid "_Read"
 msgstr "_Lire"
 
-#: ../src/phone.c:3228
+#: ../src/phone.c:3238
 msgid "Open file..."
 msgstr "Ouvrir fichier..."
 
-#: ../src/phone.c:3452
+#: ../src/phone.c:3462
 msgid "Write message"
 msgstr "Écrire un message"
 
-#: ../src/phone.c:3462
+#: ../src/phone.c:3472
 msgid "Send"
 msgstr "Envoyer"
 
-#: ../src/phone.c:3468
+#: ../src/phone.c:3478
 msgid "Attach"
 msgstr "Joindre"
 
-#: ../src/phone.c:3603
+#: ../src/phone.c:3613
 msgid "Attach file..."
 msgstr "Joindre un fichier..."
 
-#: ../src/phone.c:3706
+#: ../src/phone.c:3716
 #, c-format
 msgid "%d message%s, %d/%d characters"
 msgstr "%d message%s, %d/%d caractères"
 
-#: ../src/phone.c:3707
+#: ../src/phone.c:3717
 msgid "s"
 msgstr "s"
 
-#: ../src/phone.c:3771
+#: ../src/phone.c:3781
 msgid "Sending message..."
 msgstr "Envoi du message..."
 
-#: ../src/phone.c:4008
+#: ../src/phone.c:4042
 msgid "Operation in progress..."
 msgstr "Opération en cours..."
 
-#: ../src/phone.c:4073 ../src/phone.c:4077
+#: ../src/phone.c:4107 ../src/phone.c:4111
 msgid "Question"
 msgstr "Question"
 
-#: ../src/phone.c:4097 ../src/phone.c:4101 ../src/plugins/gprs.c:848
-#: ../src/plugins/gprs.c:853
+#: ../src/phone.c:4131 ../src/phone.c:4135 ../src/plugins/gprs.c:858
+#: ../src/plugins/gprs.c:863
 msgid "Error"
 msgstr "Erreur"
 
-#: ../src/phone.c:4412
+#: ../src/phone.c:4447
 msgid "Name: "
 msgstr "Nom : "
 
-#: ../src/phone.c:4429
+#: ../src/phone.c:4464
 msgid "Number: "
 msgstr "Numéro : "
 
-#: ../src/phone.c:4449
+#: ../src/phone.c:4484
 msgid "New contact"
 msgstr "Nouveau contact"
 
-#: ../src/phone.c:4451
+#: ../src/phone.c:4486
 msgid "Edit contact: "
 msgstr "Modifier contact : "
 
-#: ../src/phone.c:4478
+#: ../src/phone.c:4513
 msgid "The name cannot be empty"
 msgstr "Le nom ne peut être vide"
 
-#: ../src/phone.c:4483
+#: ../src/phone.c:4518
 msgid "The number cannot be empty"
 msgstr "Le numéro ne peut être vide"
 
-#: ../src/phone.c:4591 ../src/phone.c:4595 ../src/plugins/gprs.c:725
-#: ../src/plugins/gprs.c:730
+#: ../src/phone.c:4626 ../src/phone.c:4630 ../src/plugins/gprs.c:735
+#: ../src/plugins/gprs.c:740
 msgid "Warning"
 msgstr "Attention"
 
-#: ../src/phone.c:4649
+#: ../src/phone.c:4684
 msgid "Message sent"
 msgstr "Message envoyé"
 
-#: ../src/phone.c:4653
+#: ../src/phone.c:4688
 msgid "Model information"
 msgstr "Informations du modèle"
 
-#: ../src/phone.c:4687
+#: ../src/phone.c:4722
 #, c-format
 msgid "Wrong %s"
 msgstr "Mauvais %s"
 
-#: ../src/phone.c:4690
+#: ../src/phone.c:4725
 msgid "Authentication failed"
 msgstr "Échec lors de l'authentification"
 
-#: ../src/phone.c:4699
+#: ../src/phone.c:4734
 #, c-format
 msgid "%s is valid"
 msgstr "%s valide"
 
-#: ../src/phone.c:4707
+#: ../src/phone.c:4742
 msgid "Authentication successful"
 msgstr "Authentification réussie"
 
-#: ../src/phone.c:4785
+#: ../src/phone.c:4820
 msgid "Raw data (not shown)"
 msgstr "Données brutes (non affichées)"
 
-#: ../src/phone.c:4821
+#: ../src/phone.c:4856
 msgid "Message deleted"
 msgstr "Message effacé"
 
-#: ../src/phonectl.c:46
+#: ../src/phonectl.c:56
 msgid ""
 "Usage: phonectl -C\n"
 "       phonectl -D\n"
@@ -426,70 +426,70 @@ msgstr ""
 "  -r\tReprendre la téléphonie\n"
 "  -s\tSuspendre la téléphonie\n"
 
-#: ../src/plugins/gprs.c:117
+#: ../src/plugins/gprs.c:127
 msgid "Dial-up networking"
 msgstr "Accès par ligne commutée"
 
-#: ../src/plugins/gprs.c:155 ../src/plugins/gprs.c:447
-#: ../src/plugins/gprs.c:617
+#: ../src/plugins/gprs.c:165 ../src/plugins/gprs.c:457
+#: ../src/plugins/gprs.c:627
 msgid "Not connected"
 msgstr "Non connecté"
 
-#: ../src/plugins/gprs.c:315
+#: ../src/plugins/gprs.c:325
 msgid "Preferences"
 msgstr "Préférences"
 
-#: ../src/plugins/gprs.c:363
+#: ../src/plugins/gprs.c:373
 msgid "Force GPRS registration"
 msgstr "Forcer l'enregistrement GPRS"
 
-#: ../src/plugins/gprs.c:367
+#: ../src/plugins/gprs.c:377
 msgid "Show in system tray"
 msgstr "Afficher dans la zone de notifications"
 
-#: ../src/plugins/gprs.c:370
+#: ../src/plugins/gprs.c:380
 msgid "Credentials"
 msgstr "Identifiants de connexion"
 
-#: ../src/plugins/gprs.c:376
+#: ../src/plugins/gprs.c:386
 msgid "Access point:"
 msgstr "Point d'accès :"
 
-#: ../src/plugins/gprs.c:389
+#: ../src/plugins/gprs.c:399
 msgid "Username:"
 msgstr "Utilisateur :"
 
-#: ../src/plugins/gprs.c:402
+#: ../src/plugins/gprs.c:412
 msgid "Password:"
 msgstr "Mot de passe :"
 
-#: ../src/plugins/gprs.c:417
+#: ../src/plugins/gprs.c:427
 msgid "Load defaults"
 msgstr "Charger les préférences par défaut"
 
-#: ../src/plugins/gprs.c:440
+#: ../src/plugins/gprs.c:450
 msgid "Details"
 msgstr "Détails"
 
-#: ../src/plugins/gprs.c:479
+#: ../src/plugins/gprs.c:489
 msgid "Counters"
 msgstr "Compteurs"
 
-#: ../src/plugins/gprs.c:617
+#: ../src/plugins/gprs.c:627
 msgid "Connected"
 msgstr "Connecté"
 
-#: ../src/plugins/gprs.c:628
+#: ../src/plugins/gprs.c:638
 #, c-format
 msgid "Received: %zu kB (%zu kB/s)"
 msgstr "Reçu : %zu kB (%zu kB/s)"
 
-#: ../src/plugins/gprs.c:631
+#: ../src/plugins/gprs.c:641
 #, c-format
 msgid "Sent: %zu kB (%zu kB/s)"
 msgstr "Envoyé : %zu kB (%zu kB/s)"
 
-#: ../src/plugins/gprs.c:638
+#: ../src/plugins/gprs.c:648
 #, c-format
 msgid ""
 "%s\n"
@@ -500,17 +500,17 @@ msgstr ""
 "Reçu: %zu kB\n"
 "Envoyé: %zu kB"
 
-#: ../src/plugins/gprs.c:668
+#: ../src/plugins/gprs.c:678
 #, c-format
 msgid "Received: %zu kB"
 msgstr "Reçu : %zu kB"
 
-#: ../src/plugins/gprs.c:671
+#: ../src/plugins/gprs.c:681
 #, c-format
 msgid "Sent: %zu kB"
 msgstr "Envoyé : %zu kB"
 
-#: ../src/plugins/gprs.c:711
+#: ../src/plugins/gprs.c:721
 msgid ""
 "You are currently roaming, and additional charges are therefore likely to "
 "apply.\n"
@@ -520,62 +520,62 @@ msgstr ""
 "être appliqués.\n"
 "Voulez-vous vraiment vous connecter ?"
 
-#: ../src/plugins/gprs.c:736
+#: ../src/plugins/gprs.c:746
 msgid "Connecting..."
 msgstr "Connexion..."
 
-#: ../src/plugins/gprs.c:782
+#: ../src/plugins/gprs.c:792
 msgid "Disconnecting..."
 msgstr "Déconnexion..."
 
-#: ../src/plugins/gprs.c:852
+#: ../src/plugins/gprs.c:862
 msgid "No defaults known for the current operator"
 msgstr "Pas de préférences par défaut connues pour l'opérateur actuel"
 
-#: ../src/plugins/gprs.c:880
+#: ../src/plugins/gprs.c:890
 msgid "_Disconnect"
 msgstr "_Déconnexion"
 
-#: ../src/plugins/gprs.c:880
+#: ../src/plugins/gprs.c:890
 msgid "_Connect"
 msgstr "_Connexion"
 
-#: ../src/plugins/profiles.c:111
+#: ../src/plugins/profiles.c:121
 msgid "General"
 msgstr "Général"
 
-#: ../src/plugins/profiles.c:112
+#: ../src/plugins/profiles.c:122
 msgid "Beep"
 msgstr "Bip"
 
-#: ../src/plugins/profiles.c:114 ../src/plugins/profiles.c:518
+#: ../src/plugins/profiles.c:124 ../src/plugins/profiles.c:528
 msgid "Silent"
 msgstr "Silencieux"
 
-#: ../src/plugins/profiles.c:115
+#: ../src/plugins/profiles.c:125
 msgid "Offline"
 msgstr "Hors ligne"
 
-#: ../src/plugins/profiles.c:396
+#: ../src/plugins/profiles.c:406
 msgid "Online"
 msgstr "En ligne"
 
-#: ../src/plugins/profiles.c:405
+#: ../src/plugins/profiles.c:415
 msgid "Volume: "
 msgstr "Volume : "
 
-#: ../src/plugins/profiles.c:417
+#: ../src/plugins/profiles.c:427
 msgid "Ring"
 msgstr "Sonner"
 
-#: ../src/plugins/profiles.c:421
+#: ../src/plugins/profiles.c:431
 msgid "Vibrate"
 msgstr "Vibrer"
 
-#: ../src/plugins/profiles.c:523
+#: ../src/plugins/profiles.c:533
 msgid "Ascending"
 msgstr "Ascendant"
 
-#: ../src/plugins/profiles.c:585
+#: ../src/plugins/profiles.c:595
 msgid "Invalid profile"
 msgstr "Profil invalide"
