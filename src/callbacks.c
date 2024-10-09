@@ -26,7 +26,6 @@
 
 
 #include <string.h>
-#include <gdk/gdkx.h>
 #include "phone.h"
 #include "callbacks.h"
 
