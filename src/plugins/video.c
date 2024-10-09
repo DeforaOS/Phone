@@ -245,10 +245,6 @@ static VideoPhonePlugin * _video_init(PhonePluginHelper * helper)
 	g_signal_connect(video->area, "expose-event", G_CALLBACK(
 				_video_on_drawing_area_expose), video);
 #endif
-#ifndef __APPLE__
-	gtk_widget_set_size_request(video->area, video->format.fmt.pix.width,
-			video->format.fmt.pix.height);
-#endif
 	gtk_container_add(GTK_CONTAINER(video->window), video->area);
 	gtk_widget_show_all(video->window);
 	_video_start(video);
