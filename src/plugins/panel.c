@@ -34,8 +34,10 @@
 #endif
 #include <string.h>
 #include <gtk/gtk.h>
-#if GTK_CHECK_VERSION(3, 0, 0)
-# include <gtk/gtkx.h>
+#if defined(GDK_WINDOWING_X11)
+# if GTK_CHECK_VERSION(3, 0, 0)
+#  include <gtk/gtkx.h>
+# endif
 #endif
 #include <Desktop.h>
 #include "Phone.h"
@@ -73,6 +75,7 @@ typedef struct _PhonePlugin
 {
 	PhonePluginHelper * helper;
 
+#if defined(GDK_WINDOWING_X11)
 	guint timeout;
 	GtkWidget * plug;
 	GtkWidget * hbox;
@@ -92,6 +95,7 @@ typedef struct _PhonePlugin
 	GtkWidget * window;
 	GtkWidget * battery;
 	GtkWidget * truncate;
+#endif
 } Panel;
 
 
@@ -101,12 +105,14 @@ static void _panel_destroy(Panel * panel);
 static int _panel_event(Panel * panel, PhoneEvent * event);
 static void _panel_settings(Panel * panel);
 
+#if defined(GDK_WINDOWING_X11)
 static void _panel_set_battery_level(Panel * panel, gdouble level,
 		gboolean charging);
 static void _panel_set_operator(Panel * panel, ModemRegistrationStatus status,
 		char const * _operator);
 static void _panel_set_signal_level(Panel * panel, gdouble level);
 static void _panel_set_status(Panel * panel, gboolean data, gboolean roaming);
+#endif
 
 
 /* public */
@@ -126,19 +132,22 @@ PhonePluginDefinition plugin =
 /* private */
 /* functions */
 /* panel_init */
+#if defined(GDK_WINDOWING_X11)
 static gboolean _on_plug_delete_event(gpointer data);
 static void _on_plug_embedded(gpointer data);
 static gboolean _on_battery_timeout(gpointer data);
+#endif
 
 static Panel * _panel_init(PhonePluginHelper * helper)
 {
+#if defined(GDK_WINDOWING_X11)
 	Panel * panel;
 	PangoFontDescription * bold;
 	char const * p;
 
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+# endif
 	if((panel = object_new(sizeof(*panel))) == NULL)
 		return NULL;
 	panel->helper = helper;
@@ -150,11 +159,11 @@ static Panel * _panel_init(PhonePluginHelper * helper)
 				_on_plug_delete_event), panel);
 	g_signal_connect_swapped(panel->plug, "embedded", G_CALLBACK(
 				_on_plug_embedded), panel);
-#if GTK_CHECK_VERSION(3, 0, 0)
+# if GTK_CHECK_VERSION(3, 0, 0)
 	panel->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-#else
+# else
 	panel->hbox = gtk_hbox_new(FALSE, 2);
-#endif
+# endif
 	/* battery */
 	panel->battery_timeout = 0;
 	panel->battery_level = -1;
@@ -178,9 +187,9 @@ static Panel * _panel_init(PhonePluginHelper * helper)
 			&& strtol(p, NULL, 10) != 0)
 		gtk_label_set_ellipsize(GTK_LABEL(panel->operator),
 				PANGO_ELLIPSIZE_END);
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_label_set_max_width_chars(GTK_LABEL(panel->operator), 12);
-#endif
+# endif
 	gtk_widget_modify_font(panel->operator, bold);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->operator, TRUE, TRUE,
 			0);
@@ -188,16 +197,16 @@ static Panel * _panel_init(PhonePluginHelper * helper)
 	/* connection status */
 	panel->data = gtk_image_new_from_icon_name("stock_internet",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
-#if GTK_CHECK_VERSION(2, 12, 0)
+# if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(panel->data, "Connected to GPRS");
-#endif
+# endif
 	gtk_widget_set_no_show_all(panel->data, TRUE);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->data, FALSE, TRUE, 0);
 	panel->roaming = gtk_image_new_from_icon_name("phone-roaming",
 			GTK_ICON_SIZE_SMALL_TOOLBAR);
-#if GTK_CHECK_VERSION(2, 12, 0)
+# if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(panel->roaming, "Roaming");
-#endif
+# endif
 	gtk_widget_set_no_show_all(panel->roaming, TRUE);
 	gtk_box_pack_start(GTK_BOX(panel->hbox), panel->roaming, FALSE, TRUE,
 			0);
@@ -208,15 +217,22 @@ static Panel * _panel_init(PhonePluginHelper * helper)
 	pango_font_description_free(bold);
 	_on_plug_delete_event(panel);
 	return panel;
+#else
+	(void) helper;
+
+	error_set_code(-ENOSYS, "%s", "X11 support not detected");
+	return NULL;
+#endif
 }
 
+#if defined(GDK_WINDOWING_X11)
 static gboolean _on_plug_delete_event(gpointer data)
 {
 	Panel * panel = data;
 
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+# endif
 	if(panel->timeout == 0)
 		panel->timeout = g_timeout_add(5000, _on_plug_delete_event,
 				panel);
@@ -230,9 +246,9 @@ static void _on_plug_embedded(gpointer data)
 	Panel * panel = data;
 	PhonePluginHelper * helper = panel->helper;
 
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s()\n", __func__);
-#endif
+# endif
 	if(panel->timeout != 0)
 		g_source_remove(panel->timeout);
 	panel->timeout = 0;
@@ -250,25 +266,33 @@ static gboolean _on_battery_timeout(gpointer data)
 	panel->helper->request(panel->helper->phone, &request);
 	return TRUE;
 }
+#endif
 
 
 /* panel_destroy */
 static void _panel_destroy(Panel * panel)
 {
+#if defined(GDK_WINDOWING_X11)
 	if(panel->battery_timeout != 0)
 		g_source_remove(panel->battery_timeout);
 	if(panel->timeout != 0)
 		g_source_remove(panel->timeout);
 	gtk_widget_destroy(panel->hbox);
 	object_delete(panel);
+#else
+	(void) panel;
+#endif
 }
 
 
 /* panel_event */
+#if defined(GDK_WINDOWING_X11)
 static int _event_modem_event(Panel * panel, ModemEvent * event);
+#endif
 
 static int _panel_event(Panel * panel, PhoneEvent * event)
 {
+#if defined(GDK_WINDOWING_X11)
 	switch(event->type)
 	{
 		case PHONE_EVENT_TYPE_MODEM_EVENT:
@@ -297,9 +321,15 @@ static int _panel_event(Panel * panel, PhoneEvent * event)
 		default:
 			break;
 	}
+#else
+	(void) panel;
+	(void) event;
+
+#endif
 	return 0;
 }
 
+#if defined(GDK_WINDOWING_X11)
 static int _event_modem_event(Panel * panel, ModemEvent * event)
 {
 	char const * media = "";
@@ -328,8 +358,10 @@ static int _event_modem_event(Panel * panel, ModemEvent * event)
 	}
 	return 0;
 }
+#endif
 
 
+#if defined(GDK_WINDOWING_X11)
 /* panel_set_battery_level */
 static void _set_battery_image(Panel * panel, PanelBattery battery,
 		gboolean charging);
@@ -337,20 +369,20 @@ static void _set_battery_image(Panel * panel, PanelBattery battery,
 static void _panel_set_battery_level(Panel * panel, gdouble level,
 		gboolean charging)
 {
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(stderr, "DEBUG: %s(panel, %f)\n", __func__, level);
-#endif
-#if GTK_CHECK_VERSION(2, 12, 0)
+# endif
+# if GTK_CHECK_VERSION(2, 12, 0)
 	char buf[32];
 
 	snprintf(buf, sizeof(buf), "%.0f%%%s", level * 100.0, charging
 			? " (charging)" : "");
-#endif
+# endif
 	if(level < 0.0)
 	{
-#if GTK_CHECK_VERSION(2, 12, 0)
+# if GTK_CHECK_VERSION(2, 12, 0)
 		snprintf(buf, sizeof(buf), "%s", "Unknown status");
-#endif
+# endif
 		_set_battery_image(panel, PANEL_BATTERY_UNKNOWN, charging);
 	}
 	else if(level <= 0.01)
@@ -365,14 +397,14 @@ static void _panel_set_battery_level(Panel * panel, gdouble level,
 		_set_battery_image(panel, PANEL_BATTERY_FULL, charging);
 	else
 	{
-#if GTK_CHECK_VERSION(2, 12, 0)
+# if GTK_CHECK_VERSION(2, 12, 0)
 		snprintf(buf, sizeof(buf), "%s", "Error");
-#endif
+# endif
 		_set_battery_image(panel, PANEL_BATTERY_ERROR, FALSE);
 	}
-#if GTK_CHECK_VERSION(2, 12, 0)
+# if GTK_CHECK_VERSION(2, 12, 0)
 	gtk_widget_set_tooltip_text(panel->battery_image, buf);
-#endif
+# endif
 }
 
 static void _set_battery_image(Panel * panel, PanelBattery battery,
@@ -489,15 +521,19 @@ static void _panel_set_status(Panel * panel, gboolean data, gboolean roaming)
 	else
 		gtk_widget_hide(panel->roaming);
 }
+#endif
 
 
 /* panel_settings */
+#if defined(GDK_WINDOWING_X11)
 static void _on_settings_cancel(gpointer data);
 static gboolean _on_settings_closex(gpointer data);
 static void _on_settings_ok(gpointer data);
+#endif
 
 static void _panel_settings(Panel * panel)
 {
+#if defined(GDK_WINDOWING_X11)
 	GtkWidget * vbox;
 	GtkWidget * bbox;
 	GtkWidget * widget;
@@ -510,17 +546,17 @@ static void _panel_settings(Panel * panel)
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_container_set_border_width(GTK_CONTAINER(panel->window), 4);
 	gtk_window_set_default_size(GTK_WINDOW(panel->window), 200, 300);
-#if GTK_CHECK_VERSION(2, 6, 0)
+# if GTK_CHECK_VERSION(2, 6, 0)
 	gtk_window_set_icon_name(GTK_WINDOW(panel->window), "gnome-settings");
-#endif
+# endif
 	gtk_window_set_title(GTK_WINDOW(panel->window), "Panel preferences");
 	g_signal_connect_swapped(panel->window, "delete-event", G_CALLBACK(
 				_on_settings_closex), panel);
-#if GTK_CHECK_VERSION(3, 0, 0)
+# if GTK_CHECK_VERSION(3, 0, 0)
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-#else
+# else
 	vbox = gtk_vbox_new(FALSE, 0);
-#endif
+# endif
 	/* check button */
 	panel->battery = gtk_check_button_new_with_label(
 			"Monitor battery activity");
@@ -529,11 +565,11 @@ static void _panel_settings(Panel * panel)
 			"Shorten the operator name");
 	gtk_box_pack_start(GTK_BOX(vbox), panel->truncate, FALSE, TRUE, 0);
 	/* button box */
-#if GTK_CHECK_VERSION(3, 0, 0)
+# if GTK_CHECK_VERSION(3, 0, 0)
 	bbox = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
-#else
+# else
 	bbox = gtk_hbutton_box_new();
-#endif
+# endif
 	gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 	gtk_box_set_spacing(GTK_BOX(bbox), 4);
 	widget = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
@@ -548,8 +584,13 @@ static void _panel_settings(Panel * panel)
 	gtk_container_add(GTK_CONTAINER(panel->window), vbox);
 	_on_settings_cancel(panel);
 	gtk_widget_show_all(panel->window);
+#else
+	(void) panel;
+
+#endif
 }
 
+#if defined(GDK_WINDOWING_X11)
 static void _on_settings_cancel(gpointer data)
 {
 	Panel * panel = data;
@@ -610,3 +651,4 @@ static void _on_settings_ok(gpointer data)
 	helper->config_set(helper->phone, "panel", "truncate", value
 			? "1" : "0");
 }
+#endif
